@@ -16,7 +16,6 @@ ElementType = Enum("ElementType",[
 ])
 
 
-
 # General parent classes
 
 # Single element
@@ -127,6 +126,11 @@ class ElementCollection:
 
         if self.element_type == ElementType.NONE:
             self.element_type = arr[0].element_type
+
+        if not(self.element_type==arr[0].element_type):
+            raise TypeError(
+                f"Input list is not of the same element type as collection!\
+                    ({arr[0].element_type.element_type} and {self.element_type})")
 
         for element in arr:
             self.append(element)
@@ -272,3 +276,44 @@ class Register(HarpElement):
         }
 
 
+class MaskCollection(ElementCollection):
+
+    def __init__(
+            self,
+            element_array = Optional[List[Mask]]) -> None:
+            super().__init__(
+                element_type=ElementType.Mask,
+                element_array=element_array)
+
+    def from_array(self, arr: List[Mask]) -> None:
+        super().from_array(arr)
+
+    def append(self, element: Mask) -> None:
+        super().append(element)
+
+    def insert(self, idx: int, element: Mask) -> None:
+        super().insert(idx, element)
+
+    def pop(self, idx: Optional[int]) -> None:
+        super().pop(idx)
+
+class RegisterCollection(ElementCollection):
+
+    def __init__(
+            self,
+            element_array = Optional[List[Register]]) -> None:
+            super().__init__(
+                element_type=ElementType.Register,
+                element_array=element_array)
+
+    def from_array(self, arr: List[Register]) -> None:
+        super().from_array(arr)
+
+    def append(self, element: Register) -> None:
+        super().append(element)
+
+    def insert(self, idx: int, element: Register) -> None:
+        super().insert(idx, element)
+
+    def pop(self, idx: Optional[int]) -> None:
+        super().pop(idx)
