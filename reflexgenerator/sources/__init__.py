@@ -1,0 +1,248 @@
+from __future__ import annotations
+from typing import Optional, List, Callable
+from enum import Enum
+
+# Type shorthands
+
+HarpDataType = Enum("HarpDataType",[
+    "NONE",
+    "U8", "U16", "U32", "U64",
+    "S8", "S16", "S32", "S64",
+    "float"
+    ])
+
+ElementType = Enum("ElementType",[
+    "NONE", "Mask", "Register"
+])
+
+
+
+# General parent classes
+
+# Single element
+class HarpElement:
+    "Parent class that represents a single element (e.g. register or mask)"
+    def __init__(
+        self,
+        name: str,
+        element_type: ElementType = ElementType.NONE,
+        dtype: HarpDataType = HarpDataType.NONE,
+        mask_family: Optional[str] = None,
+        description: Optional[str] = None,
+        converter: Optional[str] = None,
+        enable_generator: bool = True,
+    ) -> None:
+
+        self._name = name
+        self._element_type = element_type
+        self._dtype = dtype
+        self._mask_family = mask_family
+        self._description = description
+        self._converter = converter
+        self._enable_generator = enable_generator
+
+    def _setter_callback(self):
+        pass
+
+    @property
+    def name(self):
+        return self._name
+    @name.setter
+    def name(self, value: str):
+        self._name = value
+        self._setter_callback()
+
+    @property
+    def element_type(self):
+        return self._element_type
+    @element_type.setter
+    def element_type(self, value: ElementType):
+        self._element_type = value
+        self._setter_callback()
+
+    @property
+    def dtype(self):
+        return self._dtype
+    @dtype.setter
+    def dtype(self, value: HarpDataType):
+        self._dtype = value
+        self._setter_callback()
+
+    @property
+    def mask_family(self):
+        return self._mask_family
+    @mask_family.setter
+    def mask_family(self, value: Optional[str]):
+        self._mask_family = value
+        self._setter_callback()
+
+    @property
+    def description(self):
+        return self._description
+    @description.setter
+    def description(self, value: Optional[str]):
+        self._description = value
+        self._setter_callback()
+
+    @property
+    def converter(self):
+        return self._converter
+    @converter.setter
+    def converter(self, value: Optional[str]):
+        self._converter = value
+        self._setter_callback()
+
+    @property
+    def enable_generator(self):
+        return self._enable_generator
+    @enable_generator.setter
+    def enable_generator(self, value: Optional[str]):
+        self._enable_generator = value
+        self._setter_callback()
+
+
+# Collection of multiple elements
+class ElementCollection:
+    "Parent class that represents a collection of HarpElements"
+    def __init__(
+        self,
+        element_type: ElementType = ElementType.NONE,
+        element_array = Optional[List[HarpElement]]):
+
+        self.element_type = element_type
+        self.elements = []
+        if element_array:
+            self.from_array(element_array)
+
+    def __iter__(self):
+        return iter(self.elements)
+
+    def from_array(self, arr: List[HarpElement]) -> None:
+        if len(arr) < 1:
+            raise ValueError("List can't be empty!")
+
+        if self.element_type == ElementType.NONE:
+            self.element_type = arr[0].element_type
+
+        for element in arr:
+            self.append(element)
+
+    def append(self, element: HarpElement) -> None:
+        if not(self.element_type == element.element_type):
+            raise TypeError(
+                f"Element to be appended must be of the same type as the collection!\
+                    ({element.element_type} and {self.element_type})")
+        self.elements.append(element)
+
+    def insert(self, idx: int, element: HarpElement) -> None:
+        if not(self.element_type == element.element_type):
+            raise TypeError(
+                f"Element to be appended must be of the same type as the collection!\
+                    ({element.element_type} and {self.element_type})")
+        self.elements.insert(idx, element)
+
+    def pop(self, idx: Optional[int]) -> None:
+        self.elements.pop(idx)
+
+
+
+# Child classes
+
+class Mask(HarpElement):
+
+    def __init__(
+        self,
+        name: str,
+        mask: str | int,
+        dtype: HarpDataType,
+        mask_family: Optional[str] = None,
+        description: Optional[str] = None,
+        converter: Optional[str] = None,
+        enable_generator: bool = True
+    ) -> None:
+
+        super().__init__(
+            name=name,
+            element_type=ElementType.Mask,
+            dtype=dtype,
+            mask_family=mask_family,
+            description=description,
+            converter=converter,
+            enable_generator=enable_generator)
+
+        self._mask = mask
+
+    # override parent method for setter
+    def _setter_callback(self):
+        print(self)
+
+    @property
+    def mask(self):
+        return self._mask
+    @mask.setter
+    def mask(self, value: str|int):
+        self._mask = value
+        self._setter_callback()
+
+
+
+
+class Register(HarpElement):
+
+    def __init__(
+        self,
+        name: str,
+        address: int,
+        dtype: HarpDataType,
+        is_event: bool = False,
+        mask_family: Optional[str] = None,
+        description: Optional[str] = None,
+        converter: Optional[str] = None,
+        enable_generator: bool = True
+    ) -> None:
+
+        super().__init__(
+            name=name,
+            element_type=ElementType.Mask,
+            dtype=dtype,
+            mask_family=mask_family,
+            description=description,
+            converter=converter,
+            enable_generator=enable_generator)
+
+        self._address = address
+        self._is_event = is_event
+
+    # override parent method for setter
+    def _setter_callback(self):
+        print(self)
+
+    @property
+    def address(self):
+        return self._address
+    @address.setter
+    def address(self, value:int):
+        self._address = value
+        self._setter_callback()
+
+    @property
+    def is_event(self):
+        return self._is_event
+    @is_event.setter
+    def is_event(self, value:bool):
+        self._is_event = value
+        self._setter_callback()
+
+
+
+    # def from_array(self, arr: List[Register]) -> None:
+    #     super().from_array(arr)
+
+    # def append(self, element: Register) -> None:
+    #     super().append(element)
+
+    # def insert(self, idx: int, element: Register) -> None:
+    #     (super().insert(idx, element))
+
+    # def pop(self, idx: Optional[int]) -> None:
+    #     (super().pop(idx))
