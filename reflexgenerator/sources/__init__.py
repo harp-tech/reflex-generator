@@ -105,12 +105,15 @@ class HarpElement:
         return ("""{}""".format("\n".join(_l))) + """\n"""
 
 # Collection of multiple elements
+
+
 class ElementCollection:
     "Parent class that represents a collection of HarpElements"
     def __init__(
         self,
-        element_type: ElementType = ElementType.NONE,
-        element_array = Optional[List[HarpElement]]):
+        element_array: Optional[List[HarpElement]],
+        element_type: ElementType = ElementType.NONE
+        ) -> None:
 
         self.element_type = element_type
         self.elements = []
@@ -124,10 +127,10 @@ class ElementCollection:
         if len(arr) < 1:
             raise ValueError("List can't be empty!")
 
-        if self.element_type == ElementType.NONE:
+        if (self.element_type == ElementType.NONE):
             self.element_type = arr[0].element_type
 
-        if not(self.element_type==arr[0].element_type):
+        if not (self.element_type == arr[0].element_type):
             raise TypeError(
                 f"Input list is not of the same element type as collection!\
                     ({arr[0].element_type} and {self.element_type})")
@@ -136,14 +139,14 @@ class ElementCollection:
             self.append(element)
 
     def append(self, element: HarpElement) -> None:
-        if not(self.element_type == element.element_type):
+        if not (self.element_type == element.element_type):
             raise TypeError(
                 f"Element to be appended must be of the same type as the collection!\
                     ({element.element_type} and {self.element_type})")
         self.elements.append(element)
 
     def insert(self, idx: int, element: HarpElement) -> None:
-        if not(self.element_type == element.element_type):
+        if not (self.element_type == element.element_type):
             raise TypeError(
                 f"Element to be appended must be of the same type as the collection!\
                     ({element.element_type} and {self.element_type})")
@@ -151,7 +154,6 @@ class ElementCollection:
 
     def pop(self, idx: Optional[int]) -> None:
         self.elements.pop(idx)
-
 
 
 # Child classes
@@ -246,27 +248,29 @@ class Register(HarpElement):
     @property
     def address(self):
         return self._address
+
     @address.setter
-    def address(self, value:int):
+    def address(self, value: int):
         self._address = value
         self._setter_callback()
 
     @property
     def array_spec(self):
         return self._array_spec
+
     @array_spec.setter
-    def array_spec(self, value:Optional[str]):
+    def array_spec(self, value: Optional[str]):
         self._array_spec = value
         self._setter_callback()
 
     @property
     def is_event(self):
         return self._is_event
+
     @is_event.setter
-    def is_event(self, value:bool):
+    def is_event(self, value: bool):
         self._is_event = value
         self._setter_callback()
-
 
     def _refresh_property_dict(self):
         self.dict = {
@@ -285,10 +289,10 @@ class MaskCollection(ElementCollection):
 
     def __init__(
             self,
-            element_array = Optional[List[Mask]]) -> None:
-            super().__init__(
-                element_type=ElementType.Mask,
-                element_array=element_array)
+            element_array: Optional[List[Mask]]) -> None:
+        super().__init__(
+            element_type=ElementType.Mask,
+            element_array=element_array)
 
     def from_array(self, arr: List[Mask]) -> None:
         super().from_array(arr)
@@ -302,14 +306,15 @@ class MaskCollection(ElementCollection):
     def pop(self, idx: Optional[int]) -> None:
         super().pop(idx)
 
+
 class RegisterCollection(ElementCollection):
 
     def __init__(
             self,
-            element_array = Optional[List[Register]]) -> None:
-            super().__init__(
-                element_type=ElementType.Register,
-                element_array=element_array)
+            element_array: Optional[List[Register]]) -> None:
+        super().__init__(
+            element_type=ElementType.Register,
+            element_array=element_array)
 
     def from_array(self, arr: List[Register]) -> None:
         super().from_array(arr)
