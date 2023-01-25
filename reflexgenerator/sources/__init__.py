@@ -40,6 +40,7 @@ class HarpElement:
         self._description = description
         self._converter = converter
         self._enable_generator = enable_generator
+        self.dict = {}
 
     def _setter_callback(self):
         pass
@@ -100,6 +101,9 @@ class HarpElement:
         self._enable_generator = value
         self._setter_callback()
 
+    def __str__(self) -> str:
+        _l = [f"{k} : {v}" for k,v in self.dict.items()]
+        return ("""{}""".format("\n".join(_l)))
 
 # Collection of multiple elements
 class ElementCollection:
@@ -171,10 +175,12 @@ class Mask(HarpElement):
             enable_generator=enable_generator)
 
         self._mask = mask
+        self.dict = None
+        self._refresh_property_dict()
 
     # override parent method for setter
     def _setter_callback(self):
-        print(self)
+        self._refresh_property_dict()
 
     @property
     def mask(self):
@@ -184,8 +190,16 @@ class Mask(HarpElement):
         self._mask = value
         self._setter_callback()
 
-
-
+    def _refresh_property_dict(self):
+        self.dict = {
+            "Name": self.name,
+            "MaskFamily": self.mask_family,
+            "Mask": self.mask,
+            "Format": self.dtype,
+            "Description": self.description,
+            "Converter": self.converter,
+            "AutoInterface": self.enable_generator
+        }
 
 class Register(HarpElement):
 
@@ -194,6 +208,7 @@ class Register(HarpElement):
         name: str,
         address: int,
         dtype: HarpDataType,
+        arrayspec: Optional[str] = None,
         is_event: bool = False,
         mask_family: Optional[str] = None,
         description: Optional[str] = None,
@@ -212,10 +227,12 @@ class Register(HarpElement):
 
         self._address = address
         self._is_event = is_event
+        self._array_spec = arrayspec
+        self._refresh_property_dict()
 
     # override parent method for setter
     def _setter_callback(self):
-        print(self)
+        self._refresh_property_dict()
 
     @property
     def address(self):
@@ -223,6 +240,14 @@ class Register(HarpElement):
     @address.setter
     def address(self, value:int):
         self._address = value
+        self._setter_callback()
+
+    @property
+    def array_spec(self):
+        return self._array_spec
+    @array_spec.setter
+    def array_spec(self, value:Optional[str]):
+        self._array_spec = value
         self._setter_callback()
 
     @property
@@ -234,15 +259,16 @@ class Register(HarpElement):
         self._setter_callback()
 
 
+    def _refresh_property_dict(self):
+        self.dict = {
+            "Name": self.name,
+            "Address": self.address,
+            "Format": self.dtype,
+            "PayloadFormat": self.array_spec,
+            "Description": self.description,
+            "MaskFamily": self.mask_family,
+            "Converter": self.converter,
+            "AutoInterface": self.enable_generator
+        }
 
-    # def from_array(self, arr: List[Register]) -> None:
-    #     super().from_array(arr)
 
-    # def append(self, element: Register) -> None:
-    #     super().append(element)
-
-    # def insert(self, idx: int, element: Register) -> None:
-    #     (super().insert(idx, element))
-
-    # def pop(self, idx: Optional[int]) -> None:
-    #     (super().pop(idx))
