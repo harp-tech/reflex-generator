@@ -161,7 +161,7 @@ class Mask(HarpElement):
     def __init__(
         self,
         name: str,
-        mask: str | int,
+        mask: str,
         dtype: HarpDataType,
         mask_family: Optional[str] = None,
         description: Optional[str] = None,
@@ -190,9 +190,14 @@ class Mask(HarpElement):
     def mask(self):
         return self._mask
     @mask.setter
-    def mask(self, value: str|int):
+    def mask(self, value: str):
+        if "<<" in value:
+            value = value.strip("()")
+            value = f"({value})"
+
         self._mask = value
         self._setter_callback()
+
 
     def _refresh_property_dict(self):
         self.dict = {
