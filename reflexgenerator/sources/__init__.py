@@ -102,7 +102,7 @@ class HarpElement:
 
     def __str__(self) -> str:
         _l = [f"{k} : {v}" for k,v in self.dict.items()]
-        return ("""{}""".format("\n".join(_l)))
+        return ("""{}""".format("\n".join(_l))) + """\n"""
 
 # Collection of multiple elements
 class ElementCollection:
@@ -130,7 +130,7 @@ class ElementCollection:
         if not(self.element_type==arr[0].element_type):
             raise TypeError(
                 f"Input list is not of the same element type as collection!\
-                    ({arr[0].element_type.element_type} and {self.element_type})")
+                    ({arr[0].element_type} and {self.element_type})")
 
         for element in arr:
             self.append(element)
@@ -222,7 +222,7 @@ class Register(HarpElement):
 
         super().__init__(
             name=name,
-            element_type=ElementType.Mask,
+            element_type=ElementType.Register,
             dtype=dtype,
             mask_family=mask_family,
             description=description,
