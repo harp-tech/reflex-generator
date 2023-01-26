@@ -22,6 +22,7 @@ class HarpElement:
     def __init__(
         self,
         name: str,
+        alias: Optional[str],
         element_type: ElementType = ElementType.NONE,
         dtype: HarpDataType = HarpDataType.NONE,
         mask_family: Optional[str] = None,
@@ -31,6 +32,7 @@ class HarpElement:
     ) -> None:
 
         self._name = name
+        self._alias = alias
         self._element_type = element_type
         self._dtype = dtype
         self._mask_family = mask_family
@@ -42,17 +44,37 @@ class HarpElement:
     def _setter_callback(self):
         pass
 
+    # Properties
+
     @property
     def name(self):
         return self._name
+
     @name.setter
     def name(self, value: str):
         self._name = value
         self._setter_callback()
 
     @property
+    def alias(self):
+        return self._alias
+
+    @alias.getter
+    def alias(self):
+        if self._alias is None:
+            return self._name
+        else:
+            return self._alias
+
+    @alias.setter
+    def alias(self, value: str):
+        self._alias = value
+        self._setter_callback()
+
+    @property
     def element_type(self):
         return self._element_type
+
     @element_type.setter
     def element_type(self, value: ElementType):
         self._element_type = value
@@ -61,6 +83,7 @@ class HarpElement:
     @property
     def dtype(self):
         return self._dtype
+
     @dtype.setter
     def dtype(self, value: HarpDataType):
         self._dtype = value
@@ -69,6 +92,7 @@ class HarpElement:
     @property
     def mask_family(self):
         return self._mask_family
+
     @mask_family.setter
     def mask_family(self, value: Optional[str]):
         self._mask_family = value
@@ -77,6 +101,7 @@ class HarpElement:
     @property
     def description(self):
         return self._description
+
     @description.setter
     def description(self, value: Optional[str]):
         self._description = value
@@ -85,6 +110,7 @@ class HarpElement:
     @property
     def converter(self):
         return self._converter
+
     @converter.setter
     def converter(self, value: Optional[str]):
         self._converter = value
@@ -93,14 +119,18 @@ class HarpElement:
     @property
     def enable_generator(self):
         return self._enable_generator
+
     @enable_generator.setter
     def enable_generator(self, value: Optional[str]):
         self._enable_generator = value
         self._setter_callback()
 
+    # Methods
+
     def __str__(self) -> str:
         _l = [f"{k} : {v}" for k,v in self.dict.items()]
         return ("""{}""".format("\n".join(_l))) + """\n"""
+
 
 # Collection of multiple elements
 
