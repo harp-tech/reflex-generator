@@ -1,19 +1,17 @@
 from __future__ import annotations
-from typing import Optional, List, Callable
+from typing import Optional, List, Dict
 from enum import Enum
 
 # Type shorthands
 
-HarpDataType = Enum("HarpDataType",[
+HarpDataType = Enum("HarpDataType", [
     "NONE",
     "U8", "U16", "U32", "U64",
     "S8", "S16", "S32", "S64",
-    "float"
-    ])
+    "float"])
 
-ElementType = Enum("ElementType",[
-    "NONE", "Mask", "Register"
-])
+ElementType = Enum("ElementType", [
+    "NONE", "Mask", "Register"])
 
 
 # General parent classes
@@ -180,7 +178,7 @@ class Mask(HarpElement):
             converter=converter,
             enable_generator=enable_generator)
 
-        self._mask = mask
+        self._mask = self.mask = mask
         self.dict = None
         self._refresh_property_dict()
 
@@ -200,17 +198,22 @@ class Mask(HarpElement):
         self._mask = value
         self._setter_callback()
 
-
     def _refresh_property_dict(self):
         self.dict = {
-            "Name": self.name,
-            "MaskFamily": self.mask_family,
-            "Mask": self.mask,
-            "Format": self.dtype,
-            "Description": self.description,
-            "Converter": self.converter,
-            "AutoInterface": self.enable_generator
+            "element_type": self.element_type,
+            "name": self.name,
+            "mask": self.mask,
+            "mask_family": self.mask_family,
+            "dtype": self.dtype,
+            "description": self.description,
+            "converter": self.converter,
+            "enable_generator": self.enable_generator,
         }
+
+    @staticmethod
+    def from_dict(dict_: Dict[str, any]) -> Mask:
+        return Mask(**dict_)
+
 
 class Register(HarpElement):
 
@@ -219,7 +222,7 @@ class Register(HarpElement):
         name: str,
         address: int,
         dtype: HarpDataType,
-        arrayspec: Optional[str] = None,
+        array_spec: Optional[str] = None,
         is_event: bool = False,
         mask_family: Optional[str] = None,
         description: Optional[str] = None,
@@ -238,7 +241,7 @@ class Register(HarpElement):
 
         self._address = address
         self._is_event = is_event
-        self._array_spec = arrayspec
+        self._array_spec = array_spec
         self._refresh_property_dict()
 
     # override parent method for setter
@@ -274,15 +277,21 @@ class Register(HarpElement):
 
     def _refresh_property_dict(self):
         self.dict = {
-            "Name": self.name,
-            "Address": self.address,
-            "Format": self.dtype,
-            "PayloadFormat": self.array_spec,
-            "Description": self.description,
-            "MaskFamily": self.mask_family,
-            "Converter": self.converter,
-            "AutoInterface": self.enable_generator
+            "element_type": self.element_type,
+            "name": self.name,
+            "address": self.address,
+            "dtype": self.dtype,
+            "array_spec": self.array_spec,
+            "is_event": self.is_event,
+            "description": self.description,
+            "mask_family": self.mask_family,
+            "converter": self.converter,
+            "enable_generator": self.enable_generator
         }
+
+    @staticmethod
+    def from_dict(dict_: Dict[str, any]) -> Register:
+        return Register(**dict_)
 
 
 class MaskCollection(ElementCollection):
