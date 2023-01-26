@@ -22,13 +22,14 @@ class HarpElement:
     def __init__(
         self,
         name: str,
-        alias: Optional[str],
+        alias: Optional[str] = None,
         element_type: ElementType = ElementType.NONE,
         dtype: HarpDataType = HarpDataType.NONE,
         mask_family: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
         enable_generator: bool = True,
+        grouping: Optional[str] = None
     ) -> None:
 
         self._name = name
@@ -39,6 +40,7 @@ class HarpElement:
         self._description = description
         self._converter = converter
         self._enable_generator = enable_generator
+        self._grouping = grouping
         self.dict = {}
 
     def _setter_callback(self):
@@ -125,6 +127,15 @@ class HarpElement:
         self._enable_generator = value
         self._setter_callback()
 
+    @property
+    def grouping(self):
+        return self._grouping
+
+    @grouping.setter
+    def grouping(self, value: Optional[str]):
+        self._grouping = value
+        self._setter_callback()
+
     # Methods
 
     def __str__(self) -> str:
@@ -193,20 +204,24 @@ class Mask(HarpElement):
         name: str,
         mask: str,
         dtype: HarpDataType,
+        alias: Optional[str] = None,
         mask_family: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
-        enable_generator: bool = True
+        enable_generator: bool = True,
+        grouping: Optional[str] = None
     ) -> None:
 
         super().__init__(
             name=name,
+            alias=alias,
             element_type=ElementType.Mask,
             dtype=dtype,
             mask_family=mask_family,
             description=description,
             converter=converter,
-            enable_generator=enable_generator)
+            enable_generator=enable_generator,
+            grouping=grouping)
 
         self._mask = self.mask = mask
         self.dict = None
@@ -219,6 +234,7 @@ class Mask(HarpElement):
     @property
     def mask(self):
         return self._mask
+
     @mask.setter
     def mask(self, value: str):
         if "<<" in value:
@@ -232,12 +248,14 @@ class Mask(HarpElement):
         self.dict = {
             "element_type": self.element_type,
             "name": self.name,
+            "alias": self.alias,
             "mask": self.mask,
             "mask_family": self.mask_family,
             "dtype": self.dtype,
             "description": self.description,
             "converter": self.converter,
             "enable_generator": self.enable_generator,
+            "grouping": self.grouping,
         }
 
     @staticmethod
@@ -252,22 +270,26 @@ class Register(HarpElement):
         name: str,
         address: int,
         dtype: HarpDataType,
+        alias: Optional[str] = None,
         array_spec: Optional[str] = None,
         is_event: bool = False,
         mask_family: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
-        enable_generator: bool = True
+        enable_generator: bool = True,
+        grouping: Optional[str] = None
     ) -> None:
 
         super().__init__(
             name=name,
+            alias=alias,
             element_type=ElementType.Register,
             dtype=dtype,
             mask_family=mask_family,
             description=description,
             converter=converter,
-            enable_generator=enable_generator)
+            enable_generator=enable_generator,
+            grouping=grouping)
 
         self._address = address
         self._is_event = is_event
@@ -309,6 +331,7 @@ class Register(HarpElement):
         self.dict = {
             "element_type": self.element_type,
             "name": self.name,
+            "alias": self.alias,
             "address": self.address,
             "dtype": self.dtype,
             "array_spec": self.array_spec,
@@ -316,7 +339,8 @@ class Register(HarpElement):
             "description": self.description,
             "mask_family": self.mask_family,
             "converter": self.converter,
-            "enable_generator": self.enable_generator
+            "enable_generator": self.enable_generator,
+            "grouping": self.grouping
         }
 
     @staticmethod
