@@ -1,4 +1,4 @@
-﻿Name,MaskFamily,Alias,Mask,Format,Description,Converter,AutoInterface, GroupInterface
+﻿Name,MaskFamily,Alias,Mask,Format,Description,Converter,AutoInterface, InterfaceGrouping
 Poke0,DOMask,,1<<0,U16,Output of Poke0,,True,
 Poke1,DOMask,,1<<1,U16,Output of Poke1,,True,
 Poke2,DOMask,,1<<2,U16,Output of Poke2,,True,

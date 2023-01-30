@@ -5,13 +5,16 @@ from enum import Enum
 # Type shorthands
 
 HarpDataType = Enum("HarpDataType", [
-    "NONE",
     "U8", "U16", "U32", "U64",
     "S8", "S16", "S32", "S64",
     "float"])
 
 ElementType = Enum("ElementType", [
     "NONE", "Mask", "Register"])
+
+HarpMessageType = Enum("HarpMessageType", [
+    "NONE", "READ", "WRITE", "EVENT"
+])
 
 
 # General parent classes
@@ -22,9 +25,9 @@ class HarpElement:
     def __init__(
         self,
         name: str,
+        dtype: HarpDataType,
         alias: Optional[str] = None,
         element_type: ElementType = ElementType.NONE,
-        dtype: HarpDataType = HarpDataType.NONE,
         mask_family: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
@@ -272,7 +275,7 @@ class Register(HarpElement):
         dtype: HarpDataType,
         alias: Optional[str] = None,
         array_spec: Optional[str] = None,
-        is_event: bool = False,
+        message_type: HarpMessageType = HarpMessageType.NONE,
         mask_family: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
@@ -292,7 +295,7 @@ class Register(HarpElement):
             grouping=grouping)
 
         self._address = address
-        self._is_event = is_event
+        self._message_type = message_type
         self._array_spec = array_spec
         self._refresh_property_dict()
 
@@ -319,12 +322,12 @@ class Register(HarpElement):
         self._setter_callback()
 
     @property
-    def is_event(self):
-        return self._is_event
+    def message_type(self):
+        return self._message_type
 
-    @is_event.setter
-    def is_event(self, value: bool):
-        self._is_event = value
+    @message_type.setter
+    def message_type(self, value: bool):
+        self._message_type = value
         self._setter_callback()
 
     def _refresh_property_dict(self):
@@ -335,7 +338,7 @@ class Register(HarpElement):
             "address": self.address,
             "dtype": self.dtype,
             "array_spec": self.array_spec,
-            "is_event": self.is_event,
+            "is_event": self.message_type,
             "description": self.description,
             "mask_family": self.mask_family,
             "converter": self.converter,
