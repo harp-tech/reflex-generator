@@ -166,6 +166,7 @@ def parse_name(value: Optional[str]) -> Optional[str]:
     else:
         raise ValueError(f"Found invalid characters in name {value}")
 
+
 def parse_alias(value: Optional[str]) -> Optional[str]:
     if _empty_or_none(value):
         return None
@@ -173,6 +174,15 @@ def parse_alias(value: Optional[str]) -> Optional[str]:
         return value
     else:
         raise ValueError(f"Found invalid characters in alias {value}")
+
+
+def parse_mask_family(value: Optional[str]) -> Optional[str]:
+    if _empty_or_none(value):
+        return None
+    if _validate_single_string(value):
+        return value
+    else:
+        raise ValueError(f"Found invalid characters in mask group m {value}")
 
 
 def parse_dtype(value: Optional[str]) -> Optional[HarpDataType]:
@@ -183,3 +193,20 @@ def parse_dtype(value: Optional[str]) -> Optional[HarpDataType]:
             return HarpDataType[value]
         except KeyError:
             raise KeyError(f"Uknown harp data type {value}")
+
+
+def parse_enabled_generator(value: Optional[str]) -> Optional[bool]:
+    if _empty_or_none:
+        return None
+    else:
+        if value.casefold() in ["1", "true"]:
+            return True
+        elif value.casefold() in ["0", "false"]:
+            return False
+        else:
+            raise ValueError(f"Enabled generator must be True(1) or Fals(0).\
+                 Found {value}")
+def parse_grouping(value: Optional[str]) -> Optional[str]:
+    pass
+def parse_mask(value: Optional[str]) -> Optional[str]:
+    pass
