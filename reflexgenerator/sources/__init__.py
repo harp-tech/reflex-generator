@@ -4,18 +4,21 @@ from enum import Enum
 
 # Type shorthands
 
-HarpDataType = Enum("HarpDataType", [
+PayloadType = Enum("PayloadType", [
     "U8", "U16", "U32", "U64",
     "S8", "S16", "S32", "S64",
-    "float"])
+    "Float"])
 
 ElementType = Enum("ElementType", [
     "NONE", "Mask", "Register"])
 
-HarpMessageType = Enum("HarpMessageType", [
-    "NONE", "READ", "WRITE", "EVENT"
+RegisterType = Enum("RegisterType", [
+    "NONE", "Command", "Event"
 ])
 
+VisibilityType = Enum("VisibilityType", [
+    "Public", "Private"
+])
 
 # General parent classes
 
@@ -25,29 +28,26 @@ class HarpElement:
     def __init__(
         self,
         name: str,
-        dtype: HarpDataType,
+        payloadType: str | PayloadType,
         alias: Optional[str] = None,
-        element_type: ElementType = ElementType.NONE,
-        mask_family: Optional[str] = None,
+        elementType: ElementType = ElementType.NONE,
+        maskType: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
-        enable_generator: bool = True,
-        grouping: Optional[str] = None
+        visibility: str | VisibilityType = VisibilityType.Public,
+        group: Optional[str] = None
     ) -> None:
 
-        self._name = name
-        self._alias = alias
-        self._element_type = element_type
-        self._dtype = dtype
-        self._mask_family = mask_family
-        self._description = description
-        self._converter = converter
-        self._enable_generator = enable_generator
-        self._grouping = grouping
-        self.dict = {}
+        self._elementType = self.elementType = elementType
 
-    def _setter_callback(self):
-        pass
+        self._name = self.name = name
+        self._alias = self.alias = alias
+        self._payloadType = self.payloadType = payloadType
+        self._maskType = self.maskType = maskType
+        self._description = self.description = description
+        self._converter = self.converter = converter
+        self._visibility = self.visibility = visibility
+        self._group = self.group = group
 
     # Properties
 
@@ -58,7 +58,6 @@ class HarpElement:
     @name.setter
     def name(self, value: str):
         self._name = value
-        self._setter_callback()
 
     @property
     def alias(self):
@@ -74,34 +73,35 @@ class HarpElement:
     @alias.setter
     def alias(self, value: str):
         self._alias = value
-        self._setter_callback()
 
     @property
-    def element_type(self):
-        return self._element_type
+    def elementType(self):
+        return self._elementType
 
-    @element_type.setter
-    def element_type(self, value: ElementType):
-        self._element_type = value
-        self._setter_callback()
-
-    @property
-    def dtype(self):
-        return self._dtype
-
-    @dtype.setter
-    def dtype(self, value: HarpDataType):
-        self._dtype = value
-        self._setter_callback()
+    @elementType.setter
+    def elementType(self, value: ElementType):
+        self._elementType = value
 
     @property
-    def mask_family(self):
-        return self._mask_family
+    def payloadType(self):
+        return self._payloadType
 
-    @mask_family.setter
-    def mask_family(self, value: Optional[str]):
-        self._mask_family = value
-        self._setter_callback()
+    @payloadType.setter
+    def payloadType(self, value: str | PayloadType):
+        if isinstance(value, PayloadType):
+            self._payloadType = value
+        elif isinstance(value, str):
+            self._payloadType = PayloadType[value]
+        else:
+            raise TypeError("Only string or PayloadType types are allowed!")
+
+    @property
+    def maskType(self):
+        return self._maskType
+
+    @maskType.setter
+    def maskType(self, value: Optional[str]):
+        self._maskType = value
 
     @property
     def description(self):
@@ -110,7 +110,6 @@ class HarpElement:
     @description.setter
     def description(self, value: Optional[str]):
         self._description = value
-        self._setter_callback()
 
     @property
     def converter(self):
@@ -119,31 +118,27 @@ class HarpElement:
     @converter.setter
     def converter(self, value: Optional[str]):
         self._converter = value
-        self._setter_callback()
 
     @property
-    def enable_generator(self):
-        return self._enable_generator
+    def visibility(self):
+        return self._visibility
 
-    @enable_generator.setter
-    def enable_generator(self, value: Optional[str]):
-        self._enable_generator = value
-        self._setter_callback()
+    @visibility.setter
+    def visibility(self, value: str | VisibilityType):
+        if isinstance(value, VisibilityType):
+            self._visibility = value
+        elif isinstance(value, str):
+            self._visibility = VisibilityType[value]
+        else:
+            raise TypeError("Only string or VisibilityType types are allowed!")
 
     @property
-    def grouping(self):
-        return self._grouping
+    def group(self):
+        return self._group
 
-    @grouping.setter
-    def grouping(self, value: Optional[str]):
-        self._grouping = value
-        self._setter_callback()
-
-    # Methods
-
-    def __str__(self) -> str:
-        _l = [f"{k} : {v}" for k,v in self.dict.items()]
-        return ("""{}""".format("\n".join(_l))) + """\n"""
+    @group.setter
+    def group(self, value: Optional[str]):
+        self._group = value
 
 
 # Collection of multiple elements
@@ -154,10 +149,10 @@ class ElementCollection:
     def __init__(
         self,
         element_array: Optional[List[HarpElement]],
-        element_type: ElementType = ElementType.NONE
+        elementType: ElementType = ElementType.NONE
         ) -> None:
 
-        self.element_type = element_type
+        self.elementType = elementType
         self.elements = []
         if element_array:
             self.from_array(element_array)
@@ -169,33 +164,38 @@ class ElementCollection:
         if len(arr) < 1:
             raise ValueError("List can't be empty!")
 
-        if (self.element_type == ElementType.NONE):
-            self.element_type = arr[0].element_type
+        if (self.elementType == ElementType.NONE):
+            self.elementType = arr[0].elementType
 
-        if not (self.element_type == arr[0].element_type):
+        if not (self.elementType == arr[0].elementType):
             raise TypeError(
                 f"Input list is not of the same element type as collection!\
-                    ({arr[0].element_type} and {self.element_type})")
+                    ({arr[0].elementType} and {self.elementType})")
 
         for element in arr:
             self.append(element)
 
     def append(self, element: HarpElement) -> None:
-        if not (self.element_type == element.element_type):
+        if not (self.elementType == element.elementType):
             raise TypeError(
-                f"Element to be appended must be of the same type as the collection!\
-                    ({element.element_type} and {self.element_type})")
+                f"Element to be appended must\
+                     be of the same type as the collection!\
+                    ({element.elementType} and {self.elementType})")
         self.elements.append(element)
 
     def insert(self, idx: int, element: HarpElement) -> None:
-        if not (self.element_type == element.element_type):
+        if not (self.elementType == element.elementType):
             raise TypeError(
-                f"Element to be appended must be of the same type as the collection!\
-                    ({element.element_type} and {self.element_type})")
+                f"Element to be appended must\
+                     be of the same type as the collection!\
+                    ({element.elementType} and {self.elementType})")
         self.elements.insert(idx, element)
 
     def pop(self, idx: Optional[int]) -> None:
         self.elements.pop(idx)
+
+    def __getitem__(self, index):
+        return self.elements[index]
 
 
 # Child classes
@@ -206,33 +206,28 @@ class Mask(HarpElement):
         self,
         name: str,
         mask: str,
-        dtype: HarpDataType,
+        payloadType: PayloadType,
         alias: Optional[str] = None,
-        mask_family: Optional[str] = None,
+        maskType: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
-        enable_generator: bool = True,
-        grouping: Optional[str] = None
+        visibility: str | VisibilityType = VisibilityType.Public,
+        group: Optional[str] = None
     ) -> None:
 
         super().__init__(
             name=name,
             alias=alias,
-            element_type=ElementType.Mask,
-            dtype=dtype,
-            mask_family=mask_family,
+            elementType=ElementType.Mask,
+            payloadType=payloadType,
+            maskType=maskType,
             description=description,
             converter=converter,
-            enable_generator=enable_generator,
-            grouping=grouping)
+            visibility=visibility,
+            group=group)
 
         self._mask = self.mask = mask
         self.dict = None
-        self._refresh_property_dict()
-
-    # override parent method for setter
-    def _setter_callback(self):
-        self._refresh_property_dict()
 
     @property
     def mask(self):
@@ -245,63 +240,55 @@ class Mask(HarpElement):
             value = f"({value})"
 
         self._mask = value
-        self._setter_callback()
 
-    def _refresh_property_dict(self):
-        self.dict = {
-            "element_type": self.element_type,
-            "name": self.name,
-            "alias": self.alias,
-            "mask": self.mask,
-            "mask_family": self.mask_family,
-            "dtype": self.dtype,
-            "description": self.description,
-            "converter": self.converter,
-            "enable_generator": self.enable_generator,
-            "grouping": self.grouping,
-        }
+    def __str__(self) -> str:
+        att = {k: getattr(self, k) for k, v in
+               self.__class__.__dict__.items()
+               if isinstance(v, property)}
+        att.update({k: getattr(self, k) for k, v in
+                    self.__class__.__bases__[0].__dict__.items()
+                    if isinstance(v, property)})
+        return ("""{}""".format("\n".join([f"{k} : {att[k]}" for k in att]))) + """\n"""
 
-    @staticmethod
-    def from_dict(dict_: Dict[str, any]) -> Mask:
-        return Mask(**dict_)
-
-
+    def to_dict(self) -> Dict[str, any]:
+        att = {k: getattr(self, k) for k, v in
+               self.__class__.__dict__.items()
+               if isinstance(v, property)}
+        att.update({k: getattr(self, k) for k, v in
+                    self.__class__.__bases__[0].__dict__.items()
+                    if isinstance(v, property)})
+        return att
 class Register(HarpElement):
 
     def __init__(
         self,
         name: str,
         address: int,
-        dtype: HarpDataType,
+        payloadType: PayloadType,
         alias: Optional[str] = None,
-        array_spec: Optional[str] = None,
-        message_type: HarpMessageType = HarpMessageType.NONE,
-        mask_family: Optional[str] = None,
+        arrayType: str | List[str] | int = None,
+        registerType: str | RegisterType = RegisterType.NONE,
+        maskType: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
-        enable_generator: bool = True,
-        grouping: Optional[str] = None
+        visibility: str | VisibilityType = VisibilityType.Public,
+        group: Optional[str] = None
     ) -> None:
 
         super().__init__(
             name=name,
             alias=alias,
-            element_type=ElementType.Register,
-            dtype=dtype,
-            mask_family=mask_family,
+            elementType=ElementType.Register,
+            payloadType=payloadType,
+            maskType=maskType,
             description=description,
             converter=converter,
-            enable_generator=enable_generator,
-            grouping=grouping)
+            visibility=visibility,
+            group=group)
 
-        self._address = address
-        self._message_type = message_type
-        self._array_spec = array_spec
-        self._refresh_property_dict()
-
-    # override parent method for setter
-    def _setter_callback(self):
-        self._refresh_property_dict()
+        self._address = self.address = address
+        self._registerType = self.registerType = registerType
+        self._arrayType = self.arrayType = arrayType
 
     @property
     def address(self):
@@ -310,46 +297,47 @@ class Register(HarpElement):
     @address.setter
     def address(self, value: int):
         self._address = value
-        self._setter_callback()
+
 
     @property
-    def array_spec(self):
-        return self._array_spec
+    def arrayType(self):
+        return self._arrayType
 
-    @array_spec.setter
-    def array_spec(self, value: Optional[str]):
-        self._array_spec = value
-        self._setter_callback()
+    @arrayType.setter
+    def arrayType(self, value: Optional[str]):
+        self._arrayType = value
+
 
     @property
-    def message_type(self):
-        return self._message_type
+    def registerType(self):
+        return self._registerType
 
-    @message_type.setter
-    def message_type(self, value: bool):
-        self._message_type = value
-        self._setter_callback()
+    @registerType.setter
+    def registerType(self, value: str | RegisterType):
+        if isinstance(value, RegisterType):
+            self._registerType = value
+        elif isinstance(value, str):
+            self._registerType = RegisterType[value]
+        else:
+            raise TypeError("Only string or RegisterType types are allowed!")
 
-    def _refresh_property_dict(self):
-        self.dict = {
-            "element_type": self.element_type,
-            "name": self.name,
-            "alias": self.alias,
-            "address": self.address,
-            "dtype": self.dtype,
-            "array_spec": self.array_spec,
-            "is_event": self.message_type,
-            "description": self.description,
-            "mask_family": self.mask_family,
-            "converter": self.converter,
-            "enable_generator": self.enable_generator,
-            "grouping": self.grouping
-        }
+    def __str__(self) -> str:
+        att = {k: getattr(self, k) for k, v in
+               self.__class__.__dict__.items()
+               if isinstance(v, property)}
+        att.update({k: getattr(self, k) for k, v in
+                    self.__class__.__bases__[0].__dict__.items()
+                    if isinstance(v, property)})
+        return ("""{}""".format("\n".join([f"{k} : {att[k]}" for k in att]))) + """\n"""
 
-    @staticmethod
-    def from_dict(dict_: Dict[str, any]) -> Register:
-        return Register(**dict_)
-
+    def to_dict(self) -> Dict[str, any]:
+        att = {k: getattr(self, k) for k, v in
+               self.__class__.__dict__.items()
+               if isinstance(v, property)}
+        att.update({k: getattr(self, k) for k, v in
+                    self.__class__.__bases__[0].__dict__.items()
+                    if isinstance(v, property)})
+        return att
 
 class MaskCollection(ElementCollection):
 
@@ -357,7 +345,7 @@ class MaskCollection(ElementCollection):
             self,
             element_array: Optional[List[Mask]]) -> None:
         super().__init__(
-            element_type=ElementType.Mask,
+            elementType=ElementType.Mask,
             element_array=element_array)
 
     def from_array(self, arr: List[Mask]) -> None:
@@ -379,7 +367,7 @@ class RegisterCollection(ElementCollection):
             self,
             element_array: Optional[List[Register]]) -> None:
         super().__init__(
-            element_type=ElementType.Register,
+            elementType=ElementType.Register,
             element_array=element_array)
 
     def from_array(self, arr: List[Register]) -> None:
