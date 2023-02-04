@@ -266,7 +266,7 @@ class Register(HarpElement):
         address: int,
         payloadType: PayloadType,
         alias: Optional[str] = None,
-        arrayType: str | List[str] | int = None,
+        arrayType: str | List[str] | int = 1,
         registerType: str | RegisterType = RegisterType.NONE,
         maskType: Optional[str] = None,
         description: Optional[str] = None,
@@ -304,7 +304,7 @@ class Register(HarpElement):
         return self._arrayType
 
     @arrayType.setter
-    def arrayType(self, value: Optional[str]):
+    def arrayType(self, value: str | List[str] | int):
         self._arrayType = value
 
 
