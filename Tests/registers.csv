@@ -1,8 +1,0 @@
-﻿Name,Address,Alias,Format,PayloadFormat,Type,Description,MaskFamily,Converter,AutoInterface,InterfaceGrouping
-DigitalSet,123,,U16,Set,Write,Sets output,DOMask,,True,DigitalIO
-DigitalClear,124,,U16,Clear,Write,Clears output,DOMask,,True,DigitalIO
-PwmStart,125,StartPWM,U8,1,Write,Starts pwm,PwmMask,,True,PWM
-PwmStop,126,StopPWM,U8,,Write,Stops pwm,PwmMask,,True,PWM
-Heartbeat,12,,U8,,Event;Write,Heartbeat event,,,False,Core
-AnalogConverter,44,,S16,2,Event,adc read,,RegToVoltage;RegToMicroVolt,True,ADC;Encoder
-AnalogConverterEncoder,44,,S16,ADC1;ADC2;Encoder,Event,adc read,,,True,ADC;Encoder
