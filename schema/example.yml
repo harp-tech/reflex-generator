@@ -53,3 +53,16 @@ registers:
     registerType: Command
     payloadType: U8
     description: Bitmask to write the available outputs.
+masks:
+  - name: DO0
+    value: 1
+    payloadType: U8
+    maskType: DO
+  - name: DO1
+    value: 0x03
+    payloadType: U8
+    maskType: DO
+  - name: DO2
+    value: 1<<2
+    payloadType: U8
+    maskType: DO

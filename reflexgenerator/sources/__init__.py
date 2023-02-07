@@ -34,8 +34,7 @@ class HarpElement:
         maskType: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
-        visibility: str | VisibilityType = VisibilityType.Public,
-        group: Optional[str] = None
+        visibility: str | VisibilityType = VisibilityType.Public
     ) -> None:
 
         self._elementType = self.elementType = elementType
@@ -47,7 +46,6 @@ class HarpElement:
         self._description = self.description = description
         self._converter = self.converter = converter
         self._visibility = self.visibility = visibility
-        self._group = self.group = group
 
     # Properties
 
@@ -132,14 +130,6 @@ class HarpElement:
         else:
             raise TypeError("Only string or VisibilityType types are allowed!")
 
-    @property
-    def group(self):
-        return self._group
-
-    @group.setter
-    def group(self, value: Optional[str]):
-        self._group = value
-
 
 # Collection of multiple elements
 
@@ -205,14 +195,13 @@ class Mask(HarpElement):
     def __init__(
         self,
         name: str,
-        mask: str,
+        value: str,
         payloadType: PayloadType,
         alias: Optional[str] = None,
         maskType: Optional[str] = None,
         description: Optional[str] = None,
         converter: Optional[str] = None,
         visibility: str | VisibilityType = VisibilityType.Public,
-        group: Optional[str] = None
     ) -> None:
 
         super().__init__(
@@ -223,23 +212,23 @@ class Mask(HarpElement):
             maskType=maskType,
             description=description,
             converter=converter,
-            visibility=visibility,
-            group=group)
+            visibility=visibility
+            )
 
-        self._mask = self.mask = mask
+        self._value = self.value = value
         self.dict = None
 
     @property
-    def mask(self):
-        return self._mask
+    def value(self):
+        return self._value
 
-    @mask.setter
-    def mask(self, value: str):
+    @value.setter
+    def value(self, value: str):
         if "<<" in value:
             value = value.strip("()")
             value = f"({value})"
 
-        self._mask = value
+        self._value = value
 
     def __str__(self) -> str:
         att = {k: getattr(self, k) for k, v in
@@ -283,12 +272,12 @@ class Register(HarpElement):
             maskType=maskType,
             description=description,
             converter=converter,
-            visibility=visibility,
-            group=group)
+            visibility=visibility)
 
         self._address = self.address = address
         self._registerType = self.registerType = registerType
         self._arrayType = self.arrayType = arrayType
+        self._group = self.group = group
 
     @property
     def address(self):
@@ -320,6 +309,14 @@ class Register(HarpElement):
             self._registerType = RegisterType[value]
         else:
             raise TypeError("Only string or RegisterType types are allowed!")
+
+    @property
+    def group(self):
+        return self._group
+
+    @group.setter
+    def group(self, value: Optional[str]):
+        self._group = value
 
     def __str__(self) -> str:
         att = {k: getattr(self, k) for k, v in
