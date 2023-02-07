@@ -66,3 +66,9 @@ masks:
     value: 1<<2
     payloadType: U8
     maskType: DO
+io:
+  - name: DO3
+    port: PORTC
+    pin: 0
+    direction: output
+    description: DO0
