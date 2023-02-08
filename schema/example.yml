@@ -3,6 +3,7 @@ device: ExampleDevice
 whoAmI: 0000
 firmwareVersion: "0.1"
 hardwareVersion: "0.1"
+architecture: "atmega"
 registers:
   - name: Cam0Event
     address: 32
