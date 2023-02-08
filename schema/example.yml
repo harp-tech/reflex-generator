@@ -52,7 +52,7 @@ registers:
     address: 41
     registerType: Command
     payloadType: U8
-    maskType: DOshd
+    maskType: DO
     description: Bitmask to write the available outputs.
 masks:
   - name: DO
