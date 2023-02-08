@@ -33,7 +33,7 @@ class HarpElement:
         elementType: ElementType = ElementType.NONE,
         maskType: Optional[str] = None,
         description: Optional[str] = None,
-        converter: Optional[str] = None,
+        converter: Optional[bool] = None,
         visibility: str | VisibilityType = VisibilityType.Public
     ) -> None:
 
@@ -114,7 +114,7 @@ class HarpElement:
         return self._converter
 
     @converter.setter
-    def converter(self, value: Optional[str]):
+    def converter(self, value: Optional[bool]):
         self._converter = value
 
     @property
@@ -195,12 +195,12 @@ class Mask(HarpElement):
     def __init__(
         self,
         name: str,
-        value: str,
+        value: str | int,
         payloadType: PayloadType,
         alias: Optional[str] = None,
         maskType: Optional[str] = None,
         description: Optional[str] = None,
-        converter: Optional[str] = None,
+        converter: Optional[bool] = None,
         visibility: str | VisibilityType = VisibilityType.Public,
     ) -> None:
 
@@ -223,12 +223,17 @@ class Mask(HarpElement):
         return self._value
 
     @value.setter
-    def value(self, value: str):
-        if "<<" in value:
-            value = value.strip("()")
-            value = f"({value})"
+    def value(self, value: str | int):
+        if isinstance(value, int):
+            self._value = hex(value)
+            return
+        if isinstance(value, str):
+            if "<<" in value:
+                value = value.strip("()")
+                value = f"({value})"
 
-        self._value = value
+            self._value = value
+            return
 
     def __str__(self) -> str:
         att = {k: getattr(self, k) for k, v in
@@ -259,7 +264,7 @@ class Register(HarpElement):
         registerType: str | RegisterType = RegisterType.NONE,
         maskType: Optional[str] = None,
         description: Optional[str] = None,
-        converter: Optional[str] = None,
+        converter: Optional[bool] = None,
         visibility: str | VisibilityType = VisibilityType.Public,
         group: Optional[str] = None
     ) -> None:
