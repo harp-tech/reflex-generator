@@ -53,21 +53,16 @@ registers:
     address: 41
     registerType: Command
     payloadType: U8
+    maskType: DO
     description: Bitmask to write the available outputs.
 masks:
-  - name: DO0
-    value: 1
+  - name: DO
     payloadType: U8
-    maskType: DO
-  - name: DO1
-    value: 0x03
-    payloadType: U8
-    maskType: DO
-  - name: DO2
-    value: 1<<2
-    payloadType: U8
-    maskType: DO
-io:
+    description: Bitmask representing the state of the digital outputs.
+    bits:
+      DO0: 0x01
+      DO1: 0x02
+ios:
   - name: DO3
     port: PORTC
     pin: 0
