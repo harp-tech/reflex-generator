@@ -73,3 +73,8 @@ io:
     pin: 0
     direction: output
     description: DO0
+  - name: DO2
+    port: PORTB
+    pin: 2
+    direction: output
+    description: DO0
