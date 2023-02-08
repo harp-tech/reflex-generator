@@ -2,8 +2,9 @@ from __future__ import annotations
 from typing import Optional, List, Dict
 from enum import Enum
 import attr
-from attr import define
+from attr import define, Factory
 
+_MASKS = {}
 
 # Type shorthands
 
@@ -12,389 +13,117 @@ PayloadType = Enum("PayloadType", [
     "S8", "S16", "S32", "S64",
     "Float"])
 
-ElementType = Enum("ElementType", [
-    "NONE", "Mask", "Register"])
+
+def _payloadType_converter(value: PayloadType | str) -> PayloadType:
+    if isinstance(value, str):
+        return PayloadType[value]
+    if isinstance(value, PayloadType):
+        return value
+    raise TypeError("Must be PayloadType or str.")
+
 
 RegisterType = Enum("RegisterType", [
     "NONE", "Command", "Event"
 ])
 
+
+def _registerType_converter(value: RegisterType | str) -> RegisterType:
+    if isinstance(value, str):
+        return RegisterType[value]
+    if isinstance(value, RegisterType):
+        return value
+    raise TypeError("Must be RegisterType or str.")
+
+
 VisibilityType = Enum("VisibilityType", [
     "Public", "Private"
 ])
 
-# General parent classes
+
+def _visibilityType_converter(value: VisibilityType | str) -> VisibilityType:
+    if isinstance(value, str):
+        return VisibilityType[value]
+    if isinstance(value, VisibilityType):
+        return value
+    raise TypeError("Must be VisibilityType or str.")
 
 
-# Single element
-class HarpElement:
-    "Parent class that represents a single element (e.g. register or mask)"
-    def __init__(
-        self,
-        name: str,
-        payloadType: str | PayloadType,
-        alias: Optional[str] = None,
-        elementType: ElementType = ElementType.NONE,
-        maskType: Optional[str] = None,
-        description: Optional[str] = None,
-        converter: Optional[bool] = None,
-        visibility: str | VisibilityType = VisibilityType.Public
-    ) -> None:
+@define
+class Bit:
+    name: attr.ib(default=None, type=Optional[str], converter=str)
+    value: attr.ub(default=None, type=Optional[int], converter=hex)
 
-        self._elementType = self.elementType = elementType
-
-        self._name = self.name = name
-        self._alias = self.alias = alias
-        self._payloadType = self.payloadType = payloadType
-        self._maskType = self.maskType = maskType
-        self._description = self.description = description
-        self._converter = self.converter = converter
-        self._visibility = self.visibility = visibility
-
-    # Properties
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value: str):
-        self._name = value
-
-    @property
-    def alias(self):
-        return self._alias
-
-    @alias.getter
-    def alias(self):
-        if self._alias is None:
-            return self._name
-        else:
-            return self._alias
-
-    @alias.setter
-    def alias(self, value: str):
-        self._alias = value
-
-    @property
-    def elementType(self):
-        return self._elementType
-
-    @elementType.setter
-    def elementType(self, value: ElementType):
-        self._elementType = value
-
-    @property
-    def payloadType(self):
-        return self._payloadType
-
-    @payloadType.setter
-    def payloadType(self, value: str | PayloadType):
-        if isinstance(value, PayloadType):
-            self._payloadType = value
-        elif isinstance(value, str):
-            self._payloadType = PayloadType[value]
-        else:
-            raise TypeError("Only string or PayloadType types are allowed!")
-
-    @property
-    def maskType(self):
-        return self._maskType
-
-    @maskType.setter
-    def maskType(self, value: Optional[str]):
-        self._maskType = value
-
-    @property
-    def description(self):
-        return self._description
-
-    @description.setter
-    def description(self, value: Optional[str]):
-        self._description = value
-
-    @property
-    def converter(self):
-        return self._converter
-
-    @converter.setter
-    def converter(self, value: Optional[bool]):
-        self._converter = value
-
-    @property
-    def visibility(self):
-        return self._visibility
-
-    @visibility.setter
-    def visibility(self, value: str | VisibilityType):
-        if isinstance(value, VisibilityType):
-            self._visibility = value
-        elif isinstance(value, str):
-            self._visibility = VisibilityType[value]
-        else:
-            raise TypeError("Only string or VisibilityType types are allowed!")
+    @classmethod
+    def from_dict(self, value_dict: Dict[str, int]):
+        assert len(value_dict) == 2
+        return Bit(value_dict[0], value_dict[1])
 
 
-# Collection of multiple elements
+def _make_bit_array(value: Optional[Dict[str, int]]) -> Optional[List[Bit]]:
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        return [Bit.from_dict(bit) for bit in value.items()]
 
 
-class ElementCollection:
-    "Parent class that represents a collection of HarpElements"
-    def __init__(
-        self,
-        element_array: Optional[List[HarpElement]],
-        elementType: ElementType = ElementType.NONE
-        ) -> None:
+@define
+class BitMask:
+    name = attr.ib(type=str, converter=str)
+    payloadType = attr.ib(type=PayloadType | str,
+                          converter=_payloadType_converter)
+    description = attr.ib(default=None,
+                          type=Optional[str], converter=str)
+    bits = attr.ib(default=None,
+                   type=Optional[List[Bit]], converter=_make_bit_array)
 
-        self.elementType = elementType
-        self.elements = []
-        if element_array:
-            self.from_array(element_array)
-
-    def __iter__(self):
-        return iter(self.elements)
-
-    def from_array(self, arr: List[HarpElement]) -> None:
-        if len(arr) < 1:
-            raise ValueError("List can't be empty!")
-
-        if (self.elementType == ElementType.NONE):
-            self.elementType = arr[0].elementType
-
-        if not (self.elementType == arr[0].elementType):
-            raise TypeError(
-                f"Input list is not of the same element type as collection!\
-                    ({arr[0].elementType} and {self.elementType})")
-
-        for element in arr:
-            self.append(element)
-
-    def append(self, element: HarpElement) -> None:
-        if not (self.elementType == element.elementType):
-            raise TypeError(
-                f"Element to be appended must\
-                     be of the same type as the collection!\
-                    ({element.elementType} and {self.elementType})")
-        self.elements.append(element)
-
-    def insert(self, idx: int, element: HarpElement) -> None:
-        if not (self.elementType == element.elementType):
-            raise TypeError(
-                f"Element to be appended must\
-                     be of the same type as the collection!\
-                    ({element.elementType} and {self.elementType})")
-        self.elements.insert(idx, element)
-
-    def pop(self, idx: Optional[int]) -> None:
-        self.elements.pop(idx)
-
-    def __getitem__(self, index):
-        return self.elements[index]
-
-
-# Child classes
-
-class Mask(HarpElement):
-
-    def __init__(
-        self,
-        name: str,
-        value: str | int,
-        payloadType: PayloadType,
-        alias: Optional[str] = None,
-        maskType: Optional[str] = None,
-        description: Optional[str] = None,
-        converter: Optional[bool] = None,
-        visibility: str | VisibilityType = VisibilityType.Public,
-    ) -> None:
-
-        super().__init__(
-            name=name,
-            alias=alias,
-            elementType=ElementType.Mask,
-            payloadType=payloadType,
-            maskType=maskType,
-            description=description,
-            converter=converter,
-            visibility=visibility
-            )
-
-        self._value = self.value = value
-        self.dict = None
-
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, value: str | int):
-        if isinstance(value, int):
-            self._value = hex(value)
-            return
-        if isinstance(value, str):
-            if "<<" in value:
-                value = value.strip("()")
-                value = f"({value})"
-
-            self._value = value
-            return
-
-    def __str__(self) -> str:
-        att = {k: getattr(self, k) for k, v in
-               self.__class__.__dict__.items()
-               if isinstance(v, property)}
-        att.update({k: getattr(self, k) for k, v in
-                    self.__class__.__bases__[0].__dict__.items()
-                    if isinstance(v, property)})
-        return ("""{}""".format("\n".join([f"{k} : {att[k]}" for k in att]))) + """\n"""
+    def __attrs_post_init__(self):
+        _MASKS.update({self.name: self})
 
     def to_dict(self) -> Dict[str, any]:
-        att = {k: getattr(self, k) for k, v in
-               self.__class__.__dict__.items()
-               if isinstance(v, property)}
-        att.update({k: getattr(self, k) for k, v in
-                    self.__class__.__bases__[0].__dict__.items()
-                    if isinstance(v, property)})
-        return att
-class Register(HarpElement):
-
-    def __init__(
-        self,
-        name: str,
-        address: int,
-        payloadType: PayloadType,
-        alias: Optional[str] = None,
-        arrayType: str | List[str] | int = 1,
-        registerType: str | RegisterType = RegisterType.NONE,
-        maskType: Optional[str] = None,
-        description: Optional[str] = None,
-        converter: Optional[bool] = None,
-        visibility: str | VisibilityType = VisibilityType.Public,
-        group: Optional[str] = None
-    ) -> None:
-
-        super().__init__(
-            name=name,
-            alias=alias,
-            elementType=ElementType.Register,
-            payloadType=payloadType,
-            maskType=maskType,
-            description=description,
-            converter=converter,
-            visibility=visibility)
-
-        self._address = self.address = address
-        self._registerType = self.registerType = registerType
-        self._arrayType = self.arrayType = arrayType
-        self._group = self.group = group
-
-    @property
-    def address(self):
-        return self._address
-
-    @address.setter
-    def address(self, value: int):
-        self._address = value
+        return attr.asdict(self)
 
 
-    @property
-    def arrayType(self):
-        return self._arrayType
-
-    @arrayType.setter
-    def arrayType(self, value: str | List[str] | int):
-        self._arrayType = value
-
-
-    @property
-    def registerType(self):
-        return self._registerType
-
-    @registerType.setter
-    def registerType(self, value: str | RegisterType):
-        if isinstance(value, RegisterType):
-            self._registerType = value
-        elif isinstance(value, str):
-            self._registerType = RegisterType[value]
+def get_bit_mask(value: Optional[str]) -> Optional[BitMask]:
+    if value is None:
+        return None
+    else:
+        if value in list(_MASKS.keys()):
+            return _MASKS[value]
         else:
-            raise TypeError("Only string or RegisterType types are allowed!")
+            raise KeyError("Specified mask has not been defined.")
 
-    @property
-    def group(self):
-        return self._group
-
-    @group.setter
-    def group(self, value: Optional[str]):
-        self._group = value
-
-    def __str__(self) -> str:
-        att = {k: getattr(self, k) for k, v in
-               self.__class__.__dict__.items()
-               if isinstance(v, property)}
-        att.update({k: getattr(self, k) for k, v in
-                    self.__class__.__bases__[0].__dict__.items()
-                    if isinstance(v, property)})
-        return ("""{}""".format("\n".join([f"{k} : {att[k]}" for k in att]))) + """\n"""
+@define
+class Register:
+    name = attr.ib(type=str)
+    address = attr.ib(type=int, converter=int)
+    payloadType = attr.ib(type=PayloadType | str,
+                          converter=_payloadType_converter)
+    alias = attr.ib(default=None, type=Optional[str])
+    arrayType = attr.ib(default=1, type=(str | List[str] | int))
+    registerType = attr.ib(default=RegisterType.NONE,
+                           type=str, converter=_registerType_converter)
+    maskType = attr.ib(default=None,
+                       type=Optional[List[BitMask]], converter=get_bit_mask)
+    description = attr.ib(default=None, type=Optional[str], converter=str)
+    converter = attr.ib(default=None, type=Optional[bool])
+    visibility = attr.ib(default=VisibilityType.Public,
+                         type=str, converter=_visibilityType_converter)
+    group = attr.ib(default=None, type=Optional[str], converter=str)
 
     def to_dict(self) -> Dict[str, any]:
-        att = {k: getattr(self, k) for k, v in
-               self.__class__.__dict__.items()
-               if isinstance(v, property)}
-        att.update({k: getattr(self, k) for k, v in
-                    self.__class__.__bases__[0].__dict__.items()
-                    if isinstance(v, property)})
-        return att
+        return attr.asdict(self)
 
-class MaskCollection(ElementCollection):
-
-    def __init__(
-            self,
-            element_array: Optional[List[Mask]]) -> None:
-        super().__init__(
-            elementType=ElementType.Mask,
-            element_array=element_array)
-
-    def from_array(self, arr: List[Mask]) -> None:
-        super().from_array(arr)
-
-    def append(self, element: Mask) -> None:
-        super().append(element)
-
-    def insert(self, idx: int, element: Mask) -> None:
-        super().insert(idx, element)
-
-    def pop(self, idx: Optional[int]) -> None:
-        super().pop(idx)
-
-
-class RegisterCollection(ElementCollection):
-
-    def __init__(
-            self,
-            element_array: Optional[List[Register]]) -> None:
-        super().__init__(
-            elementType=ElementType.Register,
-            element_array=element_array)
-
-    def from_array(self, arr: List[Register]) -> None:
-        super().from_array(arr)
-
-    def append(self, element: Register) -> None:
-        super().append(element)
-
-    def insert(self, idx: int, element: Register) -> None:
-        super().insert(idx, element)
-
-    def pop(self, idx: Optional[int]) -> None:
-        super().pop(idx)
 
 @define
 class Metadata:
-    device: str = "HarpDevice"
-    whoAmI: int = 0000
-    firmwareVersion: Optional[str] = None
-    hardwareVersion: Optional[str] = None
-    architecture: Optional[str] = None
+    device: attr.ib(type=str)
+    whoAmI: attr.ib(type=int)
+    firmwareVersion: attr.ib(default=None, type=Optional[str])
+    hardwareVersion: attr.ib(default=None, type=Optional[str])
+    architecture: attr.ib(default=None, type=Optional[str])
+
+    def to_dict(self) -> Dict[str, any]:
+        return attr.asdict(self)
 
 @define
 class IOElement:
@@ -415,10 +144,17 @@ class IOElement:
     def to_dict(self):
         return attr.asdict(self)
 
-class IOElementCollection:
+
+_COLLECTION_TYPE = List[Register] | List[BitMask] | List[Metadata] | List[IOElement]
+_ELEMENT_TYPE = Register | BitMask | Metadata | IOElement
+
+
+# Collection of multiple elements
+class Collection:
+    "Parent class that represents a collection of HarpElements"
     def __init__(
         self,
-        element_array: Optional[List[IOElement]],
+        element_array: Optional[_COLLECTION_TYPE],
         ) -> None:
 
         self.elements = []
@@ -428,17 +164,16 @@ class IOElementCollection:
     def __iter__(self):
         return iter(self.elements)
 
-    def from_array(self, arr: List[IOElement]) -> None:
+    def from_array(self, arr: Optional[List[_COLLECTION_TYPE]]) -> None:
         if len(arr) < 1:
             raise ValueError("List can't be empty!")
-
         for element in arr:
             self.append(element)
 
-    def append(self, element: IOElement) -> None:
+    def append(self, element: _ELEMENT_TYPE) -> None:
         self.elements.append(element)
 
-    def insert(self, idx: int, element: IOElement) -> None:
+    def insert(self, idx: int, element: _ELEMENT_TYPE) -> None:
         self.elements.insert(idx, element)
 
     def pop(self, idx: Optional[int]) -> None:
