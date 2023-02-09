@@ -1,8 +1,12 @@
 from __future__ import annotations
+import attr
+
+from attr import define
 from typing import Optional, List, Dict
 from enum import Enum
-import attr
-from attr import define, Factory
+
+from reflexgenerator.generator.markdown import AnchorReference
+
 
 _MASKS = {}
 
@@ -75,12 +79,20 @@ class BitMask:
                           type=Optional[str], converter=str)
     bits = attr.ib(default=None,
                    type=Optional[List[Bit]], converter=_make_bit_array)
+    _uref = attr.ib(init=False)
 
     def __attrs_post_init__(self):
         _MASKS.update({self.name: self})
+        self._uref = AnchorReference(self.name, self.name, self)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self)
+
+    def render_uref(self, label: Optional[str] = None) -> str:
+        return self._uref.render_reference(label)
+
+    def render_pointer(self, label: Optional[str] = None) -> str:
+        return self._uref.render_pointer(label)
 
 
 def get_bit_mask(value: Optional[str]) -> Optional[BitMask]:
@@ -109,10 +121,19 @@ class Register:
     visibility = attr.ib(default=VisibilityType.Public,
                          type=str, converter=_visibilityType_converter)
     group = attr.ib(default=None, type=Optional[str], converter=str)
+    _uref = attr.ib(init=False)
+
+    def __attrs_post_init__(self):
+        self._uref = AnchorReference(self.name, self.name, self)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self)
 
+    def render_uref(self, label: Optional[str] = None) -> str:
+        return self._uref.render_reference(label)
+
+    def render_pointer(self, label: Optional[str] = None) -> str:
+        return self._uref.render_pointer(label)
 
 @define
 class Metadata:
