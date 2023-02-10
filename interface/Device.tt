@@ -25,8 +25,9 @@ using (var reader = new StreamReader(metadataFileName))
         .Build();
 
     deviceMetadata = deserializer.Deserialize<DeviceInfo>(reader);
-    eventMetadata = deviceMetadata.Registers.Where(register => register.Value.RegisterType == RegisterType.Event);
-    commandMetadata = deviceMetadata.Registers.Where(register => register.Value.RegisterType == RegisterType.Command);
+    var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public);
+    eventMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Event);
+    commandMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Command);
 }
 
 var deviceName = deviceMetadata.Device;

@@ -23,6 +23,12 @@ public enum RegisterType
     Both
 }
 
+public enum RegisterVisibility
+{
+    Public,
+    Private
+}
+
 public class RegisterInfo
 {
     public int Address;
@@ -31,6 +37,7 @@ public class RegisterInfo
     public PayloadType PayloadType;
     public int PayloadLength;
     public Dictionary<string, PayloadMemberInfo> PayloadSpec;
+    public RegisterVisibility Visibility;
     public string MaskType;
 
     public string PayloadTypeSuffix => Converter.GetPayloadTypeSuffix(PayloadType, PayloadLength);
