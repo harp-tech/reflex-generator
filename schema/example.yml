@@ -59,7 +59,6 @@ registers:
 bitMasks:
   DO:
     description: Bitmask representing the state of the digital outputs.
-    payloadType: U8
     bits:
       DO0: 0x01
       DO1: 0x02
