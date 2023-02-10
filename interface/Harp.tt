@@ -10,42 +10,42 @@ public class DeviceInfo
     public string Device;
     public int WhoAmI;
     public HarpVersion FirmwareVersion;
-    public HarpVersion HardwareVersion;
-    public List<RegisterInfo> Registers = new List<RegisterInfo>();
-    public List<BitMaskInfo> Masks = new List<BitMaskInfo>();
+    public HarpVersion HardwareTargets;
+    public Dictionary<string, RegisterInfo> Registers = new Dictionary<string, RegisterInfo>();
+    public Dictionary<string, BitMaskInfo> BitMasks = new Dictionary<string, BitMaskInfo>();
+    public Dictionary<string, GroupMaskInfo> GroupMasks = new Dictionary<string, GroupMaskInfo>();
 }
 
 public enum RegisterType
 {
     Command,
-    Event
+    Event,
+    Both
 }
 
 public class RegisterInfo
 {
-    public string Name;
     public int Address;
+    public string Description = "";
     public PayloadType PayloadType;
     public RegisterType RegisterType;
-    public string Description = "";
-    public string ArrayType;
+    public Dictionary<string, PayloadMemberInfo> PayloadSpec;
     public string MaskType;
 
     public string PayloadTypeSuffix => Converter.GetPayloadTypeSuffix(PayloadType);
     public string PayloadInterfaceType => Converter.GetInterfaceType(PayloadType);
-    public string InterfaceType
-    {
-        get
-        {
-            if (!string.IsNullOrEmpty(MaskType)) return MaskType;
-            else return Converter.GetInterfaceType(PayloadType);
-        }
-    }
+}
+
+public class PayloadMemberInfo
+{
+    public int? Mask;
+    public int? Offset;
+    public string MaskType;
+    public string Description = "";
 }
 
 public class BitMaskInfo
 {
-    public string Name;
     public PayloadType PayloadType;
     public string Description = "";
     public Dictionary<string, int> Bits = new Dictionary<string, int>();
@@ -53,8 +53,24 @@ public class BitMaskInfo
     public string InterfaceType => Converter.GetInterfaceType(PayloadType);
 }
 
+public class GroupMaskInfo
+{
+    public PayloadType PayloadType;
+    public string Description = "";
+    public Dictionary<string, int> Values = new Dictionary<string, int>();
+
+    public string InterfaceType => Converter.GetInterfaceType(PayloadType);
+}
+
 public static class Converter
 {
+    public static string GetInterfaceType(string name, RegisterInfo register)
+    {
+        if (register.PayloadSpec != null) return $"{name}Payload";
+        else if (!string.IsNullOrEmpty(register.MaskType)) return register.MaskType;
+        else return Converter.GetInterfaceType(register.PayloadType);
+    }
+
     public static string GetInterfaceType(PayloadType payloadType)
     {
         switch (payloadType)
@@ -68,7 +84,7 @@ public static class Converter
             case PayloadType.U64: return "ulong";
             case PayloadType.S64: return "long";
             case PayloadType.Float: return "float";
-            default: throw new ArgumentOutOfRangeException(nameof(PayloadType));
+            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
         }
     }
 
@@ -85,7 +101,18 @@ public static class Converter
             case PayloadType.U64: return "UInt64";
             case PayloadType.S64: return "Int64";
             case PayloadType.Float: return "Single";
-            default: throw new ArgumentOutOfRangeException(nameof(PayloadType));
+            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
+        }
+    }
+
+    public static string GetEventConversion(RegisterInfo register, string expression)
+    {
+        var maskType = register.MaskType;
+        if (string.IsNullOrEmpty(maskType)) return expression;
+        switch (maskType)
+        {
+            case "bool": return $"{expression} != 0";
+            default: return $"({maskType}){expression}";
         }
     }
 }

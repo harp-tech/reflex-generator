@@ -15,8 +15,8 @@ var path = Host.ResolvePath(string.Empty);
 var namespaceName = Path.GetFileName(path);
 
 DeviceInfo deviceMetadata;
-IEnumerable<RegisterInfo> eventMetadata;
-IEnumerable<RegisterInfo> commandMetadata;
+IEnumerable<KeyValuePair<string, RegisterInfo>> eventMetadata;
+IEnumerable<KeyValuePair<string, RegisterInfo>> commandMetadata;
 var metadataFileName = Host.ResolvePath("../../../Firmware/VestibularH1/registers.yml");
 using (var reader = new StreamReader(metadataFileName))
 {
@@ -25,8 +25,8 @@ using (var reader = new StreamReader(metadataFileName))
         .Build();
 
     deviceMetadata = deserializer.Deserialize<DeviceInfo>(reader);
-    eventMetadata = deviceMetadata.Registers.Where(register => register.RegisterType == RegisterType.Event);
-    commandMetadata = deviceMetadata.Registers.Where(register => register.RegisterType == RegisterType.Command);
+    eventMetadata = deviceMetadata.Registers.Where(register => register.Value.RegisterType == RegisterType.Event);
+    commandMetadata = deviceMetadata.Registers.Where(register => register.Value.RegisterType == RegisterType.Command);
 }
 
 var deviceName = deviceMetadata.Device;
@@ -100,7 +100,7 @@ namespace <#= namespaceName #>
 foreach (var register in eventMetadata)
 {
 #>
-    /// <seealso cref="<#= register.Name #>"/>
+    /// <seealso cref="<#= register.Key #>"/>
 <#
 }
 #>
@@ -108,7 +108,7 @@ foreach (var register in eventMetadata)
 foreach (var register in eventMetadata)
 {
 #>
-    [XmlInclude(typeof(<#= register.Name #>))]
+    [XmlInclude(typeof(<#= register.Key #>))]
 <#
 }
 #>
@@ -119,17 +119,19 @@ foreach (var register in eventMetadata)
         /// </summary>
         public <#= eventClassName #>()
         {
-            Event = new <#= eventMetadata.First().Name #>();
+            Event = new <#= eventMetadata.First().Key #>();
         }
     }
 <#
-foreach (var register in eventMetadata)
+foreach (var registerMetadata in eventMetadata)
 {
-    var interfaceType = register.InterfaceType;
+    var register = registerMetadata.Value;
     var payloadSuffix = register.PayloadTypeSuffix;
-    var conversion = !string.IsNullOrEmpty(register.MaskType) ? $"({register.MaskType})" : string.Empty;
+    var payloadSelector = $"input.GetPayload{payloadSuffix}()";
+    var interfaceType = Converter.GetInterfaceType(registerMetadata.Key, register);
+    var conversion = Converter.GetEventConversion(register, payloadSelector);
     var summaryDescription = string.IsNullOrEmpty(register.Description)
-        ? $"from register {register.Name}"
+        ? $"from register {registerMetadata.Key}"
         : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
 #>
 
@@ -139,7 +141,7 @@ foreach (var register in eventMetadata)
     /// </summary>
     [DesignTimeVisible(false)]
     [Description("Filters and selects a sequence of event messages <#= summaryDescription #>.")]
-    public partial class <#= register.Name #> : Combinator<HarpMessage, <#= interfaceType #>>
+    public partial class <#= registerMetadata.Key #> : Combinator<HarpMessage, <#= interfaceType #>>
     {
         /// <summary>
         /// Filters and selects an observable sequence of event messages
@@ -152,7 +154,7 @@ foreach (var register in eventMetadata)
         /// </returns>
         public override IObservable<<#= interfaceType #>> Process(IObservable<HarpMessage> source)
         {
-            return source.Event(address: <#= register.Address #>).Select(input => <#= conversion #>input.GetPayload<#= payloadSuffix #>());
+            return source.Event(address: <#= register.Address #>).Select(input => <#= conversion #>);
         }
     }
 <#
@@ -167,7 +169,7 @@ foreach (var register in eventMetadata)
 foreach (var register in commandMetadata)
 {
 #>
-    /// <seealso cref="<#= register.Name #>"/>
+    /// <seealso cref="<#= register.Key #>"/>
 <#
 }
 #>
@@ -175,7 +177,7 @@ foreach (var register in commandMetadata)
 foreach (var register in commandMetadata)
 {
 #>
-    [XmlInclude(typeof(<#= register.Name #>))]
+    [XmlInclude(typeof(<#= register.Key #>))]
 <#
 }
 #>
@@ -186,17 +188,18 @@ foreach (var register in commandMetadata)
         /// </summary>
         public <#= commandClassName #>()
         {
-            Command = new <#= commandMetadata.First().Name #>();
+            Command = new <#= commandMetadata.First().Key #>();
         }
     }
 <#
-foreach (var register in commandMetadata)
+foreach (var registerMetadata in commandMetadata)
 {
-    var interfaceType = register.InterfaceType;
+    var register = registerMetadata.Value;
     var payloadSuffix = register.PayloadTypeSuffix;
+    var interfaceType = Converter.GetInterfaceType(registerMetadata.Key, register);
     var conversion = !string.IsNullOrEmpty(register.MaskType) ? $"({Converter.GetInterfaceType(register.PayloadType)})" : string.Empty;
     var summaryDescription = string.IsNullOrEmpty(register.Description)
-        ? $"to write on register {register.Name}"
+        ? $"to write on register {registerMetadata.Key}"
         : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
 #>
 
@@ -206,7 +209,7 @@ foreach (var register in commandMetadata)
     /// </summary>
     [DesignTimeVisible(false)]
     [Description("Creates a sequence of command messages <#= summaryDescription #>.")]
-    public partial class <#= register.Name #> : Combinator<<#= interfaceType #>, HarpMessage>
+    public partial class <#= registerMetadata.Key #> : Combinator<<#= interfaceType #>, HarpMessage>
     {
         public override IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
         {
@@ -217,15 +220,44 @@ foreach (var register in commandMetadata)
 }
 #>
 <#
-foreach (var mask in deviceMetadata.Masks)
+foreach (var registerMetadata in deviceMetadata.Registers)
 {
+    var register = registerMetadata.Value;
+    if (register.PayloadSpec == null) continue;
+#>
+
+    /// <summary>
+    /// Represents the payload of the <#= registerMetadata.Key #> register.
+    /// </summary>
+    public struct <#= registerMetadata.Key #>Payload
+    {<#
+    foreach (var member in register.PayloadSpec)
+    {
+        var memberType = string.IsNullOrEmpty(member.Value.MaskType) ? Converter.GetInterfaceType(register.PayloadType) : member.Value.MaskType;
+#>
+
+        /// <summary>
+        /// <#= member.Value.Description #>
+        /// </summary>
+        public <#= memberType #> <#= member.Key #>;
+<#
+    }
+#>
+    }
+<#
+}
+#>
+<#
+foreach (var bitMask in deviceMetadata.BitMasks)
+{
+    var mask = bitMask.Value;
 #>
 
     /// <summary>
     /// <#= mask.Description #>
     /// </summary>
     [Flags]
-    public enum <#= mask.Name #> : <#= mask.InterfaceType #>
+    public enum <#= bitMask.Key #> : <#= mask.InterfaceType #>
     {
 <#
     var bitIndex = 0;
@@ -233,6 +265,30 @@ foreach (var mask in deviceMetadata.Masks)
     {
 #>
         <#= bitField.Key #> = 0x<#= bitField.Value.ToString("X") #><#= ++bitIndex < mask.Bits.Count ? "," : string.Empty #>
+<#
+    }
+#>
+    }
+<#
+}
+#>
+<#
+foreach (var groupMask in deviceMetadata.GroupMasks)
+{
+    var mask = groupMask.Value;
+#>
+
+    /// <summary>
+    /// <#= mask.Description #>
+    /// </summary>
+    public enum <#= groupMask.Key #> : <#= mask.InterfaceType #>
+    {
+<#
+    var memberIndex = 0;
+    foreach (var member in mask.Values)
+    {
+#>
+        <#= member.Key #> = <#= member.Value #><#= ++memberIndex < mask.Values.Count ? "," : string.Empty #>
 <#
     }
 #>
