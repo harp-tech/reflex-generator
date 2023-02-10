@@ -47,20 +47,18 @@ public class PayloadMemberInfo
 
 public class BitMaskInfo
 {
-    public PayloadType PayloadType;
     public string Description = "";
     public Dictionary<string, int> Bits = new Dictionary<string, int>();
 
-    public string InterfaceType => Converter.GetInterfaceType(PayloadType);
+    public string InterfaceType => Converter.GetInterfaceType(Bits);
 }
 
 public class GroupMaskInfo
 {
-    public PayloadType PayloadType;
     public string Description = "";
     public Dictionary<string, int> Values = new Dictionary<string, int>();
 
-    public string InterfaceType => Converter.GetInterfaceType(PayloadType);
+    public string InterfaceType => Converter.GetInterfaceType(Values);
 }
 
 public static class Converter
@@ -94,6 +92,14 @@ public static class Converter
         var baseType = GetInterfaceType(payloadType);
         if (payloadLength > 0) return $"{baseType}[]";
         else return baseType;
+    }
+
+    public static string GetInterfaceType(Dictionary<string, int> maskValues)
+    {
+        var max = maskValues.Values.Max();
+        if (max <= byte.MaxValue) return "byte";
+        if (max <= ushort.MaxValue) return "ushort";
+        else return "uint";
     }
 
     public static string GetPayloadTypeSuffix(PayloadType payloadType, int payloadLength)
