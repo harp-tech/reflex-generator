@@ -127,7 +127,7 @@ foreach (var register in eventMetadata)
 foreach (var registerMetadata in eventMetadata)
 {
     var register = registerMetadata.Value;
-    var payloadSuffix = register.PayloadTypeSuffix;
+    var payloadSuffix = Converter.GetPayloadTypeSuffix(register.PayloadType, register.PayloadLength);
     var payloadSelector = $"input.GetPayload{payloadSuffix}()";
     var interfaceType = Converter.GetInterfaceType(registerMetadata.Key, register);
     var conversion = Converter.GetEventConversion(register, payloadSelector);
@@ -217,9 +217,9 @@ foreach (var register in commandMetadata)
 foreach (var registerMetadata in commandMetadata)
 {
     var register = registerMetadata.Value;
-    var payloadSuffix = register.PayloadTypeSuffix;
+    var payloadSuffix = Converter.GetPayloadTypeSuffix(register.PayloadType);
     var interfaceType = Converter.GetInterfaceType(registerMetadata.Key, register);
-    var conversion = !string.IsNullOrEmpty(register.MaskType) ? $"({Converter.GetInterfaceType(register.PayloadType)})" : string.Empty;
+    var conversion = Converter.GetCommandConversion(register, "input");
     var summaryDescription = string.IsNullOrEmpty(register.Description)
         ? $"to write on register {registerMetadata.Key}"
         : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
@@ -232,10 +232,47 @@ foreach (var registerMetadata in commandMetadata)
     [DesignTimeVisible(false)]
     [Description("Creates a sequence of command messages <#= summaryDescription #>.")]
     public partial class <#= registerMetadata.Key #> : Combinator<<#= interfaceType #>, HarpMessage>
+    {<#
+    if (register.PayloadSpec != null)
     {
+#>
+
+        static <#= register.PayloadInterfaceType #> Format(<#= interfaceType #> value)
+        {
+            <#= register.PayloadInterfaceType #> result;
+<#
+        if (register.PayloadLength > 0)
+        {
+#>
+            result = new <#= Converter.GetInterfaceType(register.PayloadType) #>[<#= register.PayloadLength #>];
+<#
+        }
+#>
+<#
+        var assigned = new bool[Math.Max(1, register.PayloadLength)];
+        foreach (var member in register.PayloadSpec)
+        {
+            var payloadIndex = member.Value.Offset.GetValueOrDefault(0);
+            var memberIndexer = member.Value.Offset.HasValue ? $"[{member.Value.Offset}]" : string.Empty;
+            var memberConversion = Converter.GetPayloadMemberFormatter(
+                member.Value,
+                $"value.{member.Key}",
+                register.PayloadType,
+                assigned[payloadIndex]);
+            assigned[payloadIndex] = true;
+#>
+            result<#= memberIndexer #><#= memberConversion #>;
+<#
+        }
+#>
+            return result;
+        }
+<#
+    }#>
+
         public override IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
         {
-            return source.Select(input => HarpCommand.Write<#= payloadSuffix #>(address: <#= register.Address #>, <#= conversion #>input));
+            return source.Select(input => HarpCommand.Write<#= payloadSuffix #>(address: <#= register.Address #>, <#= conversion #>));
         }
     }
 <#

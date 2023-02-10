@@ -40,7 +40,6 @@ public class RegisterInfo
     public RegisterVisibility Visibility;
     public string MaskType;
 
-    public string PayloadTypeSuffix => Converter.GetPayloadTypeSuffix(PayloadType, PayloadLength);
     public string PayloadInterfaceType => Converter.GetInterfaceType(PayloadType, PayloadLength);
 }
 
@@ -109,7 +108,7 @@ public static class Converter
         else return "uint";
     }
 
-    public static string GetPayloadTypeSuffix(PayloadType payloadType, int payloadLength)
+    public static string GetPayloadTypeSuffix(PayloadType payloadType, int payloadLength = 0)
     {
         if (payloadLength > 0)
         {
@@ -139,6 +138,12 @@ public static class Converter
         return GetConversionToMaskType(maskType, expression);
     }
 
+    public static string GetCommandConversion(RegisterInfo register, string expression)
+    {
+        if (register.PayloadSpec != null) return $"Format({expression})";
+        return GetConversionToMaskType(register.PayloadInterfaceType, expression);
+    }
+
     public static string GetConversionToMaskType(string maskType, string expression)
     {
         if (string.IsNullOrEmpty(maskType)) return expression;
@@ -147,6 +152,12 @@ public static class Converter
             case "bool": return $"{expression} != 0";
             default: return $"({maskType}){expression}";
         }
+    }
+
+    static int GetMaskShift(int mask)
+    {
+        var lsb = mask & (~mask + 1);
+        return (int)Math.Log(lsb, 2);
     }
 
     public static string GetPayloadMemberParser(PayloadMemberInfo member, string expression)
@@ -158,8 +169,7 @@ public static class Converter
         if (member.Mask.HasValue)
         {
             var mask = member.Mask.Value;
-            var lsb = mask & (~mask + 1);
-            var shift = (int)Math.Log(lsb, 2);
+            var shift = GetMaskShift(mask);
             expression = $"({expression} & 0x{mask.ToString("X")})";
             if (shift > 0 && member.MaskType != "bool")
             {
@@ -168,6 +178,36 @@ public static class Converter
         }
         expression = GetConversionToMaskType(member.MaskType, expression);
         return expression;
+    }
+
+    public static string GetPayloadMemberFormatter(
+        PayloadMemberInfo member,
+        string expression,
+        PayloadType payloadType,
+        bool assigned)
+    {
+        var payloadInterfaceType = GetInterfaceType(payloadType);
+        if (!string.IsNullOrEmpty(member.MaskType))
+        {
+            expression = $"({payloadInterfaceType}){expression}";
+        }
+        if (member.Mask.HasValue)
+        {
+            var mask = member.Mask.Value;
+            var shift = GetMaskShift(mask);
+            if (shift > 0 && member.MaskType != "bool")
+            {
+                expression = $"({expression} << {shift})";
+            }
+
+            expression = $"({payloadInterfaceType})({expression} & 0x{mask.ToString("X")})";
+        }
+        
+        if (member.Mask.HasValue && assigned)
+        {
+            return $" |= {expression}";
+        }
+        else return $" = {expression}";
     }
 }
 #>
