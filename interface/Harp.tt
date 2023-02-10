@@ -1,0 +1,92 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ assembly name="$(PkgBonsai_Harp)\\lib\\net462\\Bonsai.Harp.dll" #>
+<#@ import namespace="Bonsai.Harp" #>
+<#+
+public class DeviceInfo
+{
+    public string Device;
+    public int WhoAmI;
+    public HarpVersion FirmwareVersion;
+    public HarpVersion HardwareVersion;
+    public List<RegisterInfo> Registers = new List<RegisterInfo>();
+    public List<BitMaskInfo> Masks = new List<BitMaskInfo>();
+}
+
+public enum RegisterType
+{
+    Command,
+    Event
+}
+
+public class RegisterInfo
+{
+    public string Name;
+    public int Address;
+    public PayloadType PayloadType;
+    public RegisterType RegisterType;
+    public string Description = "";
+    public string ArrayType;
+    public string MaskType;
+
+    public string PayloadTypeSuffix => Converter.GetPayloadTypeSuffix(PayloadType);
+    public string PayloadInterfaceType => Converter.GetInterfaceType(PayloadType);
+    public string InterfaceType
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(MaskType)) return MaskType;
+            else return Converter.GetInterfaceType(PayloadType);
+        }
+    }
+}
+
+public class BitMaskInfo
+{
+    public string Name;
+    public PayloadType PayloadType;
+    public string Description = "";
+    public Dictionary<string, int> Bits = new Dictionary<string, int>();
+
+    public string InterfaceType => Converter.GetInterfaceType(PayloadType);
+}
+
+public static class Converter
+{
+    public static string GetInterfaceType(PayloadType payloadType)
+    {
+        switch (payloadType)
+        {
+            case PayloadType.U8: return "byte";
+            case PayloadType.S8: return "sbyte";
+            case PayloadType.U16: return "ushort";
+            case PayloadType.S16: return "short";
+            case PayloadType.U32: return "uint";
+            case PayloadType.S32: return "int";
+            case PayloadType.U64: return "ulong";
+            case PayloadType.S64: return "long";
+            case PayloadType.Float: return "float";
+            default: throw new ArgumentOutOfRangeException(nameof(PayloadType));
+        }
+    }
+
+    public static string GetPayloadTypeSuffix(PayloadType payloadType)
+    {
+        switch (payloadType)
+        {
+            case PayloadType.U8: return "Byte";
+            case PayloadType.S8: return "SByte";
+            case PayloadType.U16: return "UInt16";
+            case PayloadType.S16: return "Int16";
+            case PayloadType.U32: return "UInt32";
+            case PayloadType.S32: return "Int32";
+            case PayloadType.U64: return "UInt64";
+            case PayloadType.S64: return "Int64";
+            case PayloadType.Float: return "Single";
+            default: throw new ArgumentOutOfRangeException(nameof(PayloadType));
+        }
+    }
+}
+#>

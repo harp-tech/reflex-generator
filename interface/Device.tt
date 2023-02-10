@@ -1,0 +1,243 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ assembly name="$(PkgYamlDotNet)\\lib\\net47\\YamlDotNet.dll" #>
+<#@ import namespace="YamlDotNet" #>
+<#@ import namespace="YamlDotNet.Serialization" #>
+<#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
+<#@ include file="Harp.tt" #><##>
+<#@ output extension=".cs" #>
+<#
+var path = Host.ResolvePath(string.Empty);
+var namespaceName = Path.GetFileName(path);
+
+DeviceInfo deviceMetadata;
+IEnumerable<RegisterInfo> eventMetadata;
+IEnumerable<RegisterInfo> commandMetadata;
+var metadataFileName = Host.ResolvePath("../../../Firmware/VestibularH1/registers.yml");
+using (var reader = new StreamReader(metadataFileName))
+{
+    var deserializer = new DeserializerBuilder()
+        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .Build();
+
+    deviceMetadata = deserializer.Deserialize<DeviceInfo>(reader);
+    eventMetadata = deviceMetadata.Registers.Where(register => register.RegisterType == RegisterType.Event);
+    commandMetadata = deviceMetadata.Registers.Where(register => register.RegisterType == RegisterType.Command);
+}
+
+var deviceName = deviceMetadata.Device;
+var deviceClassName = deviceName + "Device";
+var eventClassName = deviceName + "Event";
+var commandClassName = deviceName + "Command";
+#>
+<#
+foreach (var ns in Host.StandardImports)
+{
+    Write("using " + ns + ";");
+}
+#>
+
+using System.ComponentModel;
+using System.Reactive.Linq;
+using System.Xml.Serialization;
+
+namespace <#= namespaceName #>
+{
+    /// <summary>
+    /// Represents an observable source of messages from the <#= deviceName #> device connected
+    /// at the specified serial port.
+    /// </summary>
+    [Combinator(MethodName = nameof(Generate))]
+    [WorkflowElementCategory(ElementCategory.Source)]
+    [Description("Generates events and processes commands for the <#= deviceName #> device.")]
+    public partial class <#= deviceClassName #>
+    {
+        readonly Device device = new Device(whoAmI: <#= deviceMetadata.WhoAmI #>);
+
+        /// <summary>
+        /// Gets or sets the name of the serial port used to communicate with the
+        /// <#= deviceName #> device.
+        /// </summary>
+        [TypeConverter(typeof(PortNameConverter))]
+        [Description("The name of the serial port used to communicate with the <#= deviceName #> device.")]
+        public string PortName
+        {
+            get { return device.PortName; }
+            set { device.PortName = value; }
+        }
+
+        /// <summary>
+        /// Connects to the specified serial port and returns an observable sequence of Harp messages
+        /// coming from the device.
+        /// </summary>
+        /// <returns>The observable sequence of Harp messages produced by the device.</returns>
+        public IObservable<HarpMessage> Generate()
+        {
+            return Generate(Observable.Empty<HarpMessage>());
+        }
+
+        /// <summary>
+        /// Connects to the specified serial port and sends the observable sequence of Harp messages.
+        /// The return value is an observable sequence of Harp messages coming from the device.
+        /// </summary>
+        /// <param name="source">An observable sequence of Harp messages to send to the device.</param>
+        /// <returns>The observable sequence of Harp messages produced by the device.</returns>
+        public IObservable<HarpMessage> Generate(IObservable<HarpMessage> source)
+        {
+            return device.Generate(source);
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator which filters and selects specific event messages
+    /// reported by the Harp device.
+    /// </summary>
+<#
+foreach (var register in eventMetadata)
+{
+#>
+    /// <seealso cref="<#= register.Name #>"/>
+<#
+}
+#>
+<#
+foreach (var register in eventMetadata)
+{
+#>
+    [XmlInclude(typeof(<#= register.Name #>))]
+<#
+}
+#>
+    public partial class <#= eventClassName #> : EventBuilder
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="<#= eventClassName #>"/> class.
+        /// </summary>
+        public <#= eventClassName #>()
+        {
+            Event = new <#= eventMetadata.First().Name #>();
+        }
+    }
+<#
+foreach (var register in eventMetadata)
+{
+    var interfaceType = register.InterfaceType;
+    var payloadSuffix = register.PayloadTypeSuffix;
+    var conversion = !string.IsNullOrEmpty(register.MaskType) ? $"({register.MaskType})" : string.Empty;
+    var summaryDescription = string.IsNullOrEmpty(register.Description)
+        ? $"from register {register.Name}"
+        : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
+#>
+
+    /// <summary>
+    /// Represents an operator which filters and selects a sequence of event messages
+    /// <#= summaryDescription #>.
+    /// </summary>
+    [DesignTimeVisible(false)]
+    [Description("Filters and selects a sequence of event messages <#= summaryDescription #>.")]
+    public partial class <#= register.Name #> : Combinator<HarpMessage, <#= interfaceType #>>
+    {
+        /// <summary>
+        /// Filters and selects an observable sequence of event messages
+        /// <#= summaryDescription #>.
+        /// </summary>
+        /// <param name="source">The sequence of Harp event messages.</param>
+        /// <returns>
+        /// A sequence of <see cref="<#= interfaceType #>"/> objects representing the
+        /// register payload.
+        /// </returns>
+        public override IObservable<<#= interfaceType #>> Process(IObservable<HarpMessage> source)
+        {
+            return source.Event(address: <#= register.Address #>).Select(input => <#= conversion #>input.GetPayload<#= payloadSuffix #>());
+        }
+    }
+<#
+}
+#>
+
+    /// <summary>
+    /// Represents an operator which creates standard command messages for the
+    /// Harp device.
+    /// </summary>
+<#
+foreach (var register in commandMetadata)
+{
+#>
+    /// <seealso cref="<#= register.Name #>"/>
+<#
+}
+#>
+<#
+foreach (var register in commandMetadata)
+{
+#>
+    [XmlInclude(typeof(<#= register.Name #>))]
+<#
+}
+#>
+    public partial class <#= commandClassName #> : CommandBuilder
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="<#= commandClassName #>"/> class.
+        /// </summary>
+        public <#= commandClassName #>()
+        {
+            Command = new <#= commandMetadata.First().Name #>();
+        }
+    }
+<#
+foreach (var register in commandMetadata)
+{
+    var interfaceType = register.InterfaceType;
+    var payloadSuffix = register.PayloadTypeSuffix;
+    var conversion = !string.IsNullOrEmpty(register.MaskType) ? $"({Converter.GetInterfaceType(register.PayloadType)})" : string.Empty;
+    var summaryDescription = string.IsNullOrEmpty(register.Description)
+        ? $"to write on register {register.Name}"
+        : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
+#>
+
+    /// <summary>
+    /// Represents an operator that creates a sequence of command messages
+    /// <#= summaryDescription #>.
+    /// </summary>
+    [DesignTimeVisible(false)]
+    [Description("Creates a sequence of command messages <#= summaryDescription #>.")]
+    public partial class <#= register.Name #> : Combinator<<#= interfaceType #>, HarpMessage>
+    {
+        public override IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
+        {
+            return source.Select(input => HarpCommand.Write<#= payloadSuffix #>(address: <#= register.Address #>, <#= conversion #>input));
+        }
+    }
+<#
+}
+#>
+<#
+foreach (var mask in deviceMetadata.Masks)
+{
+#>
+
+    /// <summary>
+    /// <#= mask.Description #>
+    /// </summary>
+    [Flags]
+    public enum <#= mask.Name #> : <#= mask.InterfaceType #>
+    {
+<#
+    var bitIndex = 0;
+    foreach (var bitField in mask.Bits)
+    {
+#>
+        <#= bitField.Key #> = 0x<#= bitField.Value.ToString("X") #><#= ++bitIndex < mask.Bits.Count ? "," : string.Empty #>
+<#
+    }
+#>
+    }
+<#
+}
+#>
+}
