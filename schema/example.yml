@@ -2,75 +2,74 @@
 device: ExampleDevice
 whoAmI: 0000
 firmwareVersion: "0.1"
-hardwareVersion: "0.1"
+hardwareTargets: "0.1"
 architecture: "atmega"
 registers:
-  - name: Cam0Event
+  Cam0Event:
     address: 32
     payloadType: U8
     registerType: Event
-  - name: Cam0TriggerFrequency
+  Cam0TriggerFrequency:
     address: 33
     registerType: Command
     payloadType: U16
     maskType: DO
     description: Sets the trigger frequency for camera 0 between 1 and 1000.
-  - name: Cam0TriggerDuration
+  Cam0TriggerDuration:
     address: 34
     registerType: Command
     payloadType: U16
     description: Sets the duration of the trigger pulse (minimum is 100) for camera 0.
-  - name: StartAndStop
+  StartAndStop:
     address: 35
     registerType: Command
     payloadType: U8
     description: Starts or stops the camera immediately.
-  - name: InState
+  InState:
     address: 36
     registerType: Event
     payloadType: U8
     description: Contains the state of the input ports.
-  - name: Valve0Pulse
+  Valve0Pulse:
     address: 37
     registerType: Command
     payloadType: U8
     description: Configures the valve 0 open time in milliseconds.
-  - name: OutSet
+  OutSet:
     address: 38
     registerType: Command
     payloadType: U8
     description: Bitmask to set the available outputs.
-  - name: OutClear
+  OutClear:
     address: 39
     registerType: Command
     payloadType: U8
     description: Bitmask to clear the available outputs.
-  - name: OutToggle
+  OutToggle:
     address: 40
     registerType: Command
     payloadType: U8
     description: Bitmask to toggle the available outputs.
-  - name: OutWrite
+  OutWrite:
     address: 41
     registerType: Command
     payloadType: U8
     maskType: DO
     description: Bitmask to write the available outputs.
-masks:
-  - name: DO
-    payloadType: U8
+bitMasks:
+  DO:
     description: Bitmask representing the state of the digital outputs.
     bits:
       DO0: 0x01
       DO1: 0x02
 ios:
-  - name: DO3
-    port: PORTC
-    pin: 0
+  DO3:
+    portName: PORTC
+    pinNumber: 0
     direction: output
     description: DO0
-  - name: DO2
-    port: PORTB
-    pin: 2
+  DO2:
+    portName: PORTB
+    pinNumber: 2
     direction: output
     description: DO0
