@@ -24,19 +24,24 @@
             "type": "string"
         },
         "registers": {
+            "type": "object",
             "description": "Specifies the collection of registers implementing the device function.",
-            "type": "array",
-            "items": { "$ref": "#/definitions/register" }
+            "additionalProperties": { "$ref": "#/definitions/register" }
         },
-        "masks": {
+        "bitMasks": {
+            "type": "object",
             "description": "Specifies the collection of masks available to be used with the different registers.",
-            "type": "array",
-            "items": { "$ref": "#/definitions/bitMask" }
+            "additionalProperties": { "$ref": "#/definitions/bitMask" }
+        },
+        "groupMasks": {
+            "type": "object",
+            "description": "Specifies the collection of group masks available to be used with the different registers.",
+            "additionalProperties": { "$ref": "#/definitions/groupMask" }
         },
         "ios": {
+            "type": "object",
             "description": "Specifies the IO pin configuration used to automatically generate the firmware.",
-            "type": "array",
-            "items": { "$ref": "#/definitions/pin" }
+            "additionalProperties": { "$ref": "#/definitions/pinMapping" }
         }
     },
     "required": ["device", "whoAmI", "firmwareVersion", "hardwareTargets", "registers"],
@@ -50,29 +55,60 @@
             "description": "Specifies a bit mask used for reading or writing specific registers.",
             "type": "object",
             "properties": {
-                "name": {
-                    "description": "Specifies the unique name of the bit mask.",
-                    "type": "string"
-                },
                 "description": {
                     "description": "Specifies a summary description of the bit mask function.",
                     "type": "string"
                 },
-                "payloadType": { "$ref": "#/definitions/payloadType" },
                 "bits": {
                     "type": "object",
                     "additionalProperties": { "type": "integer" }
                 }
             },
-            "required": ["name", "payloadType"]
+            "required": ["bits"]
+        },
+        "groupMask": {
+            "description": "Specifies a group mask used for reading or writing specific registers.",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Specifies a summary description of the group mask function.",
+                    "type": "string"
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": { "type": "integer" }
+                }
+            },
+            "required": ["values"]
+        },
+        "payloadMember": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Specifies a summary description of the payload member.",
+                    "type": "string"
+                },
+                "mask": {
+                    "description": "Specifies the mask used to read and write this payload member.",
+                    "type": "integer"
+                },
+                "offset": {
+                    "description": "Specifies the payload array offset where this payload member is stored.",
+                    "type": "integer"
+                },
+                "maskType": {
+                    "description": "Specifies the name of the bit mask or group mask used to represent the payload data.",
+                    "type": "string"
+                },
+                "converter": {
+                    "description": "Flags the existence of an optional converter method used to parse or format the payload value in the high-level interface.",
+                    "type": "boolean"
+                }
+            }
         },
         "register": {
             "type": "object",
             "properties": {
-                "name": {
-                    "description":"Specifies the unique name of the register.",
-                    "type": "string"
-                },
                 "description": {
                     "description": "Specifies a summary description of the register function.",
                     "type": "string"
@@ -80,6 +116,7 @@
                 "address": {
                     "description": "Specifies the unique 8-bit address of the register.",
                     "type": "integer",
+                    "minimum": 32,
                     "maximum": 255
                 },
                 "registerType": {
@@ -88,25 +125,21 @@
                     "enum": ["Command", "Event", "Both"]
                 },
                 "payloadType": { "$ref": "#/definitions/payloadType" },
-                "arrayType": {
-                    "description": "Specifies the optional array format for the register payload.",
-                    "oneOf": [
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        {
-                            "type": "integer"
-                        }
-                    ]
+                "payloadLength": {
+                    "description": "Specifies the length of the register payload.",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "payloadSpec": {
+                    "type": "object",
+                    "additionalProperties": { "$ref": "#/definitions/payloadMember" }
                 },
                 "maskType": {
-                    "$ref": "#/definitions/bitMask/properties/name"
+                    "description": "Specifies the name of the bit mask or group mask used to represent the payload data.",
+                    "type": "string"
                 },
                 "converter": {
-                    "description": "Flags the existence of an optional converter method used to parse or format the mask value in the high-level interface.",
+                    "description": "Flags the existence of an optional converter method used to parse or format the payload value in the high-level interface.",
                     "type": "boolean"
                 },
                 "visibility": {
@@ -119,15 +152,11 @@
                     "type": "string"
                 }
             },
-            "required": ["name", "address", "registerType", "payloadType"]
+            "required": ["address", "registerType", "payloadType"]
         },
-        "pin": {
+        "pinMapping": {
             "type": "object",
             "properties": {
-                "name": {
-                    "description":"Specifies the unique name of the IO pin.",
-                    "type": "string"
-                },
                 "description": {
                     "description": "Specifies a summary description of the IO function.",
                     "type": "string"
@@ -136,7 +165,7 @@
                     "description": "Specifies the microcontroller port.",
                     "type": "string"
                 },
-                "pinNumber": {
+                "pin": {
                     "description": "Specifies the unique pin number in the defined port.",
                     "type": "integer"
                 },
@@ -166,13 +195,13 @@
                 },
                 "interruptNumber":{
                     "description": "Specifies the interrupt number associated with the specific pin.",
-                    "type": "string",
-                    "enum": ["INT0", "INT1"]
+                    "type": "integer",
+                    "enum": [0, 1]
                 },
                 "out":{
                     "description": "ONLY OUTPUTS. Specifies output mode of the pin.",
                     "type": "string",
-                    "enum": ["digital", "wire_or", "wire_and", "wired_or_pull", "wired_and_pull"]
+                    "enum": ["digital", "wireOr", "wireAnd", "wiredOrPull", "wiredAndPull"]
                 },
                 "outDefault":{
                     "description": "Specifies the initial state of the output line at boot time.",
@@ -183,7 +212,7 @@
                     "type": "boolean"
                 }
             },
-            "required": ["name", "port", "pin", "direction"]
+            "required": ["port", "pin", "direction"]
         }
     }
 }
