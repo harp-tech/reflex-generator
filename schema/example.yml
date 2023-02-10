@@ -65,12 +65,12 @@ bitMasks:
       DO1: 0x02
 ios:
   DO3:
-    portName: PORTC
-    pinNumber: 0
+    port: PORTC
+    pin: 0
     direction: output
     description: DO0
   DO2:
-    portName: PORTB
-    pinNumber: 2
+    port: PORTB
+    pin: 2
     direction: output
     description: DO0
