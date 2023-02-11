@@ -39,8 +39,9 @@ public class RegisterInfo
     public Dictionary<string, PayloadMemberInfo> PayloadSpec;
     public RegisterVisibility Visibility;
     public string MaskType;
+    public string Converter;
 
-    public string PayloadInterfaceType => Converter.GetInterfaceType(PayloadType, PayloadLength);
+    public string PayloadInterfaceType => TemplateHelper.GetInterfaceType(PayloadType, PayloadLength);
 }
 
 public class PayloadMemberInfo
@@ -48,6 +49,7 @@ public class PayloadMemberInfo
     public int? Mask;
     public int? Offset;
     public string MaskType;
+    public string Converter;
     public string Description = "";
 }
 
@@ -56,7 +58,7 @@ public class BitMaskInfo
     public string Description = "";
     public Dictionary<string, int> Bits = new Dictionary<string, int>();
 
-    public string InterfaceType => Converter.GetInterfaceType(Bits);
+    public string InterfaceType => TemplateHelper.GetInterfaceType(Bits);
 }
 
 public class GroupMaskInfo
@@ -64,16 +66,16 @@ public class GroupMaskInfo
     public string Description = "";
     public Dictionary<string, int> Values = new Dictionary<string, int>();
 
-    public string InterfaceType => Converter.GetInterfaceType(Values);
+    public string InterfaceType => TemplateHelper.GetInterfaceType(Values);
 }
 
-public static class Converter
+public static class TemplateHelper
 {
     public static string GetInterfaceType(string name, RegisterInfo register)
     {
         if (register.PayloadSpec != null) return $"{name}Payload";
         else if (!string.IsNullOrEmpty(register.MaskType)) return register.MaskType;
-        else return Converter.GetInterfaceType(register.PayloadType);
+        else return GetInterfaceType(register.PayloadType);
     }
 
     public static string GetInterfaceType(PayloadType payloadType)
@@ -133,13 +135,16 @@ public static class Converter
 
     public static string GetEventConversion(RegisterInfo register, string expression)
     {
-        var maskType = register.MaskType;
+        var converter = register.Converter;
+        if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
         if (register.PayloadSpec != null) return $"Parse({expression})";
-        return GetConversionToMaskType(maskType, expression);
+        return GetConversionToMaskType(register.MaskType, expression);
     }
 
     public static string GetCommandConversion(RegisterInfo register, string expression)
     {
+        var converter = register.Converter;
+        if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
         if (register.PayloadSpec != null) return $"Format({expression})";
         return GetConversionToMaskType(register.PayloadInterfaceType, expression);
     }
@@ -160,7 +165,10 @@ public static class Converter
         return (int)Math.Log(lsb, 2);
     }
 
-    public static string GetPayloadMemberParser(PayloadMemberInfo member, string expression)
+    public static string GetPayloadMemberParser(
+        PayloadMemberInfo member,
+        string expression,
+        PayloadType payloadType)
     {
         if (member.Offset.HasValue)
         {
@@ -171,12 +179,23 @@ public static class Converter
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
             expression = $"({expression} & 0x{mask.ToString("X")})";
-            if (shift > 0 && member.MaskType != "bool")
+            if (member.MaskType != "bool")
             {
-                expression = $"({expression} >> {shift})";
+                if (shift > 0)
+                {
+                    expression = $"({expression} >> {shift})";
+                }
+
+                var payloadInterfaceType = GetInterfaceType(payloadType);
+                expression = $"({payloadInterfaceType}){expression}";
             }
         }
+
         expression = GetConversionToMaskType(member.MaskType, expression);
+        if (!string.IsNullOrEmpty(member.Converter))
+        {
+            expression = $"{member.Converter}({expression})";
+        }
         return expression;
     }
 
@@ -186,6 +205,10 @@ public static class Converter
         PayloadType payloadType,
         bool assigned)
     {
+        if (!string.IsNullOrEmpty(member.Converter))
+        {
+            expression = $"{member.Converter}({expression})";
+        }
         var payloadInterfaceType = GetInterfaceType(payloadType);
         if (!string.IsNullOrEmpty(member.MaskType))
         {

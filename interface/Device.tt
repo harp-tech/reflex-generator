@@ -9,15 +9,19 @@
 <#@ import namespace="YamlDotNet.Serialization" #>
 <#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
 <#@ include file="Harp.tt" #><##>
-<#@ output extension=".cs" #>
+<#@ output extension=".Interface.cs" #>
 <#
-var path = Host.ResolvePath(string.Empty);
-var namespaceName = Path.GetFileName(path);
+var namespaceName = Host.ResolveAssemblyReference("$(MSBuildProjectName)");
+var firmwarePath = Host.ResolveAssemblyReference("$(HarpFirmwarePath)");
+var metadataPath = !string.IsNullOrEmpty(firmwarePath)
+    ? Host.ResolvePath(firmwarePath)
+    : Path.GetDirectoryName(Host.TemplateFile);
+var templateFileName = Path.GetFileNameWithoutExtension(Host.TemplateFile);
+var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
 
 DeviceInfo deviceMetadata;
 IEnumerable<KeyValuePair<string, RegisterInfo>> eventMetadata;
 IEnumerable<KeyValuePair<string, RegisterInfo>> commandMetadata;
-var metadataFileName = Host.ResolvePath("../../../Firmware/VestibularH1/registers.yml");
 using (var reader = new StreamReader(metadataFileName))
 {
     var deserializer = new DeserializerBuilder()
@@ -127,10 +131,10 @@ foreach (var register in eventMetadata)
 foreach (var registerMetadata in eventMetadata)
 {
     var register = registerMetadata.Value;
-    var payloadSuffix = Converter.GetPayloadTypeSuffix(register.PayloadType, register.PayloadLength);
+    var payloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType, register.PayloadLength);
     var payloadSelector = $"input.GetPayload{payloadSuffix}()";
-    var interfaceType = Converter.GetInterfaceType(registerMetadata.Key, register);
-    var conversion = Converter.GetEventConversion(register, payloadSelector);
+    var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
+    var conversion = TemplateHelper.GetEventConversion(register, payloadSelector);
     var summaryDescription = string.IsNullOrEmpty(register.Description)
         ? $"from register {registerMetadata.Key}"
         : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
@@ -144,7 +148,7 @@ foreach (var registerMetadata in eventMetadata)
     [Description("Filters and selects a sequence of event messages <#= summaryDescription #>.")]
     public partial class <#= registerMetadata.Key #> : Combinator<HarpMessage, <#= interfaceType #>>
     {<#
-    if (register.PayloadSpec != null)
+    if (register.PayloadSpec != null && string.IsNullOrEmpty(register.Converter))
     {
 #>
 
@@ -154,7 +158,10 @@ foreach (var registerMetadata in eventMetadata)
 <#
         foreach (var member in register.PayloadSpec)
         {
-            var memberConversion = Converter.GetPayloadMemberParser(member.Value, "payload");
+            var memberConversion = TemplateHelper.GetPayloadMemberParser(
+                member.Value,
+                "payload",
+                register.PayloadType);
 #>
             result.<#= member.Key #> = <#= memberConversion #>;
 <#
@@ -217,9 +224,9 @@ foreach (var register in commandMetadata)
 foreach (var registerMetadata in commandMetadata)
 {
     var register = registerMetadata.Value;
-    var payloadSuffix = Converter.GetPayloadTypeSuffix(register.PayloadType);
-    var interfaceType = Converter.GetInterfaceType(registerMetadata.Key, register);
-    var conversion = Converter.GetCommandConversion(register, "input");
+    var payloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType);
+    var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
+    var conversion = TemplateHelper.GetCommandConversion(register, "input");
     var summaryDescription = string.IsNullOrEmpty(register.Description)
         ? $"to write on register {registerMetadata.Key}"
         : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
@@ -233,7 +240,7 @@ foreach (var registerMetadata in commandMetadata)
     [Description("Creates a sequence of command messages <#= summaryDescription #>.")]
     public partial class <#= registerMetadata.Key #> : Combinator<<#= interfaceType #>, HarpMessage>
     {<#
-    if (register.PayloadSpec != null)
+    if (register.PayloadSpec != null && string.IsNullOrEmpty(register.Converter))
     {
 #>
 
@@ -244,7 +251,7 @@ foreach (var registerMetadata in commandMetadata)
         if (register.PayloadLength > 0)
         {
 #>
-            result = new <#= Converter.GetInterfaceType(register.PayloadType) #>[<#= register.PayloadLength #>];
+            result = new <#= TemplateHelper.GetInterfaceType(register.PayloadType) #>[<#= register.PayloadLength #>];
 <#
         }
 #>
@@ -254,7 +261,7 @@ foreach (var registerMetadata in commandMetadata)
         {
             var payloadIndex = member.Value.Offset.GetValueOrDefault(0);
             var memberIndexer = member.Value.Offset.HasValue ? $"[{member.Value.Offset}]" : string.Empty;
-            var memberConversion = Converter.GetPayloadMemberFormatter(
+            var memberConversion = TemplateHelper.GetPayloadMemberFormatter(
                 member.Value,
                 $"value.{member.Key}",
                 register.PayloadType,
@@ -292,7 +299,9 @@ foreach (var registerMetadata in deviceMetadata.Registers)
     {<#
     foreach (var member in register.PayloadSpec)
     {
-        var memberType = string.IsNullOrEmpty(member.Value.MaskType) ? Converter.GetInterfaceType(register.PayloadType) : member.Value.MaskType;
+        var memberType = string.IsNullOrEmpty(member.Value.MaskType)
+            ? TemplateHelper.GetInterfaceType(register.PayloadType)
+            : member.Value.MaskType;
 #>
 
         /// <summary>
