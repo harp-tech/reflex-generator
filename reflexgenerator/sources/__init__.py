@@ -86,7 +86,7 @@ class BitMask:
         self._uref = AnchorReference(self.name, self.name, self)
 
     def to_dict(self) -> Dict[str, any]:
-        return attr.asdict(self)
+        return attr.asdict(self, recurse=False)
 
     def render_uref(self, label: Optional[str] = None) -> str:
         return self._uref.render_reference(label)
@@ -95,14 +95,22 @@ class BitMask:
         return self._uref.render_pointer(label)
 
 
-def get_bit_mask(value: Optional[str]) -> Optional[BitMask]:
+def get_bit_mask(value: Optional[str | list[str]]) -> Optional[list[BitMask]]:
     if value is None:
         return None
+    if isinstance(value, list):
+        return [_get_bit_mask_helper(_mask) for _mask in value]
+    if isinstance(value, str):
+        return [_get_bit_mask_helper(value)]
+    raise ValueError("Invalid input format.")
+
+
+def _get_bit_mask_helper(value: str) -> BitMask:
+    if value in list(_MASKS.keys()):
+        return (_MASKS[value])
     else:
-        if value in list(_MASKS.keys()):
-            return _MASKS[value]
-        else:
-            raise KeyError("Specified mask has not been defined.")
+        raise KeyError("Specified mask has not been defined.")
+
 
 @define
 class Register:
@@ -110,7 +118,6 @@ class Register:
     address = attr.ib(type=int, converter=int)
     payloadType = attr.ib(type=PayloadType | str,
                           converter=_payloadType_converter)
-    alias = attr.ib(default=None, type=Optional[str])
     arrayType = attr.ib(default=1, type=(str | List[str] | int))
     registerType = attr.ib(default=RegisterType.NONE,
                            type=str, converter=_registerType_converter)
@@ -127,7 +134,7 @@ class Register:
         self._uref = AnchorReference(self.name, self.name, self)
 
     def to_dict(self) -> Dict[str, any]:
-        return attr.asdict(self)
+        return attr.asdict(self, recurse=False, )
 
     def render_uref(self, label: Optional[str] = None) -> str:
         return self._uref.render_reference(label)
@@ -140,11 +147,11 @@ class Metadata:
     device: attr.ib(type=str)
     whoAmI: attr.ib(type=int)
     firmwareVersion: attr.ib(default=None, type=Optional[str])
-    hardwareVersion: attr.ib(default=None, type=Optional[str])
+    hardwareTargets: attr.ib(default=None, type=Optional[str])
     architecture: attr.ib(default=None, type=Optional[str])
 
     def to_dict(self) -> Dict[str, any]:
-        return attr.asdict(self)
+        return attr.asdict(self, recurse=False)
 
 @define
 class IOElement:
@@ -163,7 +170,7 @@ class IOElement:
     description: Optional[str] = None
 
     def to_dict(self):
-        return attr.asdict(self)
+        return attr.asdict(self, recurse=False)
 
 
 _COLLECTION_TYPE = List[Register] | List[BitMask] | List[Metadata] | List[IOElement]
