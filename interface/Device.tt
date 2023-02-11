@@ -158,7 +158,10 @@ foreach (var registerMetadata in eventMetadata)
 <#
         foreach (var member in register.PayloadSpec)
         {
-            var memberConversion = TemplateHelper.GetPayloadMemberParser(member.Value, "payload");
+            var memberConversion = TemplateHelper.GetPayloadMemberParser(
+                member.Value,
+                "payload",
+                register.PayloadType);
 #>
             result.<#= member.Key #> = <#= memberConversion #>;
 <#

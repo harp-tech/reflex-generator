@@ -165,7 +165,10 @@ public static class TemplateHelper
         return (int)Math.Log(lsb, 2);
     }
 
-    public static string GetPayloadMemberParser(PayloadMemberInfo member, string expression)
+    public static string GetPayloadMemberParser(
+        PayloadMemberInfo member,
+        string expression,
+        PayloadType payloadType)
     {
         if (member.Offset.HasValue)
         {
@@ -176,11 +179,18 @@ public static class TemplateHelper
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
             expression = $"({expression} & 0x{mask.ToString("X")})";
-            if (shift > 0 && member.MaskType != "bool")
+            if (member.MaskType != "bool")
             {
-                expression = $"({expression} >> {shift})";
+                if (shift > 0)
+                {
+                    expression = $"({expression} >> {shift})";
+                }
+
+                var payloadInterfaceType = GetInterfaceType(payloadType);
+                expression = $"({payloadInterfaceType}){expression}";
             }
         }
+
         expression = GetConversionToMaskType(member.MaskType, expression);
         if (!string.IsNullOrEmpty(member.Converter))
         {
