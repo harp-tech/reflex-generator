@@ -9,15 +9,19 @@
 <#@ import namespace="YamlDotNet.Serialization" #>
 <#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
 <#@ include file="Harp.tt" #><##>
-<#@ output extension=".cs" #>
+<#@ output extension=".Interface.cs" #>
 <#
-var path = Host.ResolvePath(string.Empty);
-var namespaceName = Path.GetFileName(path);
+var namespaceName = Host.ResolveAssemblyReference("$(MSBuildProjectName)");
+var firmwarePath = Host.ResolveAssemblyReference("$(HarpFirmwarePath)");
+var metadataPath = !string.IsNullOrEmpty(firmwarePath)
+    ? Host.ResolvePath(firmwarePath)
+    : Path.GetDirectoryName(Host.TemplateFile);
+var templateFileName = Path.GetFileNameWithoutExtension(Host.TemplateFile);
+var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
 
 DeviceInfo deviceMetadata;
 IEnumerable<KeyValuePair<string, RegisterInfo>> eventMetadata;
 IEnumerable<KeyValuePair<string, RegisterInfo>> commandMetadata;
-var metadataFileName = Host.ResolvePath("../../../Firmware/VestibularH1/registers.yml");
 using (var reader = new StreamReader(metadataFileName))
 {
     var deserializer = new DeserializerBuilder()
