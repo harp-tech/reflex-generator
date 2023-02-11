@@ -182,6 +182,10 @@ public static class TemplateHelper
             }
         }
         expression = GetConversionToMaskType(member.MaskType, expression);
+        if (!string.IsNullOrEmpty(member.Converter))
+        {
+            expression = $"{member.Converter}({expression})";
+        }
         return expression;
     }
 
@@ -191,6 +195,10 @@ public static class TemplateHelper
         PayloadType payloadType,
         bool assigned)
     {
+        if (!string.IsNullOrEmpty(member.Converter))
+        {
+            expression = $"{member.Converter}({expression})";
+        }
         var payloadInterfaceType = GetInterfaceType(payloadType);
         if (!string.IsNullOrEmpty(member.MaskType))
         {
