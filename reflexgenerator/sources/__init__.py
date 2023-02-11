@@ -2,15 +2,16 @@ from __future__ import annotations
 import attr
 
 from attr import define
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 from enum import Enum
 
 from reflexgenerator.generator.markdown import AnchorReference
 
 
-_MASKS = {}
 
-# Type shorthands
+# ---------------------------------------------------------------------------- #
+#                            Special types and Enums                           #
+# ---------------------------------------------------------------------------- #
 
 PayloadType = Enum("PayloadType", [
     "U8", "U16", "U32", "U64",
@@ -27,7 +28,7 @@ def _payloadType_converter(value: PayloadType | str) -> PayloadType:
 
 
 RegisterType = Enum("RegisterType", [
-    "NONE", "Command", "Event"
+    "NONE", "Command", "Event", "Both"
 ])
 
 
@@ -52,33 +53,73 @@ def _visibilityType_converter(value: VisibilityType | str) -> VisibilityType:
     raise TypeError("Must be VisibilityType or str.")
 
 
+MaskCategory = Enum("MaskType", [
+    "BitMask", "GroupMask"
+])
+
+
+def _maskCategory_converter(value: MaskCategory | str) -> MaskCategory:
+    if isinstance(value, str):
+        return MaskCategory[value]
+    if isinstance(value, MaskCategory):
+        return value
+    raise TypeError("Must be MaskType or str.")
+
+
+# ---------------------------------------------------------------------------- #
+#                                Device metadata                               #
+# ---------------------------------------------------------------------------- #
+
+
 @define
-class Bit:
+class Metadata:
+    device: attr.ib(type=str)
+    whoAmI: attr.ib(type=int)
+    firmwareVersion: attr.ib(default=None, type=Optional[str])
+    hardwareTargets: attr.ib(default=None, type=Optional[str])
+    architecture: attr.ib(default=None, type=Optional[str])
+
+    def to_dict(self) -> Dict[str, any]:
+        return attr.asdict(self, recurse=False)
+
+
+# ---------------------------------------------------------------------------- #
+#                                     Masks                                    #
+# ---------------------------------------------------------------------------- #
+
+
+_MASKS = {}
+
+
+@define
+class BitOrValue:
     name: attr.ib(default=None, type=Optional[str], converter=str)
-    value: attr.ub(default=None, type=Optional[int], converter=hex)
+    value: attr.ib(default=None, type=Optional[int], converter=hex)
 
     @classmethod
     def from_dict(self, value_dict: Dict[str, int]):
         assert len(value_dict) == 2
-        return Bit(value_dict[0], value_dict[1])
+        return BitOrValue(value_dict[0], value_dict[1])
 
 
-def _make_bit_array(value: Optional[Dict[str, int]]) -> Optional[List[Bit]]:
+def _make_bitorvalue_array(value: Optional[Dict[str, int]]) -> Optional[List[BitOrValue]]:
     if value is None:
         return None
     if isinstance(value, dict):
-        return [Bit.from_dict(bit) for bit in value.items()]
+        return [BitOrValue.from_dict(bit) for bit in value.items()]
 
 
 @define
-class BitMask:
+class Mask:
     name = attr.ib(type=str, converter=str)
-    payloadType = attr.ib(type=PayloadType | str,
-                          converter=_payloadType_converter)
     description = attr.ib(default=None,
                           type=Optional[str], converter=str)
+    value = attr.ib(default=None,
+                    type=Optional[List[BitOrValue]], converter=_make_bitorvalue_array)
     bits = attr.ib(default=None,
-                   type=Optional[List[Bit]], converter=_make_bit_array)
+                   type=Optional[List[BitOrValue]], converter=_make_bitorvalue_array)
+    maskCategory = attr.ib(default=None,
+                           type=Optional[MaskCategory], converter=_maskCategory_converter)
     _uref = attr.ib(init=False)
 
     def __attrs_post_init__(self):
@@ -88,6 +129,31 @@ class BitMask:
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False)
 
+    @classmethod
+    def from_json(self,
+                  json_object: Tuple[str, Dict[str, any]],
+                  infer_maskCategory=True,
+                  maskCategory: Optional[MaskCategory] = None) -> Mask:
+
+        _name = json_object[0]
+        if infer_maskCategory:
+            if 'bits' in json_object[1]:
+                _mask_cat = MaskCategory.BitMask
+            elif 'values' in json_object[1]:
+                _mask_cat = MaskCategory.GroupMask
+            else:
+                raise KeyError("Could not infer MaskCategory. Try to manually assign it.")
+            return Mask(name=_name,
+                        maskCategory=_mask_cat,
+                        **json_object[1])
+        else:
+            if maskCategory:
+                return Mask(name=_name,
+                            maskCategory=maskCategory,
+                            **json_object[1])
+            else:
+                raise ValueError("maskCategory cannot be None if infer_maskCategory is False")
+
     def render_uref(self, label: Optional[str] = None) -> str:
         return self._uref.render_reference(label)
 
@@ -95,21 +161,26 @@ class BitMask:
         return self._uref.render_pointer(label)
 
 
-def get_bit_mask(value: Optional[str | list[str]]) -> Optional[list[BitMask]]:
+def get_mask(value: Optional[str | list[str]]) -> Optional[list[Mask]]:
     if value is None:
         return None
     if isinstance(value, list):
-        return [_get_bit_mask_helper(_mask) for _mask in value]
+        return [_get_mask_helper(_mask) for _mask in value]
     if isinstance(value, str):
-        return [_get_bit_mask_helper(value)]
+        return [_get_mask_helper(value)]
     raise ValueError("Invalid input format.")
 
 
-def _get_bit_mask_helper(value: str) -> BitMask:
+def _get_mask_helper(value: str) -> Mask:
     if value in list(_MASKS.keys()):
         return (_MASKS[value])
     else:
         raise KeyError("Specified mask has not been defined.")
+
+
+# ---------------------------------------------------------------------------- #
+#                                Registers                                     #
+# ---------------------------------------------------------------------------- #
 
 
 @define
@@ -122,7 +193,7 @@ class Register:
     registerType = attr.ib(default=RegisterType.NONE,
                            type=str, converter=_registerType_converter)
     maskType = attr.ib(default=None,
-                       type=Optional[List[BitMask]], converter=get_bit_mask)
+                       type=Optional[List[Mask]], converter=get_mask)
     description = attr.ib(default=None, type=Optional[str], converter=str)
     converter = attr.ib(default=None, type=Optional[bool])
     visibility = attr.ib(default=VisibilityType.Public,
@@ -136,25 +207,44 @@ class Register:
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False, )
 
+    def from_json(self,
+                  json_object: Tuple[str, Dict[str, any]]) -> Register:
+
+        _name = json_object[0]
+        return Register(name=_name, **json_object[1])
+
     def render_uref(self, label: Optional[str] = None) -> str:
         return self._uref.render_reference(label)
 
     def render_pointer(self, label: Optional[str] = None) -> str:
         return self._uref.render_pointer(label)
 
+
 @define
-class Metadata:
-    device: attr.ib(type=str)
-    whoAmI: attr.ib(type=int)
-    firmwareVersion: attr.ib(default=None, type=Optional[str])
-    hardwareTargets: attr.ib(default=None, type=Optional[str])
-    architecture: attr.ib(default=None, type=Optional[str])
+class payloadMember:
+    name = attr.ib(type=str)
+    mask = attr.ib(type=int, converter=int)
+    offset = attr.ib(default=1, type=Optional[int], converter=int)
+    maskType = attr.ib(default=None,
+                       type=Optional[List[Mask]], converter=get_mask)
+    description = attr.ib(default=None, type=Optional[str], converter=str)
+    converter = attr.ib(default=None, type=Optional[bool])
 
     def to_dict(self) -> Dict[str, any]:
-        return attr.asdict(self, recurse=False)
+        return attr.asdict(self, recurse=False, )
+
+    @classmethod
+    def from_dict(self, value: Dict[str, any]) -> payloadMember:
+        #_init_dict = value.items
+        #_init_dict["name"] = 
+        return payloadMember() #!TODO
+# ---------------------------------------------------------------------------- #
+#                                      PinMapping                              #
+# ---------------------------------------------------------------------------- #
+
 
 @define
-class IOElement:
+class PinMap:
     name: str
     port: str
     pin: int
@@ -173,11 +263,15 @@ class IOElement:
         return attr.asdict(self, recurse=False)
 
 
-_COLLECTION_TYPE = List[Register] | List[BitMask] | List[Metadata] | List[IOElement]
-_ELEMENT_TYPE = Register | BitMask | Metadata | IOElement
+# ---------------------------------------------------------------------------- #
+#                               Collection types                               #
+# ---------------------------------------------------------------------------- #
 
 
-# Collection of multiple elements
+_COLLECTION_TYPE = List[Register] | List[Mask] | List[Metadata] | List[PinMap]
+_ELEMENT_TYPE = Register | Mask | Metadata | PinMap
+
+
 class Collection:
     "Parent class that represents a collection of HarpElements"
     def __init__(
