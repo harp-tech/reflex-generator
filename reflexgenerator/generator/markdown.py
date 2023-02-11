@@ -60,11 +60,11 @@ class AnchorReference:
         return self.__repr__()
 
     def _add_reference(self) -> None:
-            if self.reference in self.REFERENCES.keys():
-                raise KeyError("A key with the same name as\
-                                the current reference already exists!")
-            else:
-                self.REFERENCES[self.reference] = self
+        if self.reference in self.REFERENCES.keys():
+            raise KeyError("A key with the same name as\
+                            the current reference already exists!")
+        else:
+            self.REFERENCES[self.reference] = self
 
 
 def make_anchor(reference: str, rendered_string: Optional[str] = None) -> str:
