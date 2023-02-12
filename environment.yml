@@ -1,0 +1,13 @@
+name: GitHarpCrawler
+dependencies:
+  - python=3.10
+  - pandas
+  - jupyter
+  - pip
+  - pip:
+    - dotmap
+    - PyGithub
+    - gspread
+    - Markdown
+    - pandoc
+    - packaging
