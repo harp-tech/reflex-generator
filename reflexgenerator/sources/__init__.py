@@ -8,10 +8,10 @@ from enum import Enum
 from reflexgenerator.generator.markdown import AnchorReference
 
 
-
 # ---------------------------------------------------------------------------- #
 #                            Special types and Enums                           #
 # ---------------------------------------------------------------------------- #
+
 
 PayloadType = Enum("PayloadType", [
     "U8", "U16", "U32", "U64",
@@ -102,7 +102,9 @@ class BitOrValue:
         return BitOrValue(value_dict[0], value_dict[1])
 
 
-def _make_bitorvalue_array(value: Optional[Dict[str, int]]) -> Optional[List[BitOrValue]]:
+def _make_bitorvalue_array(
+        value: Optional[Dict[str, int]]
+        ) -> Optional[List[BitOrValue]]:
     if value is None:
         return None
     if isinstance(value, dict):
@@ -115,16 +117,19 @@ class Mask:
     description = attr.ib(default=None,
                           type=Optional[str], converter=str)
     value = attr.ib(default=None,
-                    type=Optional[List[BitOrValue]], converter=_make_bitorvalue_array)
+                    type=Optional[List[BitOrValue]],
+                    converter=_make_bitorvalue_array)
     bits = attr.ib(default=None,
-                   type=Optional[List[BitOrValue]], converter=_make_bitorvalue_array)
+                   type=Optional[List[BitOrValue]],
+                   converter=_make_bitorvalue_array)
     maskCategory = attr.ib(default=None,
-                           type=Optional[MaskCategory], converter=_maskCategory_converter)
-    _uref = attr.ib(init=False)
+                           type=Optional[MaskCategory],
+                           converter=_maskCategory_converter)
+    uid = attr.ib(init=False)
 
     def __attrs_post_init__(self):
         _MASKS.update({self.name: self})
-        self._uref = AnchorReference(self.name, self.name, self)
+        self.uid = AnchorReference(self.name, self.name, self)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False)
@@ -142,7 +147,8 @@ class Mask:
             elif 'values' in json_object[1]:
                 _mask_cat = MaskCategory.GroupMask
             else:
-                raise KeyError("Could not infer MaskCategory. Try to manually assign it.")
+                raise KeyError("Could not infer MaskCategory.\
+                                Try to manually assign it.")
             return Mask(name=_name,
                         maskCategory=_mask_cat,
                         **json_object[1])
@@ -152,13 +158,14 @@ class Mask:
                             maskCategory=maskCategory,
                             **json_object[1])
             else:
-                raise ValueError("maskCategory cannot be None if infer_maskCategory is False")
+                raise ValueError("maskCategory cannot be 'None' \
+                                 if 'infer_maskCategory' is False")
 
     def render_uref(self, label: Optional[str] = None) -> str:
-        return self._uref.render_reference(label)
+        return self.uid.render_reference(label)
 
     def render_pointer(self, label: Optional[str] = None) -> str:
-        return self._uref.render_pointer(label)
+        return self.uid.render_pointer(label)
 
 
 def get_mask(value: Optional[str | list[str]]) -> Optional[list[Mask]]:
@@ -184,44 +191,7 @@ def _get_mask_helper(value: str) -> Mask:
 
 
 @define
-class Register:
-    name = attr.ib(type=str)
-    address = attr.ib(type=int, converter=int)
-    payloadType = attr.ib(type=PayloadType | str,
-                          converter=_payloadType_converter)
-    arrayType = attr.ib(default=1, type=(str | List[str] | int))
-    registerType = attr.ib(default=RegisterType.NONE,
-                           type=str, converter=_registerType_converter)
-    maskType = attr.ib(default=None,
-                       type=Optional[List[Mask]], converter=get_mask)
-    description = attr.ib(default=None, type=Optional[str], converter=str)
-    converter = attr.ib(default=None, type=Optional[bool])
-    visibility = attr.ib(default=VisibilityType.Public,
-                         type=str, converter=_visibilityType_converter)
-    group = attr.ib(default=None, type=Optional[str], converter=str)
-    _uref = attr.ib(init=False)
-
-    def __attrs_post_init__(self):
-        self._uref = AnchorReference(self.name, self.name, self)
-
-    def to_dict(self) -> Dict[str, any]:
-        return attr.asdict(self, recurse=False, )
-
-    def from_json(self,
-                  json_object: Tuple[str, Dict[str, any]]) -> Register:
-
-        _name = json_object[0]
-        return Register(name=_name, **json_object[1])
-
-    def render_uref(self, label: Optional[str] = None) -> str:
-        return self._uref.render_reference(label)
-
-    def render_pointer(self, label: Optional[str] = None) -> str:
-        return self._uref.render_pointer(label)
-
-
-@define
-class payloadMember:
+class PayloadMember:
     name = attr.ib(type=str)
     mask = attr.ib(type=int, converter=int)
     offset = attr.ib(default=1, type=Optional[int], converter=int)
@@ -234,10 +204,66 @@ class payloadMember:
         return attr.asdict(self, recurse=False, )
 
     @classmethod
-    def from_dict(self, value: Dict[str, any]) -> payloadMember:
-        #_init_dict = value.items
-        #_init_dict["name"] = 
-        return payloadMember() #!TODO
+    def from_json(self,
+                  json_object: Tuple[str, Dict[str, any]]) -> PayloadMember:
+        _name = json_object[0]
+        return PayloadMember(name=_name, **json_object[1])
+
+
+def _payloadSpec_parser(
+        value: Optional[PayloadMember | Tuple[str, Dict[str, any]]]
+        ) -> Optional[PayloadMember]:
+    if value is None:
+        return None
+    if isinstance(value, PayloadMember):
+        return value
+    if isinstance(value, Tuple[str, Dict[str, any]]):
+        return PayloadMember.from_json(value)
+    raise TypeError("Must be of  \
+                    PayloadMember or Tuple[str, Dict[str, any]] type")
+
+
+@define
+class Register:
+    name = attr.ib(type=str)
+    address = attr.ib(type=int, converter=int)
+    payloadType = attr.ib(type=PayloadType | str,
+                          converter=_payloadType_converter)
+    payloadLength = attr.ib(default=1, type=(str | List[str] | int))
+    registerType = attr.ib(default=RegisterType.NONE,
+                           type=str, converter=_registerType_converter)
+    payloadSpec = attr.ib(default=None,
+                          type=Optional[Tuple[str, Dict[str, any]]],
+                          converter=_payloadSpec_parser)
+    maskType = attr.ib(default=None,
+                       type=Optional[List[Mask]], converter=get_mask)
+    description = attr.ib(default=None, type=Optional[str], converter=str)
+    converter = attr.ib(default=None, type=Optional[bool])
+    visibility = attr.ib(default=VisibilityType.Public,
+                         type=str, converter=_visibilityType_converter)
+    group = attr.ib(default=None, type=Optional[str], converter=str)
+    uid = attr.ib(init=False)
+
+    def __attrs_post_init__(self):
+        self.uid = AnchorReference(self.name, self.name, self)
+
+    def to_dict(self) -> Dict[str, any]:
+        return attr.asdict(self, recurse=False, )
+
+    @classmethod
+    def from_json(self,
+                  json_object: Tuple[str, Dict[str, any]]) -> Register:
+
+        _name = json_object[0]
+        return Register(name=_name, **json_object[1])
+
+    def render_uref(self, label: Optional[str] = None) -> str:
+        return self.uid.render_reference(label)
+
+    def render_pointer(self, label: Optional[str] = None) -> str:
+        return self.uid.render_pointer(label)
+
+
 # ---------------------------------------------------------------------------- #
 #                                      PinMapping                              #
 # ---------------------------------------------------------------------------- #
@@ -261,6 +287,13 @@ class PinMap:
 
     def to_dict(self):
         return attr.asdict(self, recurse=False)
+
+    @classmethod
+    def from_json(self,
+                  json_object: Tuple[str, Dict[str, any]]) -> PinMap:
+
+        _name = json_object[0]
+        return PinMap(name=_name, **json_object[1])
 
 
 # ---------------------------------------------------------------------------- #
