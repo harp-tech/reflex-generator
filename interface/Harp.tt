@@ -209,21 +209,27 @@ public static class TemplateHelper
         {
             expression = $"{member.Converter}({expression})";
         }
+        var isBoolean = member.MaskType == "bool";
         var payloadInterfaceType = GetInterfaceType(payloadType);
         if (!string.IsNullOrEmpty(member.MaskType))
         {
-            expression = $"({payloadInterfaceType}){expression}";
+            if (isBoolean) expression = $"({expression} ? 1 : 0)";
+            else expression = $"({payloadInterfaceType}){expression}";
         }
         if (member.Mask.HasValue)
         {
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
-            if (shift > 0 && member.MaskType != "bool")
+            if (shift > 0)
             {
                 expression = $"({expression} << {shift})";
             }
 
             expression = $"({payloadInterfaceType})({expression} & 0x{mask.ToString("X")})";
+        }
+        else if (isBoolean)
+        {
+            expression = $"({payloadInterfaceType}){expression}";
         }
         
         if (member.Mask.HasValue && assigned)
