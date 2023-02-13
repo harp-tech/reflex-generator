@@ -138,7 +138,7 @@ class Mask:
     maskCategory = attr.ib(default=None,
                            type=Optional[MaskCategory],
                            converter=_maskCategory_converter)
-    uid=attr.ib(default=None, type=Optional[UidReference])
+    uid = attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
         _MASKS.update({self.name: self})
@@ -174,12 +174,6 @@ class Mask:
             else:
                 raise ValueError("maskCategory cannot be 'None' \
                                  if 'infer_maskCategory' is False")
-
-    def render_uref(self, label: Optional[str] = None) -> str:
-        return self.uid.render_reference(label)
-
-    def render_pointer(self, label: Optional[str] = None) -> str:
-        return self.uid.render_pointer(label)
 
 
 def get_mask(value: Optional[str | list[str]]) -> Optional[list[Mask]]:
