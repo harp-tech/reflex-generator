@@ -39,13 +39,14 @@ var deviceClassName = deviceName + "Device";
 var eventClassName = deviceName + "Event";
 var commandClassName = deviceName + "Command";
 #>
+using Bonsai;
+using Bonsai.Harp;
 <#
 foreach (var ns in Host.StandardImports)
 {
-    Write("using " + ns + ";");
+    WriteLine("using " + ns + ";");
 }
 #>
-
 using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
