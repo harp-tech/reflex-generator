@@ -56,6 +56,18 @@ registers:
     payloadType: U8
     maskType: DO
     description: Bitmask to write the available outputs.
+  AnalogIn:
+    address: 42
+    registerType: Event
+    payloadType: U16
+    payloadLength: 2
+    payloadSpec:
+      ADC:
+        description: The value of the board ADC.
+        offset: 0
+      Encoder:
+        description: The value of the quadrature counter in Port 2.
+        offset: 1
 bitMasks:
   DO:
     description: Bitmask representing the state of the digital outputs.
