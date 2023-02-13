@@ -5,13 +5,12 @@ from attr import define
 from typing import Optional, List, Dict, Tuple
 from enum import Enum
 
-from reflexgenerator.generator.markdown import AnchorReference
+from reflexgenerator.generator.xref import UidReference
 
 
 # ---------------------------------------------------------------------------- #
 #                            Special types and Enums                           #
 # ---------------------------------------------------------------------------- #
-
 
 PayloadType = Enum("PayloadType", [
     "U8", "U16", "U32", "U64",
@@ -73,11 +72,20 @@ def _maskCategory_converter(value: MaskCategory | str) -> MaskCategory:
 
 @define
 class Metadata:
-    device: attr.ib(type=str)
-    whoAmI: attr.ib(type=int)
-    firmwareVersion: attr.ib(default=None, type=Optional[str])
-    hardwareTargets: attr.ib(default=None, type=Optional[str])
-    architecture: attr.ib(default=None, type=Optional[str])
+    device = attr.ib(type=str)
+    whoAmI = attr.ib(type=int)
+    firmwareVersion = attr.ib(default=None, type=Optional[str])
+    hardwareTargets = attr.ib(default=None, type=Optional[str])
+    architecture = attr.ib(default=None, type=Optional[str])
+    uid = attr.ib(default=None, type=Optional[UidReference])
+
+    def __attrs_post_init__(self):
+        if self.uid is None:
+            self.uid = UidReference(self)
+
+    @property
+    def name(self) -> str:
+        return f"{self.device}_{self.whoAmI}"
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False)
@@ -93,8 +101,13 @@ _MASKS = {}
 
 @define
 class BitOrValue:
-    name: attr.ib(default=None, type=Optional[str], converter=str)
-    value: attr.ib(default=None, type=Optional[int], converter=hex)
+    name = attr.ib(default=None, type=Optional[str], converter=str)
+    value = attr.ib(default=None, type=Optional[int], converter=hex)
+    uid = attr.ib(default=None, type=Optional[UidReference])
+
+    def __attrs_post_init__(self):
+        if self.uid is None:
+            self.uid = UidReference(self)
 
     @classmethod
     def from_dict(self, value_dict: Dict[str, int]):
@@ -125,11 +138,12 @@ class Mask:
     maskCategory = attr.ib(default=None,
                            type=Optional[MaskCategory],
                            converter=_maskCategory_converter)
-    uid = attr.ib(init=False)
+    uid=attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
         _MASKS.update({self.name: self})
-        self.uid = AnchorReference(self.name, self.name, self)
+        if self.uid is None:
+            self.uid = UidReference(self)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False)
@@ -193,12 +207,19 @@ def _get_mask_helper(value: str) -> Mask:
 @define
 class PayloadMember:
     name = attr.ib(type=str)
-    mask = attr.ib(type=int, converter=int)
+    mask = attr.ib(default=None, type=Optional[int],
+                   converter=lambda value: int(value)
+                   if value is not None else None)
     offset = attr.ib(default=1, type=Optional[int], converter=int)
     maskType = attr.ib(default=None,
                        type=Optional[List[Mask]], converter=get_mask)
     description = attr.ib(default=None, type=Optional[str], converter=str)
     converter = attr.ib(default=None, type=Optional[bool])
+    uid = attr.ib(default=None, type=Optional[UidReference])
+
+    def __attrs_post_init__(self):
+        if self.uid is None:
+            self.uid = UidReference(self)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False, )
@@ -211,16 +232,18 @@ class PayloadMember:
 
 
 def _payloadSpec_parser(
-        value: Optional[PayloadMember | Tuple[str, Dict[str, any]]]
-        ) -> Optional[PayloadMember]:
+        value: Optional[List[PayloadMember] | PayloadMember | Dict[str, any]]
+        ) -> Optional[List[PayloadMember]]:
     if value is None:
         return None
     if isinstance(value, PayloadMember):
+        return [value]
+    if isinstance(value, list):
         return value
-    if isinstance(value, Tuple[str, Dict[str, any]]):
-        return PayloadMember.from_json(value)
-    raise TypeError("Must be of  \
-                    PayloadMember or Tuple[str, Dict[str, any]] type")
+    if isinstance(value, dict):
+        return [PayloadMember.from_json(s) for s in value.items()]
+    print(value, type(value))
+    raise TypeError("Unexpected input type.")
 
 
 @define
@@ -229,11 +252,11 @@ class Register:
     address = attr.ib(type=int, converter=int)
     payloadType = attr.ib(type=PayloadType | str,
                           converter=_payloadType_converter)
-    payloadLength = attr.ib(default=1, type=(str | List[str] | int))
+    payloadLength = attr.ib(default=1, type=int, converter=int)
     registerType = attr.ib(default=RegisterType.NONE,
                            type=str, converter=_registerType_converter)
     payloadSpec = attr.ib(default=None,
-                          type=Optional[Tuple[str, Dict[str, any]]],
+                          type=Optional[Dict[str, any]],
                           converter=_payloadSpec_parser)
     maskType = attr.ib(default=None,
                        type=Optional[List[Mask]], converter=get_mask)
@@ -242,10 +265,11 @@ class Register:
     visibility = attr.ib(default=VisibilityType.Public,
                          type=str, converter=_visibilityType_converter)
     group = attr.ib(default=None, type=Optional[str], converter=str)
-    uid = attr.ib(init=False)
+    uid = attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
-        self.uid = AnchorReference(self.name, self.name, self)
+        if self.uid is None:
+            self.uid = UidReference(self)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False, )
@@ -284,6 +308,11 @@ class PinMap:
     outDefault: Optional[bool] = None
     outInvert: Optional[bool] = None
     description: Optional[str] = None
+    uid: Optional[UidReference] = None
+
+    def __attrs_post_init__(self):
+        if self.uid is None:
+            self.uid = UidReference(self)
 
     def to_dict(self):
         return attr.asdict(self, recurse=False)

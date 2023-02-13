@@ -1,70 +1,64 @@
+from __future__ import annotations
 from typing import Optional
 
 
-class AnchorReference:
+DEVICE = "Device"
+
+
+class UidReference:
+
     REFERENCES = {}  # internal
 
     def __init__(
             self,
-            reference: str,
-            rendered_string: Optional[str] = None,
-            parent: Optional[object] = None) -> None:
+            parent) -> None:
 
-        self._reference = self.reference = reference
-        self.label = self.rendered_string = rendered_string
+        self._parent = parent
+        self._uid = self._generate_uid()
         self._pointers = []
-        self._add_reference()
-        self.parent = parent
-
 
     @property
-    def reference(self) -> str:
-        return self._reference
-
-    @reference.setter
-    def reference(self, value: str):
-        self._reference = value
+    def parent(self):
+        return self._parent
 
     @property
-    def rendered_string(self) -> str:
-        if self.label is None:
-            return self._reference
-        else:
-            return self.label
+    def uid(self) -> str:
+        return self._uid
 
-    @rendered_string.setter
-    def rendered_string(self, value: Optional[str]):
-        if value is None:
-            self.label = self._reference
+    @property
+    def current_pointers(self) -> list:
+        return self._pointers
+
+    def _generate_uid(self) -> str:
+        _ref = f"ref-{DEVICE}-{self.parent.__class__.__name__}-{self.parent.name}"
+        if _ref not in self.REFERENCES:
+            self.REFERENCES[_ref] = self
         else:
-            self.label = value
+            raise KeyError("A key with the same name as the current reference\
+                            already exists!")
+        return _ref
 
     def render_reference(self,
                          rendered_string: Optional[str] = None
                          ) -> str:
         if rendered_string is None:
-            rendered_string = self.rendered_string
-        return make_anchor(self.reference, rendered_string)
+            rendered_string = self.parent.name
+        return make_anchor(self.uid, rendered_string)
 
-    def render_pointer(self, rendered_string: Optional[str] = None) -> str:
+    def render_pointer(self,
+                       rendered_string: Optional[str] = None
+                       ) -> str:
         if rendered_string is None:
-            rendered_string = self.rendered_string
-        _link = create_link(self.reference, rendered_string)
+            rendered_string = self.parent.name
+        _link = create_link(self.uid, rendered_string)
         self._pointers.append(_link)
         return _link
 
     def __repr__(self) -> str:
-        return f"Reference to {self.reference}"
+        return f"{self.uid}"
 
     def __str__(self) -> str:
         return self.__repr__()
-
-    def _add_reference(self) -> None:
-        if self.reference in self.REFERENCES.keys():
-            raise KeyError("A key with the same name as\
-                            the current reference already exists!")
-        else:
-            self.REFERENCES[self.reference] = self
 
 
 def make_anchor(reference: str, rendered_string: Optional[str] = None) -> str:
