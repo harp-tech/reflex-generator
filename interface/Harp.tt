@@ -1,4 +1,4 @@
-<#@ assembly name="System.Core" #>
+﻿<#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
@@ -181,6 +181,13 @@ public static class TemplateHelper
     {
         var lsb = mask & (~mask + 1);
         return (int)Math.Log(lsb, 2);
+    }
+
+    public static string GetPayloadMemberType(PayloadMemberInfo member, PayloadType payloadType)
+    {
+        return string.IsNullOrEmpty(member.MaskType)
+            ? TemplateHelper.GetInterfaceType(payloadType)
+            : member.MaskType;
     }
 
     public static string GetPayloadMemberParser(
