@@ -100,7 +100,7 @@ namespace <#= namespaceName #>
 
     /// <summary>
     /// Represents an operator which filters and selects specific event messages
-    /// reported by the Harp device.
+    /// reported by the <#= deviceName #> device.
     /// </summary>
 <#
 foreach (var register in eventMetadata)
@@ -118,6 +118,7 @@ foreach (var register in eventMetadata)
 <#
 }
 #>
+    [Description("Filters and selects specific event messages reported by the <#= deviceName #> device.")]
     public partial class <#= eventClassName #> : EventBuilder
     {
         /// <summary>
@@ -207,7 +208,7 @@ foreach (var registerMetadata in eventMetadata)
 
     /// <summary>
     /// Represents an operator which creates standard command messages for the
-    /// Harp device.
+    /// <#= deviceName #> device.
     /// </summary>
 <#
 foreach (var register in commandMetadata)
@@ -225,6 +226,7 @@ foreach (var register in commandMetadata)
 <#
 }
 #>
+    [Description("Creates standard command messages for the <#= deviceName #> device.")]
     public partial class <#= commandClassName #> : CommandBuilder
     {
         /// <summary>
