@@ -40,6 +40,9 @@ public class RegisterInfo
     public RegisterVisibility Visibility;
     public string MaskType;
     public string Converter;
+    public float? MinValue;
+    public float? MaxValue;
+    public float? DefaultValue;
 
     public string PayloadInterfaceType => TemplateHelper.GetInterfaceType(PayloadType, PayloadLength);
 }
@@ -51,6 +54,9 @@ public class PayloadMemberInfo
     public string MaskType;
     public string Converter;
     public string Description = "";
+    public float? MinValue;
+    public float? MaxValue;
+    public float? DefaultValue;
 }
 
 public class BitMaskInfo
@@ -131,6 +137,19 @@ public static class TemplateHelper
             case PayloadType.Float: return "Single";
             default: throw new ArgumentOutOfRangeException(nameof(payloadType));
         }
+    }
+
+    public static string GetRangeAttributeDeclaration(float? minValue, float? maxValue)
+    {
+        var minValueDeclaration = minValue.HasValue ? minValue.Value.ToString() : "float.MinValue";
+        var maxValueDeclaration = maxValue.HasValue ? maxValue.Value.ToString() : "float.MaxValue";
+        return $"[Range(min: {minValueDeclaration}, max: {maxValueDeclaration})]";
+    }
+
+    public static string GetDefaultValueAssignment(float? defaultValue, float? minValue)
+    {
+        defaultValue ??= minValue;
+        return defaultValue.HasValue? $" = {defaultValue};" : string.Empty;
     }
 
     public static string GetEventConversion(RegisterInfo register, string expression)
