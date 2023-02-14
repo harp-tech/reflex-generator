@@ -16,11 +16,11 @@ public class DeviceInfo
     public Dictionary<string, GroupMaskInfo> GroupMasks = new Dictionary<string, GroupMaskInfo>();
 }
 
+[Flags]
 public enum RegisterType
 {
-    Command,
-    Event,
-    Both
+    Command = 0x1,
+    Event = 0x2
 }
 
 public enum RegisterVisibility
