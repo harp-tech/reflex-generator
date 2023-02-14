@@ -137,7 +137,7 @@ public static class TemplateHelper
     {
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
-        if (register.PayloadSpec != null) return $"Parse({expression})";
+        if (register.PayloadSpec != null) return $"ParsePayload({expression})";
         return GetConversionToMaskType(register.MaskType, expression);
     }
 
@@ -145,7 +145,7 @@ public static class TemplateHelper
     {
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
-        if (register.PayloadSpec != null) return $"Format({expression})";
+        if (register.PayloadSpec != null) return $"FormatPayload({expression})";
         return GetConversionToMaskType(register.PayloadInterfaceType, expression);
     }
 

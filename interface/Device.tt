@@ -133,7 +133,7 @@ foreach (var registerMetadata in eventMetadata)
 {
     var register = registerMetadata.Value;
     var payloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType, register.PayloadLength);
-    var payloadSelector = $"input.GetPayload{payloadSuffix}()";
+    var payloadSelector = $"message.GetPayload{payloadSuffix}()";
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
     var conversion = TemplateHelper.GetEventConversion(register, payloadSelector);
     var summaryDescription = string.IsNullOrEmpty(register.Description)
@@ -153,7 +153,7 @@ foreach (var registerMetadata in eventMetadata)
     {
 #>
 
-        static <#= interfaceType #> Parse(<#= register.PayloadInterfaceType #> payload)
+        static <#= interfaceType #> ParsePayload(<#= register.PayloadInterfaceType #> payload)
         {
             <#= interfaceType #> result;
 <#
@@ -172,6 +172,20 @@ foreach (var registerMetadata in eventMetadata)
         }
 <#
     }#>
+        
+        /// <summary>
+        /// Returns the payload data for the <see cref="<#= registerMetadata.Key #>"/> event message.
+        /// </summary>
+        /// <param name="message">
+        /// A <see cref="HarpMessage"/> encoding the event payload.
+        /// </param>
+        /// <returns>
+        /// A value representing the message payload <#= summaryDescription #>.
+        /// </returns>
+        public static <#= interfaceType #> Parse(HarpMessage message)
+        {
+            return <#= conversion #>;
+        }
 
         /// <summary>
         /// Filters and selects an observable sequence of event messages
@@ -184,7 +198,7 @@ foreach (var registerMetadata in eventMetadata)
         /// </returns>
         public override IObservable<<#= interfaceType #>> Process(IObservable<HarpMessage> source)
         {
-            return source.Event(address: <#= register.Address #>).Select(input => <#= conversion #>);
+            return source.Event(address: <#= register.Address #>).Select(Parse);
         }
     }
 <#
@@ -227,7 +241,7 @@ foreach (var registerMetadata in commandMetadata)
     var register = registerMetadata.Value;
     var payloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType);
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
-    var conversion = TemplateHelper.GetCommandConversion(register, "input");
+    var conversion = TemplateHelper.GetCommandConversion(register, "value");
     var summaryDescription = string.IsNullOrEmpty(register.Description)
         ? $"to write on register {registerMetadata.Key}"
         : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
@@ -245,7 +259,7 @@ foreach (var registerMetadata in commandMetadata)
     {
 #>
 
-        static <#= register.PayloadInterfaceType #> Format(<#= interfaceType #> value)
+        static <#= register.PayloadInterfaceType #> FormatPayload(<#= interfaceType #> value)
         {
             <#= register.PayloadInterfaceType #> result;
 <#
@@ -279,6 +293,21 @@ foreach (var registerMetadata in commandMetadata)
     }#>
 
         /// <summary>
+        /// Creates a command message for the <see cref="<#= registerMetadata.Key #>"/> register.
+        /// </summary>
+        /// <param name="value">
+        /// A value representing the command message payload
+        /// <#= summaryDescription #>.
+        /// </param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object representing the command message.
+        /// </returns>
+        public static HarpMessage Format(<#= interfaceType #> value)
+        {
+            return HarpCommand.Write<#= payloadSuffix #>(address: <#= register.Address #>, <#= conversion #>);
+        }
+
+        /// <summary>
         /// Creates an observable sequence of command messages
         /// <#= summaryDescription #>.
         /// </summary>
@@ -292,7 +321,7 @@ foreach (var registerMetadata in commandMetadata)
         /// </returns>
         public override IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
         {
-            return source.Select(input => HarpCommand.Write<#= payloadSuffix #>(address: <#= register.Address #>, <#= conversion #>));
+            return source.Select(Format);
         }
     }
 <#
