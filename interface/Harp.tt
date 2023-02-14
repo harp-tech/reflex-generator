@@ -146,7 +146,7 @@ public static class TemplateHelper
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
         if (register.PayloadSpec != null) return $"FormatPayload({expression})";
-        return GetConversionToMaskType(register.PayloadInterfaceType, expression);
+        return GetConversionFromInterfaceType(register.MaskType, register.PayloadInterfaceType, expression);
     }
 
     public static string GetConversionToMaskType(string maskType, string expression)
@@ -157,6 +157,24 @@ public static class TemplateHelper
             case "bool": return $"{expression} != 0";
             default: return $"({maskType}){expression}";
         }
+    }
+
+    public static string GetConversionFromInterfaceType(
+        string maskType,
+        string payloadInterfaceType,
+        string expression)
+    {
+        var isBoolean = maskType == "bool";
+        if (!string.IsNullOrEmpty(maskType))
+        {
+            if (isBoolean) expression = $"({expression} ? 1 : 0)";
+            else expression = $"({payloadInterfaceType}){expression}";
+        }
+        if (isBoolean)
+        {
+            expression = $"({payloadInterfaceType}){expression}";
+        }
+        return expression;
     }
 
     static int GetMaskShift(int mask)
