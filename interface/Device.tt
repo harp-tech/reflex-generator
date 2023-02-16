@@ -20,8 +20,8 @@ var templateFileName = Path.GetFileNameWithoutExtension(Host.TemplateFile);
 var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
 
 DeviceInfo deviceMetadata;
-IEnumerable<KeyValuePair<string, RegisterInfo>> eventMetadata;
-IEnumerable<KeyValuePair<string, RegisterInfo>> commandMetadata;
+List<KeyValuePair<string, RegisterInfo>> eventMetadata;
+List<KeyValuePair<string, RegisterInfo>> commandMetadata;
 using (var reader = new StreamReader(metadataFileName))
 {
     var deserializer = new DeserializerBuilder()
@@ -30,8 +30,8 @@ using (var reader = new StreamReader(metadataFileName))
 
     deviceMetadata = deserializer.Deserialize<DeviceInfo>(reader);
     var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public);
-    eventMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Event);
-    commandMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Command);
+    eventMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Event).ToList();
+    commandMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Command).ToList();
 }
 
 var deviceName = deviceMetadata.Device;
@@ -97,6 +97,10 @@ namespace <#= namespaceName #>
             return device.Generate(source);
         }
     }
+<#
+if (eventMetadata.Count > 0)
+{
+#>
 
     /// <summary>
     /// Represents an operator which filters and selects specific event messages
@@ -204,6 +208,13 @@ foreach (var registerMetadata in eventMetadata)
     }
 <#
 }
+#>
+<#
+} // eventMetadata.Count > 0
+#>
+<#
+if (commandMetadata.Count > 0)
+{
 #>
 
     /// <summary>
@@ -405,6 +416,9 @@ foreach (var registerMetadata in commandMetadata)
     }
 <#
 }
+#>
+<#
+} // commandMetadata.Count > 0
 #>
 <#
 foreach (var registerMetadata in deviceMetadata.Registers)
