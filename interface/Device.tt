@@ -1,4 +1,4 @@
-<#@ template debug="false" hostspecific="true" language="C#" #>
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="System.Linq" #>
@@ -20,8 +20,8 @@ var templateFileName = Path.GetFileNameWithoutExtension(Host.TemplateFile);
 var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
 
 DeviceInfo deviceMetadata;
-IEnumerable<KeyValuePair<string, RegisterInfo>> eventMetadata;
-IEnumerable<KeyValuePair<string, RegisterInfo>> commandMetadata;
+List<KeyValuePair<string, RegisterInfo>> eventMetadata;
+List<KeyValuePair<string, RegisterInfo>> commandMetadata;
 using (var reader = new StreamReader(metadataFileName))
 {
     var deserializer = new DeserializerBuilder()
@@ -30,8 +30,8 @@ using (var reader = new StreamReader(metadataFileName))
 
     deviceMetadata = deserializer.Deserialize<DeviceInfo>(reader);
     var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public);
-    eventMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Event);
-    commandMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Command);
+    eventMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Event).ToList();
+    commandMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Command).ToList();
 }
 
 var deviceName = deviceMetadata.Device;
@@ -97,6 +97,10 @@ namespace <#= namespaceName #>
             return device.Generate(source);
         }
     }
+<#
+if (eventMetadata.Count > 0)
+{
+#>
 
     /// <summary>
     /// Represents an operator which filters and selects specific event messages
@@ -205,6 +209,13 @@ foreach (var registerMetadata in eventMetadata)
 <#
 }
 #>
+<#
+} // eventMetadata.Count > 0
+#>
+<#
+if (commandMetadata.Count > 0)
+{
+#>
 
     /// <summary>
     /// Represents an operator which creates standard command messages for the
@@ -244,6 +255,7 @@ foreach (var registerMetadata in commandMetadata)
     var payloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType);
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
     var conversion = TemplateHelper.GetCommandConversion(register, "value");
+    var defaultValue = TemplateHelper.GetDefaultValueAssignment(register.DefaultValue, register.MinValue);
     var summaryDescription = string.IsNullOrEmpty(register.Description)
         ? $"to write on register {registerMetadata.Key}"
         : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
@@ -254,9 +266,60 @@ foreach (var registerMetadata in commandMetadata)
     /// <#= summaryDescription #>.
     /// </summary>
     [DesignTimeVisible(false)]
+    [WorkflowElementCategory(ElementCategory.Transform)]
     [Description("Creates a sequence of command messages <#= summaryDescription #>.")]
-    public partial class <#= registerMetadata.Key #> : Combinator<<#= interfaceType #>, HarpMessage>
+    public partial class <#= registerMetadata.Key #> : Combinator<HarpMessage>
     {<#
+    if (register.PayloadSpec != null)
+    {
+        foreach (var member in register.PayloadSpec)
+        {
+            var memberType = TemplateHelper.GetPayloadMemberType(member.Value, register.PayloadType);
+            defaultValue = TemplateHelper.GetDefaultValueAssignment(member.Value.DefaultValue, member.Value.MinValue);
+            var memberDescription = string.IsNullOrEmpty(member.Value.Description)
+                ? $"to write on payload member {member.Key}"
+                : $"that {char.ToLower(member.Value.Description[0])}{member.Value.Description.Substring(1).TrimEnd('.')}";
+#>
+
+        /// <summary>
+        /// Gets or sets a value <#= memberDescription #>.
+        /// </summary>
+<#
+            if (member.Value.MinValue.HasValue || member.Value.MaxValue.HasValue)
+            {
+#>
+        <#= TemplateHelper.GetRangeAttributeDeclaration(member.Value.MinValue, member.Value.MaxValue) #>
+        [Editor(DesignTypes.NumericUpDownEditor, DesignTypes.UITypeEditor)]
+<#
+            }
+#>
+        [Description("<#= member.Value.Description #>")]
+        public <#= memberType #> <#= member.Key #> { get; set; }<#= defaultValue #>
+<#
+        }
+    }
+    else
+    {
+#>
+
+        /// <summary>
+        /// Gets or sets the value <#= summaryDescription #>.
+        /// </summary>
+<#
+        if (register.MinValue.HasValue || register.MaxValue.HasValue)
+        {
+#>
+        <#= TemplateHelper.GetRangeAttributeDeclaration(register.MinValue, register.MaxValue) #>
+        [Editor(DesignTypes.NumericUpDownEditor, DesignTypes.UITypeEditor)]
+<#
+        }
+#>
+        [Description("The value <#= summaryDescription #>.")]
+        public <#= interfaceType #> Value { get; set; }<#= defaultValue #>
+<#
+    }
+#>
+<#
     if (register.PayloadSpec != null && string.IsNullOrEmpty(register.Converter))
     {
 #>
@@ -321,13 +384,41 @@ foreach (var registerMetadata in commandMetadata)
         /// A sequence of <see cref="HarpMessage"/> objects representing each
         /// command message.
         /// </returns>
-        public override IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
+        public override IObservable<HarpMessage> Process<TSource>(IObservable<TSource> source)
         {
-            return source.Select(Format);
+<#
+    if (register.PayloadSpec != null)
+    {
+#>
+            return source.Select(_ =>
+            {
+                <#= interfaceType #> value;
+<#
+        foreach (var member in register.PayloadSpec)
+        {
+#>
+                value.<#= member.Key #> = <#= member.Key #>;
+<#
+        }
+#>
+                return Format(value);
+            });
+<#
+    }
+    else
+    {
+#>
+            return source.Select(_ => Format(Value));
+<#
+    }
+#>
         }
     }
 <#
 }
+#>
+<#
+} // commandMetadata.Count > 0
 #>
 <#
 foreach (var registerMetadata in deviceMetadata.Registers)
@@ -343,9 +434,7 @@ foreach (var registerMetadata in deviceMetadata.Registers)
     {<#
     foreach (var member in register.PayloadSpec)
     {
-        var memberType = string.IsNullOrEmpty(member.Value.MaskType)
-            ? TemplateHelper.GetInterfaceType(register.PayloadType)
-            : member.Value.MaskType;
+        var memberType = TemplateHelper.GetPayloadMemberType(member.Value, register.PayloadType);
 #>
 
         /// <summary>

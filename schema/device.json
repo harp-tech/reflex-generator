@@ -81,6 +81,26 @@
             },
             "required": ["values"]
         },
+        "maskType": {
+            "description": "Specifies the name of the bit mask or group mask used to represent the payload value.",
+            "type": "string"
+        },
+        "converter": {
+            "description": "Specifies a custom converter method used to parse or format the payload value in the high-level interface.",
+            "type": "string"
+        },
+        "minValue": {
+            "description": "Specifies the minimum allowable value for the payload or payload member.",
+            "type": "number"
+        },
+        "maxValue": {
+            "description": "Specifies the maximum allowable value for the payload or payload member.",
+            "type": "number"
+        },
+        "defaultValue": {
+            "description": "Specifies the default value for the payload or payload member.",
+            "type": "number"
+        },
         "payloadMember": {
             "type": "object",
             "properties": {
@@ -96,14 +116,11 @@
                     "description": "Specifies the payload array offset where this payload member is stored.",
                     "type": "integer"
                 },
-                "maskType": {
-                    "description": "Specifies the name of the bit mask or group mask used to represent the payload data.",
-                    "type": "string"
-                },
-                "converter": {
-                    "description": "Specifies a custom converter method used to parse or format the payload value in the high-level interface.",
-                    "type": "string"
-                }
+                "maskType": { "$ref": "#/definitions/maskType" },
+                "converter": { "$ref": "#/definitions/converter" },
+                "minValue": { "$ref": "#/definitions/minValue" },
+                "maxValue": { "$ref": "#/definitions/maxValue" },
+                "defaultValue": { "$ref": "#/definitions/defaultValue" }
             }
         },
         "register": {
@@ -134,14 +151,11 @@
                     "type": "object",
                     "additionalProperties": { "$ref": "#/definitions/payloadMember" }
                 },
-                "maskType": {
-                    "description": "Specifies the name of the bit mask or group mask used to represent the payload data.",
-                    "type": "string"
-                },
-                "converter": {
-                    "description": "Specifies a custom converter method used to parse or format the payload value in the high-level interface.",
-                    "type": "string"
-                },
+                "maskType": { "$ref": "#/definitions/maskType" },
+                "converter": { "$ref": "#/definitions/converter" },
+                "minValue": { "$ref": "#/definitions/minValue" },
+                "maxValue": { "$ref": "#/definitions/maxValue" },
+                "defaultValue": { "$ref": "#/definitions/defaultValue" },
                 "visibility": {
                     "description": "Specifies whether the register function is exposed in the high-level interface.",
                     "type": "string",
