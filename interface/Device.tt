@@ -4,10 +4,6 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ assembly name="$(PkgYamlDotNet)\\lib\\net47\\YamlDotNet.dll" #>
-<#@ import namespace="YamlDotNet" #>
-<#@ import namespace="YamlDotNet.Serialization" #>
-<#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
 <#@ include file="Harp.tt" #><##>
 <#@ output extension=".Interface.cs" #>
 <#
@@ -19,20 +15,10 @@ var metadataPath = !string.IsNullOrEmpty(firmwarePath)
 var templateFileName = Path.GetFileNameWithoutExtension(Host.TemplateFile);
 var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
 
-DeviceInfo deviceMetadata;
-List<KeyValuePair<string, RegisterInfo>> eventMetadata;
-List<KeyValuePair<string, RegisterInfo>> commandMetadata;
-using (var reader = new StreamReader(metadataFileName))
-{
-    var deserializer = new DeserializerBuilder()
-        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        .Build();
-
-    deviceMetadata = deserializer.Deserialize<DeviceInfo>(reader);
-    var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public);
-    eventMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Event).ToList();
-    commandMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Command).ToList();
-}
+var deviceMetadata = TemplateHelper.ReadDeviceMetadata(metadataFileName);
+var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public);
+var eventMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Event).ToList();
+var commandMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Command).ToList();
 
 var deviceName = deviceMetadata.Device;
 var deviceClassName = deviceName + "Device";
