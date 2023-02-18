@@ -17,8 +17,13 @@ var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
 
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(metadataFileName);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public);
-var eventMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Event).ToList();
-var commandMetadata = publicRegisters.Where(register => register.Value.RegisterType == RegisterType.Command).ToList();
+var commandMetadata = publicRegisters.Where(register => (register.Value.RegisterType & RegisterType.Command) != 0).ToList();
+var eventMetadata = publicRegisters
+    .Where(register => (register.Value.RegisterType & RegisterType.Event) != 0)
+    .Select(register => (register.Value.RegisterType & RegisterType.Command) != 0
+        ? new KeyValuePair<string, RegisterInfo>(register.Key + nameof(RegisterType.Event), register.Value)
+        : register)
+    .ToList();
 
 var deviceName = deviceMetadata.Device;
 var deviceClassName = deviceName + "Device";
