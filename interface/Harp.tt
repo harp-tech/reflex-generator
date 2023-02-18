@@ -1,4 +1,4 @@
-<#@ assembly name="System.Core" #>
+﻿<#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
@@ -197,18 +197,13 @@ public static class TemplateHelper
     }
 
     public static string GetConversionFromInterfaceType(
-        string maskType,
+        string interfaceType,
         string payloadInterfaceType,
         string expression)
     {
-        var isBoolean = maskType == "bool";
-        if (!string.IsNullOrEmpty(maskType))
+        if (!string.IsNullOrEmpty(interfaceType))
         {
-            if (isBoolean) expression = $"({expression} ? 1 : 0)";
-            else expression = $"({payloadInterfaceType}){expression}";
-        }
-        if (isBoolean)
-        {
+            if (interfaceType == "bool") expression = $"({expression} ? 1 : 0)";
             expression = $"({payloadInterfaceType}){expression}";
         }
         return expression;
@@ -275,10 +270,14 @@ public static class TemplateHelper
         var payloadInterfaceType = GetInterfaceType(payloadType);
         if (!string.IsNullOrEmpty(member.MaskType))
         {
-            if (isBoolean) expression = $"({expression} ? 1 : 0)";
-            else expression = $"({payloadInterfaceType}){expression}";
+            if (isBoolean)
+            {
+                var bitValue = member.Mask.HasValue ? $"0x{member.Mask.Value.ToString("X")}" : "1";
+                expression = $"({expression} ? {bitValue} : 0)";
+            }
+            expression = $"({payloadInterfaceType}){expression}";
         }
-        if (member.Mask.HasValue)
+        if (member.Mask.HasValue && !isBoolean)
         {
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
@@ -288,10 +287,6 @@ public static class TemplateHelper
             }
 
             expression = $"({payloadInterfaceType})({expression} & 0x{mask.ToString("X")})";
-        }
-        else if (isBoolean)
-        {
-            expression = $"({payloadInterfaceType}){expression}";
         }
         
         if (member.Mask.HasValue && assigned)
