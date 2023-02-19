@@ -3,6 +3,12 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ assembly name="$(PkgBonsai_Harp)\\lib\\net462\\Bonsai.Harp.dll" #>
+<#@ assembly name="$(PkgYamlDotNet)\\lib\\net47\\YamlDotNet.dll" #>
+<#@ import namespace="YamlDotNet" #>
+<#@ import namespace="YamlDotNet.Core" #>
+<#@ import namespace="YamlDotNet.Core.Events" #>
+<#@ import namespace="YamlDotNet.Serialization" #>
+<#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
 <#@ import namespace="Bonsai.Harp" #>
 <#+
 public class DeviceInfo
@@ -77,6 +83,18 @@ public class GroupMaskInfo
 
 public static class TemplateHelper
 {
+    public static DeviceInfo ReadDeviceMetadata(string path)
+    {
+        using (var reader = new StreamReader(path))
+        {
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                .WithTypeConverter(RegisterTypeConverter.Instance)
+                .Build();
+            return deserializer.Deserialize<DeviceInfo>(reader);
+        }
+    }
+
     public static string GetInterfaceType(string name, RegisterInfo register)
     {
         if (register.PayloadSpec != null) return $"{name}Payload";
@@ -179,18 +197,13 @@ public static class TemplateHelper
     }
 
     public static string GetConversionFromInterfaceType(
-        string maskType,
+        string interfaceType,
         string payloadInterfaceType,
         string expression)
     {
-        var isBoolean = maskType == "bool";
-        if (!string.IsNullOrEmpty(maskType))
+        if (!string.IsNullOrEmpty(interfaceType))
         {
-            if (isBoolean) expression = $"({expression} ? 1 : 0)";
-            else expression = $"({payloadInterfaceType}){expression}";
-        }
-        if (isBoolean)
-        {
+            if (interfaceType == "bool") expression = $"({expression} ? 1 : 0)";
             expression = $"({payloadInterfaceType}){expression}";
         }
         return expression;
@@ -257,10 +270,14 @@ public static class TemplateHelper
         var payloadInterfaceType = GetInterfaceType(payloadType);
         if (!string.IsNullOrEmpty(member.MaskType))
         {
-            if (isBoolean) expression = $"({expression} ? 1 : 0)";
-            else expression = $"({payloadInterfaceType}){expression}";
+            if (isBoolean)
+            {
+                var bitValue = member.Mask.HasValue ? $"0x{member.Mask.Value.ToString("X")}" : "1";
+                expression = $"({expression} ? {bitValue} : 0)";
+            }
+            expression = $"({payloadInterfaceType}){expression}";
         }
-        if (member.Mask.HasValue)
+        if (member.Mask.HasValue && !isBoolean)
         {
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
@@ -271,16 +288,58 @@ public static class TemplateHelper
 
             expression = $"({payloadInterfaceType})({expression} & 0x{mask.ToString("X")})";
         }
-        else if (isBoolean)
-        {
-            expression = $"({payloadInterfaceType}){expression}";
-        }
         
         if (member.Mask.HasValue && assigned)
         {
             return $" |= {expression}";
         }
         else return $" = {expression}";
+    }
+}
+
+class RegisterTypeConverter : IYamlTypeConverter
+{
+    public static RegisterTypeConverter Instance = new RegisterTypeConverter();
+
+    public bool Accepts(Type type)
+    {
+        return type == typeof(RegisterType);
+    }
+
+    public object ReadYaml(IParser parser, Type type)
+    {
+        if (parser.TryConsume(out SequenceStart _))
+        {
+            RegisterType value = default;
+            while (parser.TryConsume(out Scalar scalar))
+            {
+                value |= (RegisterType)Enum.Parse(typeof(RegisterType), scalar.Value);
+            }
+            parser.Consume<SequenceEnd>();
+            return value;
+        }
+        else
+        {
+            var scalar = parser.Consume<Scalar>();
+            return (RegisterType)Enum.Parse(typeof(RegisterType), scalar.Value);
+        }
+    }
+
+    public void WriteYaml(IEmitter emitter, object value, Type type)
+    {
+        var registerType = (RegisterType)value;
+        if (registerType == (RegisterType.Command | RegisterType.Event))
+        {
+            emitter.Emit(new SequenceStart(AnchorName.Empty, TagName.Empty, isImplicit: true, SequenceStyle.Flow));
+            emitter.Emit(new Scalar(RegisterType.Command.ToString()));
+            emitter.Emit(new Scalar(RegisterType.Event.ToString()));
+            emitter.Emit(new SequenceEnd());
+        }
+        else
+        {
+            var scalar = new Scalar(registerType.ToString());
+            emitter.Emit(scalar);
+        }
     }
 }
 #>
