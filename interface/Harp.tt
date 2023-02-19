@@ -45,6 +45,7 @@ public class RegisterInfo
     public Dictionary<string, PayloadMemberInfo> PayloadSpec;
     public RegisterVisibility Visibility;
     public string MaskType;
+    public string InterfaceType;
     public string Converter;
     public float? MinValue;
     public float? MaxValue;
@@ -58,6 +59,7 @@ public class PayloadMemberInfo
     public int? Mask;
     public int? Offset;
     public string MaskType;
+    public string InterfaceType;
     public string Converter;
     public string Description = "";
     public float? MinValue;
@@ -97,9 +99,17 @@ public static class TemplateHelper
 
     public static string GetInterfaceType(string name, RegisterInfo register)
     {
-        if (register.PayloadSpec != null) return $"{name}Payload";
+        if (!string.IsNullOrEmpty(register.InterfaceType)) return register.InterfaceType;
+        else if (register.PayloadSpec != null) return $"{name}Payload";
         else if (!string.IsNullOrEmpty(register.MaskType)) return register.MaskType;
         else return GetInterfaceType(register.PayloadType, register.PayloadLength);
+    }
+
+    public static string GetInterfaceType(PayloadMemberInfo member, PayloadType payloadType)
+    {
+        if (!string.IsNullOrEmpty(member.InterfaceType)) return member.InterfaceType;
+        else if (!string.IsNullOrEmpty(member.MaskType)) return member.MaskType;
+        else return GetInterfaceType(payloadType);
     }
 
     public static string GetInterfaceType(PayloadType payloadType)
@@ -175,7 +185,7 @@ public static class TemplateHelper
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
         if (register.PayloadSpec != null) return $"ParsePayload({expression})";
-        return GetConversionToMaskType(register.MaskType, expression);
+        return GetConversionToInterfaceType(register.InterfaceType ?? register.MaskType, expression);
     }
 
     public static string GetCommandConversion(RegisterInfo register, string expression)
@@ -183,16 +193,16 @@ public static class TemplateHelper
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
         if (register.PayloadSpec != null) return $"FormatPayload({expression})";
-        return GetConversionFromInterfaceType(register.MaskType, register.PayloadInterfaceType, expression);
+        return GetConversionFromInterfaceType(register.InterfaceType ?? register.MaskType, register.PayloadInterfaceType, expression);
     }
 
-    public static string GetConversionToMaskType(string maskType, string expression)
+    public static string GetConversionToInterfaceType(string interfaceType, string expression)
     {
-        if (string.IsNullOrEmpty(maskType)) return expression;
-        switch (maskType)
+        if (string.IsNullOrEmpty(interfaceType)) return expression;
+        switch (interfaceType)
         {
             case "bool": return $"{expression} != 0";
-            default: return $"({maskType}){expression}";
+            default: return $"({interfaceType}){expression}";
         }
     }
 
@@ -215,13 +225,6 @@ public static class TemplateHelper
         return (int)Math.Log(lsb, 2);
     }
 
-    public static string GetPayloadMemberType(PayloadMemberInfo member, PayloadType payloadType)
-    {
-        return string.IsNullOrEmpty(member.MaskType)
-            ? TemplateHelper.GetInterfaceType(payloadType)
-            : member.MaskType;
-    }
-
     public static string GetPayloadMemberParser(
         PayloadMemberInfo member,
         string expression,
@@ -236,7 +239,7 @@ public static class TemplateHelper
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
             expression = $"({expression} & 0x{mask.ToString("X")})";
-            if (member.MaskType != "bool")
+            if (member.InterfaceType != "bool")
             {
                 if (shift > 0)
                 {
@@ -248,7 +251,7 @@ public static class TemplateHelper
             }
         }
 
-        expression = GetConversionToMaskType(member.MaskType, expression);
+        expression = GetConversionToInterfaceType(member.InterfaceType ?? member.MaskType, expression);
         if (!string.IsNullOrEmpty(member.Converter))
         {
             expression = $"{member.Converter}({expression})";
@@ -266,9 +269,9 @@ public static class TemplateHelper
         {
             expression = $"{member.Converter}({expression})";
         }
-        var isBoolean = member.MaskType == "bool";
+        var isBoolean = member.InterfaceType == "bool";
         var payloadInterfaceType = GetInterfaceType(payloadType);
-        if (!string.IsNullOrEmpty(member.MaskType))
+        if (!string.IsNullOrEmpty(member.InterfaceType ?? member.MaskType))
         {
             if (isBoolean)
             {

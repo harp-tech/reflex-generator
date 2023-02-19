@@ -265,7 +265,7 @@ foreach (var registerMetadata in commandMetadata)
     {
         foreach (var member in register.PayloadSpec)
         {
-            var memberType = TemplateHelper.GetPayloadMemberType(member.Value, register.PayloadType);
+            var memberType = TemplateHelper.GetInterfaceType(member.Value, register.PayloadType);
             defaultValue = TemplateHelper.GetDefaultValueAssignment(member.Value.DefaultValue, member.Value.MinValue);
             var memberDescription = string.IsNullOrEmpty(member.Value.Description)
                 ? $"to write on payload member {member.Key}"
@@ -416,16 +416,17 @@ foreach (var registerMetadata in deviceMetadata.Registers)
 {
     var register = registerMetadata.Value;
     if (register.PayloadSpec == null) continue;
+    var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
 #>
 
     /// <summary>
     /// Represents the payload of the <#= registerMetadata.Key #> register.
     /// </summary>
-    public struct <#= registerMetadata.Key #>Payload
+    public struct <#= interfaceType #>
     {<#
     foreach (var member in register.PayloadSpec)
     {
-        var memberType = TemplateHelper.GetPayloadMemberType(member.Value, register.PayloadType);
+        var memberType = TemplateHelper.GetInterfaceType(member.Value, register.PayloadType);
 #>
 
         /// <summary>
