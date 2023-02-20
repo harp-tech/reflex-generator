@@ -2,7 +2,9 @@ from __future__ import annotations
 import attr
 
 from attr import define
-from typing import Optional, List, Dict, Tuple, Array
+from typing import Optional, List, Dict, Tuple, List
+from numbers import Number
+
 from enum import Enum
 
 from reflexgenerator.generator.xref import UidReference
@@ -107,6 +109,7 @@ _MASKS = {}
 class BitOrValue:
     name = attr.ib(default=None, type=Optional[str], converter=str)
     value = attr.ib(default=None, type=Optional[int], converter=hex)
+    description = attr.ib(default=None, type=Optional[str], converter=str)
     uid = attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
@@ -114,9 +117,16 @@ class BitOrValue:
             self.uid = UidReference(self)
 
     @classmethod
-    def from_dict(self, value_dict: Dict[str, int]):
-        assert len(value_dict) == 2
-        return BitOrValue(value_dict[0], value_dict[1])
+    def parse(self,
+              value: Tuple[str, Dict[Number | str, Optional[str]]]
+              ) -> BitOrValue:
+        _name = value[0]
+        _value = list(value[1].keys())[0]
+        try:
+            _description = value[1]["description"]
+        except KeyError:
+            _description = None
+        return BitOrValue(name=_name, value=_value, description=_description)
 
 
 def _make_bitorvalue_array(
@@ -125,7 +135,7 @@ def _make_bitorvalue_array(
     if value is None:
         return None
     if isinstance(value, dict):
-        return [BitOrValue.from_dict(bit) for bit in value.items()]
+        return [BitOrValue.parse(bit) for bit in value.items()]
 
 
 @define
