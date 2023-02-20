@@ -456,8 +456,20 @@ foreach (var bitMask in deviceMetadata.BitMasks)
     var bitIndex = 0;
     foreach (var bitField in mask.Bits)
     {
+        var fieldInfo = bitField.Value;
 #>
-        <#= bitField.Key #> = 0x<#= bitField.Value.ToString("X") #><#= ++bitIndex < mask.Bits.Count ? "," : string.Empty #>
+<#
+        if (!string.IsNullOrEmpty(fieldInfo.Description))
+        {
+            if (bitIndex > 0) WriteLine("");
+#>
+        /// <summary>
+        /// <#= fieldInfo.Description #>
+        /// </summary>
+<#
+        }
+#>
+        <#= bitField.Key #> = 0x<#= fieldInfo.Value.ToString("X") #><#= ++bitIndex < mask.Bits.Count ? "," : string.Empty #>
 <#
     }
 #>
@@ -480,8 +492,20 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
     var memberIndex = 0;
     foreach (var member in mask.Values)
     {
+        var memberInfo = member.Value;
 #>
-        <#= member.Key #> = <#= member.Value #><#= ++memberIndex < mask.Values.Count ? "," : string.Empty #>
+<#
+        if (!string.IsNullOrEmpty(memberInfo.Description))
+        {
+            if (memberIndex > 0) WriteLine("");
+#>
+        /// <summary>
+        /// <#= memberInfo.Description #>
+        /// </summary>
+<#
+        }
+#>
+        <#= member.Key #> = <#= memberInfo.Value #><#= ++memberIndex < mask.Values.Count ? "," : string.Empty #>
 <#
     }
 #>

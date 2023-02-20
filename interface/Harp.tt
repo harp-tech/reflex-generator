@@ -70,7 +70,7 @@ public class PayloadMemberInfo
 public class BitMaskInfo
 {
     public string Description = "";
-    public Dictionary<string, int> Bits = new Dictionary<string, int>();
+    public Dictionary<string, MaskValue> Bits = new Dictionary<string, MaskValue>();
 
     public string InterfaceType => TemplateHelper.GetInterfaceType(Bits);
 }
@@ -78,9 +78,15 @@ public class BitMaskInfo
 public class GroupMaskInfo
 {
     public string Description = "";
-    public Dictionary<string, int> Values = new Dictionary<string, int>();
+    public Dictionary<string, MaskValue> Values = new Dictionary<string, MaskValue>();
 
     public string InterfaceType => TemplateHelper.GetInterfaceType(Values);
+}
+
+public class MaskValue
+{
+    public int Value;
+    public string Description;
 }
 
 public static class TemplateHelper
@@ -92,6 +98,7 @@ public static class TemplateHelper
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .WithTypeConverter(RegisterTypeConverter.Instance)
+                .WithTypeConverter(MaskValueTypeConverter.Instance)
                 .Build();
             return deserializer.Deserialize<DeviceInfo>(reader);
         }
@@ -136,9 +143,9 @@ public static class TemplateHelper
         else return baseType;
     }
 
-    public static string GetInterfaceType(Dictionary<string, int> maskValues)
+    public static string GetInterfaceType(Dictionary<string, MaskValue> maskValues)
     {
-        var max = maskValues.Values.Max();
+        var max = maskValues.Values.Max(field => field.Value);
         if (max <= byte.MaxValue) return "byte";
         if (max <= ushort.MaxValue) return "ushort";
         else return "uint";
@@ -300,6 +307,49 @@ public static class TemplateHelper
     }
 }
 
+class MaskValueTypeConverter : IYamlTypeConverter
+{
+    public static MaskValueTypeConverter Instance = new MaskValueTypeConverter();
+    static readonly IDeserializer ValueDeserializer = new Deserializer();
+
+    public bool Accepts(Type type)
+    {
+        return type == typeof(MaskValue);
+    }
+
+    public object ReadYaml(IParser parser, Type type)
+    {
+        if (parser.TryConsume(out MappingStart _))
+        {
+            var maskValue = new MaskValue();
+            while (!parser.TryConsume(out MappingEnd _))
+            {
+                var key = parser.Consume<Scalar>();
+                var value = parser.Consume<Scalar>();
+                if (string.IsNullOrEmpty(value.Value))
+                {
+                    maskValue.Value = ValueDeserializer.Deserialize<int>(key.Value);
+                }
+                else if (key.Value.Equals(nameof(maskValue.Description), StringComparison.OrdinalIgnoreCase))
+                {
+                    maskValue.Description = value.Value;
+                }
+            }
+            return maskValue;
+        }
+        else
+        {
+            var scalar = parser.Consume<Scalar>();
+            return new MaskValue { Value = ValueDeserializer.Deserialize<int>(scalar.Value) };
+        }
+    }
+
+    public void WriteYaml(IEmitter emitter, object value, Type type)
+    {
+        throw new NotImplementedException();
+    }
+}
+
 class RegisterTypeConverter : IYamlTypeConverter
 {
     public static RegisterTypeConverter Instance = new RegisterTypeConverter();
@@ -330,19 +380,7 @@ class RegisterTypeConverter : IYamlTypeConverter
 
     public void WriteYaml(IEmitter emitter, object value, Type type)
     {
-        var registerType = (RegisterType)value;
-        if (registerType == (RegisterType.Command | RegisterType.Event))
-        {
-            emitter.Emit(new SequenceStart(AnchorName.Empty, TagName.Empty, isImplicit: true, SequenceStyle.Flow));
-            emitter.Emit(new Scalar(RegisterType.Command.ToString()));
-            emitter.Emit(new Scalar(RegisterType.Event.ToString()));
-            emitter.Emit(new SequenceEnd());
-        }
-        else
-        {
-            var scalar = new Scalar(registerType.ToString());
-            emitter.Emit(scalar);
-        }
+        throw new NotImplementedException();
     }
 }
 #>
