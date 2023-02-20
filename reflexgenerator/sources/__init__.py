@@ -213,6 +213,10 @@ class PayloadMember:
                        type=Optional[List[Mask]], converter=get_mask)
     description = attr.ib(default=None, type=Optional[str], converter=str)
     converter = attr.ib(default=None, type=Optional[bool])
+    defaultValue = attr.ib(default=None, type=Optional[Number])
+    maxValue = attr.ib(default=None, type=Optional[Number])
+    minValue = attr.ib(default=None, type=Optional[Number])
+    interfaceType = attr.ib(default=None, type=Optional[str])
     uid = attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
@@ -260,6 +264,10 @@ class Register:
                        type=Optional[List[Mask]], converter=get_mask)
     description = attr.ib(default=None, type=Optional[str], converter=str)
     converter = attr.ib(default=None, type=Optional[bool])
+    defaultValue = attr.ib(default=None, type=Optional[Number])
+    maxValue = attr.ib(default=None, type=Optional[Number])
+    minValue = attr.ib(default=None, type=Optional[Number])
+    interfaceType = attr.ib(default=None, type=Optional[str])
     visibility = attr.ib(default=VisibilityType.Public,
                          type=str, converter=_visibilityType_converter)
     group = attr.ib(default=None, type=Optional[str], converter=str)
