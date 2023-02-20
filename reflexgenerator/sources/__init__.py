@@ -2,7 +2,7 @@ from __future__ import annotations
 import attr
 
 from attr import define
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict, Tuple, Array
 from enum import Enum
 
 from reflexgenerator.generator.xref import UidReference
@@ -31,11 +31,15 @@ RegisterType = Enum("RegisterType", [
 ])
 
 
-def _registerType_converter(value: RegisterType | str) -> RegisterType:
+def _registerType_converter(
+        value: RegisterType | str | List[RegisterType | str]
+        ) -> RegisterType:
     if isinstance(value, str):
-        return RegisterType[value]
+        return [RegisterType[value]]
     if isinstance(value, RegisterType):
-        return value
+        return [value]
+    if isinstance(value, list):
+        return [_registerType_converter(_value) for _value in value]
     raise TypeError("Must be RegisterType or str.")
 
 
