@@ -2,12 +2,7 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ assembly name="$(PkgYamlDotNet)\\lib\\net47\\YamlDotNet.dll" #>
-<#@ import namespace="YamlDotNet" #>
-<#@ import namespace="YamlDotNet.Core" #>
-<#@ import namespace="YamlDotNet.Core.Events" #>
-<#@ import namespace="YamlDotNet.Serialization" #>
-<#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
+<#@ include file="Interface.tt" #><##>
 <#+
 public enum PinDirection
 {
@@ -84,11 +79,89 @@ public static partial class TemplateHelper
     {
         using (var reader = new StreamReader(path))
         {
-            var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .Build();
+            var deserializerBuilder = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance);
+            var portPinConverter = new PortPinInfoTypeConverter(deserializerBuilder.Build());
+            var deserializer = deserializerBuilder.WithTypeConverter(portPinConverter).Build();
             return deserializer.Deserialize<Dictionary<string, PortPinInfo>>(reader);
         }
+    }
+
+    public static IEnumerable<KeyValuePair<string, T>> GetPortPinsOfType<T>(IDictionary<string, PortPinInfo> portPins) where T : PortPinInfo
+    {
+        return from item in portPins
+               where item.Value is T
+               select new KeyValuePair<string, T>(item.Key, (T)item.Value);
+    }
+
+    public static string GetFirmwareName(string name)
+    {
+        return UnderscoredNamingConvention.Instance.Apply(name).ToUpper();
+    }
+
+    public static string GetFirmwareType(PayloadType payloadType)
+    {
+        switch (payloadType)
+        {
+            case PayloadType.U8: return "uint8_t";
+            case PayloadType.S8: return "int8_t";
+            case PayloadType.U16: return "uint16_t";
+            case PayloadType.S16: return "int16_t";
+            case PayloadType.U32: return "uint32_t";
+            case PayloadType.S32: return "int32_t";
+            case PayloadType.U64: return "uint64_t";
+            case PayloadType.S64: return "int64_t";
+            case PayloadType.Float: return "float_t";
+            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
+        }
+    }
+}
+
+class PortPinInfoTypeConverter : IYamlTypeConverter
+{
+    static readonly string DirectionProperty = CamelCaseNamingConvention.Instance.Apply(nameof(PortPinInfo.Direction));
+    static readonly ISerializer DefaultSerializer = new Serializer();
+
+    public PortPinInfoTypeConverter(IDeserializer deserializer)
+    {
+        Deserializer = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
+    }
+
+    public IDeserializer Deserializer { get; }
+
+    public bool Accepts(Type type)
+    {
+        return type == typeof(PortPinInfo);
+    }
+
+    public object ReadYaml(IParser parser, Type type)
+    {
+        var portPin = Deserializer.Deserialize<Dictionary<object, object>>(parser);
+        if (portPin.TryGetValue(DirectionProperty, out object value))
+        {
+            Type portPinType;
+            var pinDirection = PascalCaseNamingConvention.Instance.Apply((string)value);
+            switch (pinDirection)
+            {
+                case nameof(PinDirection.Input):
+                    portPinType = typeof(InputPinInfo);
+                    break;
+                case nameof(PinDirection.Output):
+                    portPinType = typeof(OutputPinInfo);
+                    break;
+                default:
+                    throw new YamlException($"Invalid value for '{DirectionProperty}' when deserializing type '{typeof(PortPinInfo)}'");
+            }
+
+            var yaml = DefaultSerializer.Serialize(portPin);
+            return Deserializer.Deserialize(yaml, portPinType);
+        }
+
+        throw new YamlException($"Required property '{DirectionProperty}' not found when deserializing type '{typeof(PortPinInfo)}'.");
+    }
+
+    public void WriteYaml(IEmitter emitter, object value, Type type)
+    {
+        throw new NotImplementedException();
     }
 }
 #>

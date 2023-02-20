@@ -4,7 +4,6 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ include file="Interface.tt" #><##>
 <#@ include file="IO.tt" #><##>
 <#@ output extension=".h" #>
 #ifndef _APP_IOS_AND_REGS_H_
@@ -22,9 +21,76 @@ var ioFileName = Path.Combine(metadataPath, "ios.yml");
 
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(metadataFileName);
 var portPinMetadata = TemplateHelper.ReadPortPinMetadata(ioFileName);
+var inputPins = TemplateHelper.GetPortPinsOfType<InputPinInfo>(portPinMetadata).ToList();
+var outputPins = TemplateHelper.GetPortPinsOfType<OutputPinInfo>(portPinMetadata).ToList();
 var deviceName = deviceMetadata.Device;
 #>
 
+void init_ios(void);
+<#
+if (inputPins.Count > 0)
+{
+#>
+/************************************************************************/
+/* Definition of input pins                                             */
+/************************************************************************/
+<#
+    foreach (var pin in inputPins)
+    {
+#>
+// <#= TemplateHelper.GetFirmwareName(pin.Key) #>                  Description: <#= pin.Value.Description #>
+<#
+    }
+#>
+
+<#
+    foreach (var pin in inputPins)
+    {
+        var pinInfo = pin.Value;
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
+#>
+#define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)            // <#= pinName #>
+<#
+    }
+#>
+
+<#
+}
+#>
+<#
+if (outputPins.Count > 0)
+{
+#>
+/************************************************************************/
+/* Definition of output pins                                            */
+/************************************************************************/
+<#
+    foreach (var pin in outputPins)
+    {
+#>
+// <#= TemplateHelper.GetFirmwareName(pin.Key) #>                  Description: <#= pin.Value.Description #>
+<#
+    }
+#>
+<#
+    foreach (var pin in outputPins)
+    {
+        var pinInfo = pin.Value;
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
+#>
+
+/* <#= pinName #> */
+#define set_<#= pinName #> set_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+#define clr_<#= pinName #> clear_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+#define tgl_<#= pinName #> toggle_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+#define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+<#
+    }
+#>
+
+<#
+}
+#>
 /************************************************************************/
 /* Registers' structure                                                 */
 /************************************************************************/
