@@ -89,7 +89,7 @@ public class MaskValue
     public string Description;
 }
 
-public static class TemplateHelper
+public static partial class TemplateHelper
 {
     public static DeviceInfo ReadDeviceMetadata(string path)
     {
@@ -101,6 +101,23 @@ public static class TemplateHelper
                 .WithTypeConverter(MaskValueTypeConverter.Instance)
                 .Build();
             return deserializer.Deserialize<DeviceInfo>(reader);
+        }
+    }
+
+    public static string GetFirmwareType(PayloadType payloadType)
+    {
+        switch (payloadType)
+        {
+            case PayloadType.U8: return "uint8_t";
+            case PayloadType.S8: return "int8_t";
+            case PayloadType.U16: return "uint16_t";
+            case PayloadType.S16: return "int16_t";
+            case PayloadType.U32: return "uint32_t";
+            case PayloadType.S32: return "int32_t";
+            case PayloadType.U64: return "uint64_t";
+            case PayloadType.S64: return "int64_t";
+            case PayloadType.Float: return "float_t";
+            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
         }
     }
 

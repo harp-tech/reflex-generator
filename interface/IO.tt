@@ -1,0 +1,94 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ assembly name="$(PkgYamlDotNet)\\lib\\net47\\YamlDotNet.dll" #>
+<#@ import namespace="YamlDotNet" #>
+<#@ import namespace="YamlDotNet.Core" #>
+<#@ import namespace="YamlDotNet.Core.Events" #>
+<#@ import namespace="YamlDotNet.Serialization" #>
+<#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
+<#+
+public enum PinDirection
+{
+    Input,
+    Output
+}
+
+public enum InputPinMode
+{
+    PullUp,
+    PullDown,
+    TriState,
+    BusHolder
+}
+
+public enum TriggerMode
+{
+    None,
+    Rising,
+    Falling,
+    Toggle,
+    Low
+}
+
+public enum InterruptPriority
+{
+    Off,
+    Low,
+    Medium,
+    High
+}
+
+public enum OutputPinMode
+{
+    WiredOr,
+    WiredAnd,
+    WiredOrPull,
+    WiredAndPull
+}
+
+public enum LogicState
+{
+    Low,
+    High
+}
+
+public class PortPinInfo
+{
+    public string Port;
+    public int PinNumber;
+    public PinDirection Direction;
+    public string Description = "";
+}
+
+public class InputPinInfo : PortPinInfo
+{
+    public InputPinMode PinMode;
+    public TriggerMode TriggerMode;
+    public InterruptPriority InterruptPriority;
+    public int InterruptNumber;
+}
+
+public class OutputPinInfo : PortPinInfo
+{
+    public bool AllowRead;
+    public OutputPinMode PinMode;
+    public LogicState InitialState;
+    public bool Invert;
+}
+
+public static partial class TemplateHelper
+{
+    public static Dictionary<string, PortPinInfo> ReadPortPinMetadata(string path)
+    {
+        using (var reader = new StreamReader(path))
+        {
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                .Build();
+            return deserializer.Deserialize<Dictionary<string, PortPinInfo>>(reader);
+        }
+    }
+}
+#>
