@@ -1,8 +1,14 @@
-<#@ assembly name="System.Core" #>
+﻿<#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ assembly name="$(PkgBonsai_Harp)\\lib\\net462\\Bonsai.Harp.dll" #>
+<#@ assembly name="$(PkgYamlDotNet)\\lib\\net47\\YamlDotNet.dll" #>
+<#@ import namespace="YamlDotNet" #>
+<#@ import namespace="YamlDotNet.Core" #>
+<#@ import namespace="YamlDotNet.Core.Events" #>
+<#@ import namespace="YamlDotNet.Serialization" #>
+<#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
 <#@ import namespace="Bonsai.Harp" #>
 <#+
 public class DeviceInfo
@@ -39,7 +45,11 @@ public class RegisterInfo
     public Dictionary<string, PayloadMemberInfo> PayloadSpec;
     public RegisterVisibility Visibility;
     public string MaskType;
+    public string InterfaceType;
     public string Converter;
+    public float? MinValue;
+    public float? MaxValue;
+    public float? DefaultValue;
 
     public string PayloadInterfaceType => TemplateHelper.GetInterfaceType(PayloadType, PayloadLength);
 }
@@ -49,8 +59,12 @@ public class PayloadMemberInfo
     public int? Mask;
     public int? Offset;
     public string MaskType;
+    public string InterfaceType;
     public string Converter;
     public string Description = "";
+    public float? MinValue;
+    public float? MaxValue;
+    public float? DefaultValue;
 }
 
 public class BitMaskInfo
@@ -71,11 +85,31 @@ public class GroupMaskInfo
 
 public static class TemplateHelper
 {
+    public static DeviceInfo ReadDeviceMetadata(string path)
+    {
+        using (var reader = new StreamReader(path))
+        {
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                .WithTypeConverter(RegisterTypeConverter.Instance)
+                .Build();
+            return deserializer.Deserialize<DeviceInfo>(reader);
+        }
+    }
+
     public static string GetInterfaceType(string name, RegisterInfo register)
     {
-        if (register.PayloadSpec != null) return $"{name}Payload";
+        if (!string.IsNullOrEmpty(register.InterfaceType)) return register.InterfaceType;
+        else if (register.PayloadSpec != null) return $"{name}Payload";
         else if (!string.IsNullOrEmpty(register.MaskType)) return register.MaskType;
         else return GetInterfaceType(register.PayloadType, register.PayloadLength);
+    }
+
+    public static string GetInterfaceType(PayloadMemberInfo member, PayloadType payloadType)
+    {
+        if (!string.IsNullOrEmpty(member.InterfaceType)) return member.InterfaceType;
+        else if (!string.IsNullOrEmpty(member.MaskType)) return member.MaskType;
+        else return GetInterfaceType(payloadType);
     }
 
     public static string GetInterfaceType(PayloadType payloadType)
@@ -133,12 +167,25 @@ public static class TemplateHelper
         }
     }
 
+    public static string GetRangeAttributeDeclaration(float? minValue, float? maxValue)
+    {
+        var minValueDeclaration = minValue.HasValue ? minValue.Value.ToString() : "float.MinValue";
+        var maxValueDeclaration = maxValue.HasValue ? maxValue.Value.ToString() : "float.MaxValue";
+        return $"[Range(min: {minValueDeclaration}, max: {maxValueDeclaration})]";
+    }
+
+    public static string GetDefaultValueAssignment(float? defaultValue, float? minValue)
+    {
+        defaultValue ??= minValue;
+        return defaultValue.HasValue? $" = {defaultValue};" : string.Empty;
+    }
+
     public static string GetEventConversion(RegisterInfo register, string expression)
     {
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
         if (register.PayloadSpec != null) return $"ParsePayload({expression})";
-        return GetConversionToMaskType(register.MaskType, expression);
+        return GetConversionToInterfaceType(register.InterfaceType ?? register.MaskType, expression);
     }
 
     public static string GetCommandConversion(RegisterInfo register, string expression)
@@ -146,32 +193,27 @@ public static class TemplateHelper
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
         if (register.PayloadSpec != null) return $"FormatPayload({expression})";
-        return GetConversionFromInterfaceType(register.MaskType, register.PayloadInterfaceType, expression);
+        return GetConversionFromInterfaceType(register.InterfaceType ?? register.MaskType, register.PayloadInterfaceType, expression);
     }
 
-    public static string GetConversionToMaskType(string maskType, string expression)
+    public static string GetConversionToInterfaceType(string interfaceType, string expression)
     {
-        if (string.IsNullOrEmpty(maskType)) return expression;
-        switch (maskType)
+        if (string.IsNullOrEmpty(interfaceType)) return expression;
+        switch (interfaceType)
         {
             case "bool": return $"{expression} != 0";
-            default: return $"({maskType}){expression}";
+            default: return $"({interfaceType}){expression}";
         }
     }
 
     public static string GetConversionFromInterfaceType(
-        string maskType,
+        string interfaceType,
         string payloadInterfaceType,
         string expression)
     {
-        var isBoolean = maskType == "bool";
-        if (!string.IsNullOrEmpty(maskType))
+        if (!string.IsNullOrEmpty(interfaceType))
         {
-            if (isBoolean) expression = $"({expression} ? 1 : 0)";
-            else expression = $"({payloadInterfaceType}){expression}";
-        }
-        if (isBoolean)
-        {
+            if (interfaceType == "bool") expression = $"({expression} ? 1 : 0)";
             expression = $"({payloadInterfaceType}){expression}";
         }
         return expression;
@@ -197,7 +239,7 @@ public static class TemplateHelper
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
             expression = $"({expression} & 0x{mask.ToString("X")})";
-            if (member.MaskType != "bool")
+            if (member.InterfaceType != "bool")
             {
                 if (shift > 0)
                 {
@@ -209,7 +251,7 @@ public static class TemplateHelper
             }
         }
 
-        expression = GetConversionToMaskType(member.MaskType, expression);
+        expression = GetConversionToInterfaceType(member.InterfaceType ?? member.MaskType, expression);
         if (!string.IsNullOrEmpty(member.Converter))
         {
             expression = $"{member.Converter}({expression})";
@@ -227,14 +269,18 @@ public static class TemplateHelper
         {
             expression = $"{member.Converter}({expression})";
         }
-        var isBoolean = member.MaskType == "bool";
+        var isBoolean = member.InterfaceType == "bool";
         var payloadInterfaceType = GetInterfaceType(payloadType);
-        if (!string.IsNullOrEmpty(member.MaskType))
+        if (!string.IsNullOrEmpty(member.InterfaceType ?? member.MaskType))
         {
-            if (isBoolean) expression = $"({expression} ? 1 : 0)";
-            else expression = $"({payloadInterfaceType}){expression}";
+            if (isBoolean)
+            {
+                var bitValue = member.Mask.HasValue ? $"0x{member.Mask.Value.ToString("X")}" : "1";
+                expression = $"({expression} ? {bitValue} : 0)";
+            }
+            expression = $"({payloadInterfaceType}){expression}";
         }
-        if (member.Mask.HasValue)
+        if (member.Mask.HasValue && !isBoolean)
         {
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
@@ -245,16 +291,58 @@ public static class TemplateHelper
 
             expression = $"({payloadInterfaceType})({expression} & 0x{mask.ToString("X")})";
         }
-        else if (isBoolean)
-        {
-            expression = $"({payloadInterfaceType}){expression}";
-        }
         
         if (member.Mask.HasValue && assigned)
         {
             return $" |= {expression}";
         }
         else return $" = {expression}";
+    }
+}
+
+class RegisterTypeConverter : IYamlTypeConverter
+{
+    public static RegisterTypeConverter Instance = new RegisterTypeConverter();
+
+    public bool Accepts(Type type)
+    {
+        return type == typeof(RegisterType);
+    }
+
+    public object ReadYaml(IParser parser, Type type)
+    {
+        if (parser.TryConsume(out SequenceStart _))
+        {
+            RegisterType value = default;
+            while (parser.TryConsume(out Scalar scalar))
+            {
+                value |= (RegisterType)Enum.Parse(typeof(RegisterType), scalar.Value);
+            }
+            parser.Consume<SequenceEnd>();
+            return value;
+        }
+        else
+        {
+            var scalar = parser.Consume<Scalar>();
+            return (RegisterType)Enum.Parse(typeof(RegisterType), scalar.Value);
+        }
+    }
+
+    public void WriteYaml(IEmitter emitter, object value, Type type)
+    {
+        var registerType = (RegisterType)value;
+        if (registerType == (RegisterType.Command | RegisterType.Event))
+        {
+            emitter.Emit(new SequenceStart(AnchorName.Empty, TagName.Empty, isImplicit: true, SequenceStyle.Flow));
+            emitter.Emit(new Scalar(RegisterType.Command.ToString()));
+            emitter.Emit(new Scalar(RegisterType.Event.ToString()));
+            emitter.Emit(new SequenceEnd());
+        }
+        else
+        {
+            var scalar = new Scalar(registerType.ToString());
+            emitter.Emit(scalar);
+        }
     }
 }
 #>
