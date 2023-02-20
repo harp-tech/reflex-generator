@@ -50,7 +50,9 @@ VisibilityType = Enum("VisibilityType", [
 ])
 
 
-def _visibilityType_converter(value: VisibilityType | str) -> VisibilityType:
+def _visibilityType_converter(
+        value: VisibilityType | str
+        ) -> VisibilityType:
     if isinstance(value, str):
         return VisibilityType[value]
     if isinstance(value, VisibilityType):
@@ -126,7 +128,10 @@ class BitOrValue:
             _description = value[1]["description"]
         except KeyError:
             _description = None
-        return BitOrValue(name=_name, value=_value, description=_description)
+        return BitOrValue(
+            name=_name,
+            value=_value,
+            description=_description)
 
 
 def _make_bitorvalue_array(
@@ -310,7 +315,9 @@ class Register:
 DirectionType = Enum("DirectionType", ["input", "output"])
 
 
-def _directionType_converter(value: DirectionType | str) -> DirectionType:
+def _directionType_converter(
+        value: DirectionType | str
+        ) -> DirectionType:
     if isinstance(value, str):
         return DirectionType[value]
     if isinstance(value, DirectionType):
@@ -318,10 +325,13 @@ def _directionType_converter(value: DirectionType | str) -> DirectionType:
     raise TypeError("Must be DirectionType or str.")
 
 
-InputPinModeType = Enum("InputPinModeType", ["pullup", "pulldown", "tristate", "busholder"])
+InputPinModeType = Enum(
+    "InputPinModeType", ["pullup", "pulldown", "tristate", "busholder"])
 
 
-def _inputPinModeType_converter(value: InputPinModeType | str) -> InputPinModeType:
+def _inputPinModeType_converter(
+        value: InputPinModeType | str
+        ) -> InputPinModeType:
     if isinstance(value, str):
         return InputPinModeType[value]
     if isinstance(value, InputPinModeType):
@@ -329,10 +339,13 @@ def _inputPinModeType_converter(value: InputPinModeType | str) -> InputPinModeTy
     raise TypeError("Must be InputPinModeType or str.")
 
 
-TriggerModeType = Enum("TriggerModeType", ["none", "rising", "falling", "toggle", "low"])
+TriggerModeType = Enum(
+    "TriggerModeType", ["none", "rising", "falling", "toggle", "low"])
 
 
-def _triggerModeType_converter(value: TriggerModeType | str) -> TriggerModeType:
+def _triggerModeType_converter(
+        value: TriggerModeType | str
+        ) -> TriggerModeType:
     if isinstance(value, str):
         return TriggerModeType[value]
     if isinstance(value, TriggerModeType):
@@ -340,10 +353,13 @@ def _triggerModeType_converter(value: TriggerModeType | str) -> TriggerModeType:
     raise TypeError("Must be TriggerModeType or str.")
 
 
-InterruptPriorityType = Enum("InterruptPriorityType", ["off", "low", "medium", "high"])
+InterruptPriorityType = Enum(
+    "InterruptPriorityType", ["off", "low", "medium", "high"])
 
 
-def _interruptPriorityType_converter(value: InterruptPriorityType | str) -> InterruptPriorityType:
+def _interruptPriorityType_converter(
+        value: InterruptPriorityType | str
+        ) -> InterruptPriorityType:
     if isinstance(value, str):
         return InterruptPriorityType[value]
     if isinstance(value, InterruptPriorityType):
@@ -351,10 +367,13 @@ def _interruptPriorityType_converter(value: InterruptPriorityType | str) -> Inte
     raise TypeError("Must be InterruptPriorityType or str.")
 
 
-OutputPinModeType = Enum("OutputPinModeType", ["wiredOr", "wiredAnd", "wiredOrPull", "wiredAndPull"])
+OutputPinModeType = Enum(
+    "OutputPinModeType", ["wiredOr", "wiredAnd", "wiredOrPull", "wiredAndPull"])
 
 
-def _outputPinModeType_converter(value: OutputPinModeType | str) -> OutputPinModeType:
+def _outputPinModeType_converter(
+        value: OutputPinModeType | str
+        ) -> OutputPinModeType:
     if isinstance(value, str):
         return OutputPinModeType[value]
     if isinstance(value, OutputPinModeType):
@@ -365,7 +384,9 @@ def _outputPinModeType_converter(value: OutputPinModeType | str) -> OutputPinMod
 InitialStateType = Enum("initialStateType", ["low", "high"])
 
 
-def _initialStateType_converter(value: InitialStateType | str) -> InitialStateType:
+def _initialStateType_converter(
+        value: InitialStateType | str
+        ) -> InitialStateType:
     if isinstance(value, str):
         return InitialStateType[value]
     if isinstance(value, InitialStateType):
@@ -380,6 +401,19 @@ def PinMap(kwargs) -> InputPin | OutputPin:
         return InputPin(**kwargs)
     elif kwargs["direction"] == "output":
         return OutputPin(**kwargs)
+    else:
+        raise ValueError("Invalid value for 'direction'.")
+
+
+def PinMap_from_json(
+        json_object: Tuple[str, Dict[str, any]]
+        ) -> InputPin | OutputPin:
+    if "direction" not in json_object[1]:
+        raise KeyError("Key 'direction' not found.")
+    if json_object[1]["direction"] == "input":
+        return InputPin.from_json(json_object)
+    elif json_object[1]["direction"] == "output":
+        return OutputPin.from_json(json_object)
     else:
         raise ValueError("Invalid value for 'direction'.")
 
