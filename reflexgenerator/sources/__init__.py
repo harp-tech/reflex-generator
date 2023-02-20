@@ -307,47 +307,144 @@ class Register:
 # ---------------------------------------------------------------------------- #
 #                                      PinMapping                              #
 # ---------------------------------------------------------------------------- #
+DirectionType = Enum("DirectionType", ["input", "output"])
+
+
+def _directionType_converter(value: DirectionType | str) -> DirectionType:
+    if isinstance(value, str):
+        return DirectionType[value]
+    if isinstance(value, DirectionType):
+        return value
+    raise TypeError("Must be DirectionType or str.")
+
+
+InputPinModeType = Enum("InputPinModeType", ["pullup", "pulldown", "tristate", "busholder"])
+
+
+def _inputPinModeType_converter(value: InputPinModeType | str) -> InputPinModeType:
+    if isinstance(value, str):
+        return InputPinModeType[value]
+    if isinstance(value, InputPinModeType):
+        return value
+    raise TypeError("Must be InputPinModeType or str.")
+
+
+TriggerModeType = Enum("TriggerModeType", ["none", "rising", "falling", "toggle", "low"])
+
+
+def _triggerModeType_converter(value: TriggerModeType | str) -> TriggerModeType:
+    if isinstance(value, str):
+        return TriggerModeType[value]
+    if isinstance(value, TriggerModeType):
+        return value
+    raise TypeError("Must be TriggerModeType or str.")
+
+
+InterruptPriorityType = Enum("InterruptPriorityType", ["off", "low", "medium", "high"])
+
+
+def _interruptPriorityType_converter(value: InterruptPriorityType | str) -> InterruptPriorityType:
+    if isinstance(value, str):
+        return InterruptPriorityType[value]
+    if isinstance(value, InterruptPriorityType):
+        return value
+    raise TypeError("Must be InterruptPriorityType or str.")
+
+
+OutputPinModeType = Enum("OutputPinModeType", ["wiredOr", "wiredAnd", "wiredOrPull", "wiredAndPull"])
+
+
+def _outputPinModeType_converter(value: OutputPinModeType | str) -> OutputPinModeType:
+    if isinstance(value, str):
+        return OutputPinModeType[value]
+    if isinstance(value, OutputPinModeType):
+        return value
+    raise TypeError("Must be OutputPinModeType or str.")
+
+
+InitialStateType = Enum("initialStateType", ["low", "high"])
+
+
+def _initialStateType_converter(value: InitialStateType | str) -> InitialStateType:
+    if isinstance(value, str):
+        return InitialStateType[value]
+    if isinstance(value, InitialStateType):
+        return value
+    raise TypeError("Must be InitialStateType or str.")
+
+
+def PinMap(kwargs) -> InputPin | OutputPin:
+    if "direction" not in kwargs:
+        raise KeyError("Key 'direction' not found.")
+    if kwargs["direction"] == "input":
+        return InputPin(**kwargs)
+    elif kwargs["direction"] == "output":
+        return OutputPin(**kwargs)
+    else:
+        raise ValueError("Invalid value for 'direction'.")
 
 
 @define
-class PinMap:
-    name: str
-    port: str
-    pin: int
-    direction: str
-    useInput: Optional[bool] = None
-    pull: Optional[str] = None
-    sense: Optional[str] = None
-    interruptPriority: Optional[str] = None
-    interruptNumber: Optional[int] = None
-    out: Optional[str] = None
-    outDefault: Optional[bool] = None
-    outInvert: Optional[bool] = None
-    description: Optional[str] = None
-    uid: Optional[UidReference] = None
+class InputPin:
+    name = attr.ib(type=str)
+    port = attr.ib(type=str)
+    pinNumber = attr.ib(type=int, converter=int)
+    direction = attr.ib(type=str, converter=_directionType_converter)
+    pinMode = attr.ib(type=str, converter=_inputPinModeType_converter)
+    triggerMode = attr.ib(type=str, converter=_triggerModeType_converter)
+    interruptPriority = attr.ib(type=str, converter=_interruptPriorityType_converter)
+    interruptNumber = attr.ib(type=int, converter=int)
+    description = attr.ib(default=None, type=Optional[str], converter=str)
+    uid = attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
         if self.uid is None:
             self.uid = UidReference(self)
 
     def to_dict(self):
-        return attr.asdict(self, recurse=False)
+        return attr.asdict(self, recurse=True)
 
     @classmethod
     def from_json(self,
-                  json_object: Tuple[str, Dict[str, any]]) -> PinMap:
+                  json_object: Tuple[str, Dict[str, any]]) -> InputPin:
 
         _name = json_object[0]
-        return PinMap(name=_name, **json_object[1])
+        return InputPin(name=_name, **json_object[1])
 
 
+@define
+class OutputPin:
+    name = attr.ib(type=str)
+    port = attr.ib(type=str)
+    pinNumber = attr.ib(type=int, converter=int)
+    direction = attr.ib(type=str, converter=_directionType_converter)
+    allowRead = attr.ib(type=bool, converter=bool)
+    pinMode = attr.ib(type=str, converter=_outputPinModeType_converter)
+    initialState = attr.ib(type=int, converter=_initialStateType_converter)
+    invert = attr.ib(type=bool, converter=bool)
+    description = attr.ib(default=None, type=Optional[str], converter=str)
+    uid = attr.ib(default=None, type=Optional[UidReference])
+
+    def __attrs_post_init__(self):
+        if self.uid is None:
+            self.uid = UidReference(self)
+
+    def to_dict(self):
+        return attr.asdict(self, recurse=True)
+
+    @classmethod
+    def from_json(self,
+                  json_object: Tuple[str, Dict[str, any]]) -> OutputPin:
+
+        _name = json_object[0]
+        return OutputPin(name=_name, **json_object[1])
 # ---------------------------------------------------------------------------- #
 #                               Collection types                               #
 # ---------------------------------------------------------------------------- #
 
 
-_COLLECTION_TYPE = List[Register] | List[Mask] | List[Metadata] | List[PinMap]
-_ELEMENT_TYPE = Register | Mask | Metadata | PinMap
+_COLLECTION_TYPE = List[Register] | List[Mask] | List[Metadata] | List[InputPin] | List[OutputPin]
+_ELEMENT_TYPE = Register | Mask | Metadata | InputPin | OutputPin
 
 
 class Collection:
