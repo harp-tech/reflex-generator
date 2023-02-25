@@ -38,7 +38,7 @@ if (inputPins.Count > 0)
     foreach (var pin in inputPins)
     {
 #>
-// <#= TemplateHelper.GetFirmwareName(pin.Key) #>                  Description: <#= pin.Value.Description #>
+// <#= FirmwareNamingConvention.Instance.Apply(pin.Key) #>                  Description: <#= pin.Value.Description #>
 <#
     }
 #>
@@ -47,7 +47,7 @@ if (inputPins.Count > 0)
     foreach (var pin in inputPins)
     {
         var pinInfo = pin.Value;
-        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
+        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
 #>
 #define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)            // <#= pinName #>
 <#
@@ -68,7 +68,7 @@ if (outputPins.Count > 0)
     foreach (var pin in outputPins)
     {
 #>
-// <#= TemplateHelper.GetFirmwareName(pin.Key) #>                  Description: <#= pin.Value.Description #>
+// <#= FirmwareNamingConvention.Instance.Apply(pin.Key) #>                  Description: <#= pin.Value.Description #>
 <#
     }
 #>
@@ -76,7 +76,7 @@ if (outputPins.Count > 0)
     foreach (var pin in outputPins)
     {
         var pinInfo = pin.Value;
-        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
+        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
 #>
 
 /* <#= pinName #> */
@@ -100,7 +100,7 @@ typedef struct
 foreach (var registerMetadata in deviceMetadata.Registers)
 {
     var register = registerMetadata.Value;
-    var registerName = UnderscoredNamingConvention.Instance.Apply(registerMetadata.Key).ToUpper();
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
     var arrayType = register.PayloadLength > 0 ? $"[{register.PayloadLength}]" : string.Empty;
     var firmwareType = TemplateHelper.GetFirmwareType(register.PayloadType);
 #>
@@ -117,7 +117,7 @@ foreach (var registerMetadata in deviceMetadata.Registers)
 <#
 foreach (var registerMetadata in deviceMetadata.Registers)
 {
-    var registerName = UnderscoredNamingConvention.Instance.Apply(registerMetadata.Key).ToUpper();
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
     var register = registerMetadata.Value;
 #>
 #define ADD_REG_<#= registerName #>      <#= register.Address #> // <#= register.PayloadType #>    <#= register.Description #>
@@ -135,7 +135,7 @@ foreach (var bitMask in deviceMetadata.BitMasks)
     foreach (var bitField in mask.Bits)
     {
         var fieldInfo = bitField.Value;
-        var fieldName = UnderscoredNamingConvention.Instance.Apply(bitField.Key).ToUpper();
+        var fieldName = FirmwareNamingConvention.Instance.Apply(bitField.Key);
         var bitShift = (int)Math.Log(fieldInfo.Value, 2);
 #>
 #define B_<#= fieldName #>    (1<<<#= bitShift #>)       // <#= fieldInfo.Description ?? string.Empty #>
