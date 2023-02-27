@@ -90,3 +90,15 @@ def create_link(reference: str, rendered_string: Optional[str] = None) -> str:
     """
     rendered_string = reference if rendered_string is None else rendered_string
     return f'[{rendered_string}](#{reference})'
+
+
+def filter_refs_by_type(instance_type: str) -> dict:
+    """Filters the references dictionary by the type of the parent object.
+
+    Args:
+        type (str): type of the parent object.
+
+    Returns:
+        dict: filtered dictionary.
+    """
+    return {k: v for k, v in UidReference.REFERENCES.items() if isinstance(v.parent, instance_type)}

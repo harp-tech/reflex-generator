@@ -7,17 +7,57 @@ from numbers import Number
 
 from enum import Enum
 
-from reflexgenerator.generator.xref import UidReference
+from reflexgenerator.generator.xref import UidReference, make_anchor, create_link
+
+
+
 
 
 # ---------------------------------------------------------------------------- #
 #                            Special types and Enums                           #
 # ---------------------------------------------------------------------------- #
 
-PayloadType = Enum("PayloadType", [
-    "U8", "U16", "U32", "U64",
-    "S8", "S16", "S32", "S64",
-    "Float"])
+
+class BaseEnum(Enum):
+    """Implements the abstract enumerator class to be used in all enumerators.
+    """
+
+    def __str__(self) -> str:
+        return self.generate_link_reference()
+
+    def __repr__(self) -> str:
+        return self.generate_link_reference()
+
+    @classmethod
+    def _format_ref(self, value) -> str:
+        return f"ref-{self.__name__}-{value}"
+
+    @classmethod
+    def generate_anchor_references(self) -> List[str]:
+        return [make_anchor(self._format_ref(entry.name), entry.name) for entry in self]
+
+    @classmethod
+    def format_anchor_references(self):
+
+        def _formater(value: str) -> str:
+            return f"""- {value}\n\n"""
+
+        return f"""### {make_anchor(self._format_ref(self.__name__), self.__name__)}\n""" + "".join([_formater(it) for it in self.generate_anchor_references()])
+
+    def generate_link_reference(self) -> str:
+        return create_link(self._format_ref(self.name), self.name)
+
+
+class PayloadType(BaseEnum):
+    U8 = "U8"
+    U16 = "U16"
+    U32 = "U32"
+    U64 = "U64"
+    S8 = "S8"
+    S16 = "S16"
+    S32 = "S32"
+    S64 = "S64"
+    Float = "Float"
 
 
 def _payloadType_converter(value: PayloadType | str) -> PayloadType:
@@ -28,26 +68,27 @@ def _payloadType_converter(value: PayloadType | str) -> PayloadType:
     raise TypeError("Must be PayloadType or str.")
 
 
-RegisterType = Enum("RegisterType", [
-    "NONE", "Command", "Event", "Both"
-])
+class RegisterType(BaseEnum):
+    NONE = "INVALID"
+    Command = "Command"
+    Event = "Event"
+    Config = "Config"
+    Both = "Both"
 
 
 def _registerType_converter(
-        value: RegisterType | str | List[RegisterType | str]
+        value: RegisterType | str
         ) -> RegisterType:
     if isinstance(value, str):
-        return [RegisterType[value]]
+        return RegisterType[value]
     if isinstance(value, RegisterType):
-        return [value]
-    if isinstance(value, list):
-        return [_registerType_converter(_value) for _value in value]
+        return value
     raise TypeError("Must be RegisterType or str.")
 
 
-VisibilityType = Enum("VisibilityType", [
-    "Public", "Private"
-])
+class VisibilityType(BaseEnum):
+    Public = "Public"
+    Private = "Private"
 
 
 def _visibilityType_converter(
@@ -60,9 +101,9 @@ def _visibilityType_converter(
     raise TypeError("Must be VisibilityType or str.")
 
 
-MaskCategory = Enum("MaskType", [
-    "BitMask", "GroupMask"
-])
+class MaskCategory(BaseEnum):
+    BitMask = "BitMask"
+    GroupMask = "GroupMask"
 
 
 def _maskCategory_converter(value: MaskCategory | str) -> MaskCategory:
@@ -312,7 +353,10 @@ class Register:
 # ---------------------------------------------------------------------------- #
 #                                      PinMapping                              #
 # ---------------------------------------------------------------------------- #
-DirectionType = Enum("DirectionType", ["input", "output"])
+
+class DirectionType(BaseEnum):
+    input = "input"
+    output = "output"
 
 
 def _directionType_converter(
@@ -325,8 +369,11 @@ def _directionType_converter(
     raise TypeError("Must be DirectionType or str.")
 
 
-InputPinModeType = Enum(
-    "InputPinModeType", ["pullup", "pulldown", "tristate", "busholder"])
+class InputPinModeType(BaseEnum):
+    pullup = "pullup"
+    pulldown = "pulldown"
+    tristate = "tristate"
+    busholder = "busholder"
 
 
 def _inputPinModeType_converter(
@@ -338,9 +385,12 @@ def _inputPinModeType_converter(
         return value
     raise TypeError("Must be InputPinModeType or str.")
 
-
-TriggerModeType = Enum(
-    "TriggerModeType", ["none", "rising", "falling", "toggle", "low"])
+class TriggerModeType(BaseEnum):
+    none = "none"
+    rising = "rising"
+    falling = "falling"
+    toggle = "toggle"
+    low = "low"
 
 
 def _triggerModeType_converter(
@@ -353,8 +403,11 @@ def _triggerModeType_converter(
     raise TypeError("Must be TriggerModeType or str.")
 
 
-InterruptPriorityType = Enum(
-    "InterruptPriorityType", ["off", "low", "medium", "high"])
+class InterruptPriorityType(BaseEnum):
+    off = "off"
+    low = "low"
+    medium = "medium"
+    high = "high"
 
 
 def _interruptPriorityType_converter(
@@ -367,8 +420,11 @@ def _interruptPriorityType_converter(
     raise TypeError("Must be InterruptPriorityType or str.")
 
 
-OutputPinModeType = Enum(
-    "OutputPinModeType", ["wiredOr", "wiredAnd", "wiredOrPull", "wiredAndPull"])
+class OutputPinModeType(BaseEnum):
+    wiredOr = "wiredOr"
+    wiredAnd = "wiredAnd"
+    wiredOrPull = "wiredOrPull"
+    wiredAndPull = "wiredAndPull"
 
 
 def _outputPinModeType_converter(
@@ -381,7 +437,9 @@ def _outputPinModeType_converter(
     raise TypeError("Must be OutputPinModeType or str.")
 
 
-InitialStateType = Enum("initialStateType", ["low", "high"])
+class InitialStateType(BaseEnum):
+    low = "low"
+    high = "high"
 
 
 def _initialStateType_converter(
@@ -394,13 +452,13 @@ def _initialStateType_converter(
     raise TypeError("Must be InitialStateType or str.")
 
 
-def PinMap(kwargs) -> InputPin | OutputPin:
-    if "direction" not in kwargs:
+def PinMap(dict_args) -> InputPin | OutputPin:
+    if "direction" not in dict_args:
         raise KeyError("Key 'direction' not found.")
-    if kwargs["direction"] == "input":
-        return InputPin(**kwargs)
-    elif kwargs["direction"] == "output":
-        return OutputPin(**kwargs)
+    if dict_args["direction"] == "input":
+        return InputPin(**dict_args)
+    elif dict_args["direction"] == "output":
+        return OutputPin(**dict_args)
     else:
         raise ValueError("Invalid value for 'direction'.")
 
