@@ -477,7 +477,7 @@ class OutputPin:
 # ---------------------------------------------------------------------------- #
 
 
-_COLLECTION_TYPE = List[Register] | List[Mask] | List[Metadata] | List[InputPin] | List[OutputPin]
+_COLLECTION_TYPE = List[Register] | List[Mask] | List[Metadata] | List[InputPin | OutputPin]
 _ELEMENT_TYPE = Register | Mask | Metadata | InputPin | OutputPin
 
 
@@ -495,7 +495,7 @@ class Collection:
     def __iter__(self):
         return iter(self.elements)
 
-    def from_array(self, arr: Optional[List[_COLLECTION_TYPE]]) -> None:
+    def from_array(self, arr: Optional[_COLLECTION_TYPE]) -> None:
         if len(arr) < 1:
             raise ValueError("List can't be empty!")
         for element in arr:
