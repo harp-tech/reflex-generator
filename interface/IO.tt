@@ -1,0 +1,192 @@
+﻿<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Interface.tt" #><##>
+<#+
+public enum PinDirection
+{
+    Input,
+    Output
+}
+
+public enum InputPinMode
+{
+    PullUp,
+    PullDown,
+    TriState,
+    BusHolder
+}
+
+public enum TriggerMode
+{
+    None,
+    Rising,
+    Falling,
+    Toggle,
+    Low
+}
+
+public enum InterruptPriority
+{
+    Off,
+    Low,
+    Medium,
+    High
+}
+
+public enum OutputPinMode
+{
+    WiredOr,
+    WiredAnd,
+    WiredOrPull,
+    WiredAndPull
+}
+
+public enum LogicState
+{
+    Low,
+    High
+}
+
+public class PortPinInfo
+{
+    public string Port;
+    public int PinNumber;
+    public PinDirection Direction;
+    public string Description = "";
+}
+
+public class InputPinInfo : PortPinInfo
+{
+    public InputPinMode PinMode;
+    public TriggerMode TriggerMode;
+    public InterruptPriority InterruptPriority;
+    public int InterruptNumber;
+}
+
+public class OutputPinInfo : PortPinInfo
+{
+    public bool AllowRead;
+    public OutputPinMode PinMode;
+    public LogicState InitialState;
+    public bool Invert;
+}
+
+public static partial class TemplateHelper
+{
+    public static Dictionary<string, PortPinInfo> ReadPortPinMetadata(string path)
+    {
+        using (var reader = new StreamReader(path))
+        {
+            var deserializerBuilder = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance);
+            var portPinConverter = new PortPinInfoTypeConverter(deserializerBuilder.Build());
+            var deserializer = deserializerBuilder.WithTypeConverter(portPinConverter).Build();
+            return deserializer.Deserialize<Dictionary<string, PortPinInfo>>(reader);
+        }
+    }
+
+    public static IEnumerable<KeyValuePair<string, T>> GetPortPinsOfType<T>(IDictionary<string, PortPinInfo> portPins) where T : PortPinInfo
+    {
+        return from item in portPins
+               where item.Value is T
+               select new KeyValuePair<string, T>(item.Key, (T)item.Value);
+    }
+
+    public static string GetFirmwareType(PayloadType payloadType)
+    {
+        switch (payloadType)
+        {
+            case PayloadType.U8: return "uint8_t";
+            case PayloadType.S8: return "int8_t";
+            case PayloadType.U16: return "uint16_t";
+            case PayloadType.S16: return "int16_t";
+            case PayloadType.U32: return "uint32_t";
+            case PayloadType.S32: return "int32_t";
+            case PayloadType.U64: return "uint64_t";
+            case PayloadType.S64: return "int64_t";
+            case PayloadType.Float: return "float_t";
+            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
+        }
+    }
+}
+
+class PortPinInfoTypeConverter : IYamlTypeConverter
+{
+    static readonly string DirectionProperty = CamelCaseNamingConvention.Instance.Apply(nameof(PortPinInfo.Direction));
+    static readonly ISerializer DefaultSerializer = new Serializer();
+
+    public PortPinInfoTypeConverter(IDeserializer deserializer)
+    {
+        Deserializer = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
+    }
+
+    public IDeserializer Deserializer { get; }
+
+    public bool Accepts(Type type)
+    {
+        return type == typeof(PortPinInfo);
+    }
+
+    public object ReadYaml(IParser parser, Type type)
+    {
+        var portPin = Deserializer.Deserialize<Dictionary<object, object>>(parser);
+        if (portPin.TryGetValue(DirectionProperty, out object value))
+        {
+            Type portPinType;
+            var pinDirection = PascalCaseNamingConvention.Instance.Apply((string)value);
+            switch (pinDirection)
+            {
+                case nameof(PinDirection.Input):
+                    portPinType = typeof(InputPinInfo);
+                    break;
+                case nameof(PinDirection.Output):
+                    portPinType = typeof(OutputPinInfo);
+                    break;
+                default:
+                    throw new YamlException($"Invalid value for '{DirectionProperty}' when deserializing type '{typeof(PortPinInfo)}'");
+            }
+
+            var yaml = DefaultSerializer.Serialize(portPin);
+            return Deserializer.Deserialize(yaml, portPinType);
+        }
+
+        throw new YamlException($"Required property '{DirectionProperty}' not found when deserializing type '{typeof(PortPinInfo)}'.");
+    }
+
+    public void WriteYaml(IEmitter emitter, object value, Type type)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class FirmwareNamingConvention : INamingConvention
+{
+    public static FirmwareNamingConvention Instance = new FirmwareNamingConvention();
+
+    public string Apply(string value)
+    {
+        const string Separator = "_";
+        var startIndex = 0;
+        while (startIndex < value.Length && (char.IsUpper(value[startIndex]) || !char.IsLetter(value[startIndex])))
+        {
+            startIndex++;
+        }
+
+        value = value.Substring(0, startIndex).ToLowerInvariant() + value.Substring(startIndex);
+        var previousMatch = 0;
+        var previousLength = 0;
+        value = Regex.Replace(value, "(?<sep>[_\\-])?(?<char>[A-Z])", (Match match) =>
+        {
+            var length = match.Index - previousMatch;
+            previousMatch = match.Index;
+            var character = match.Groups["char"].Value.ToLowerInvariant();
+            var separate = length != 1 || previousLength == 1;
+            previousLength = length;
+            return separate ? Separator + character : character;
+        });
+        return value.ToUpperInvariant();
+    }
+}
+#>

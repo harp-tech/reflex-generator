@@ -1,0 +1,147 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="IO.tt" #><##>
+<#@ output extension=".h" #>
+#ifndef _APP_IOS_AND_REGS_H_
+#define _APP_IOS_AND_REGS_H_
+#include "cpu.h"
+<#
+var namespaceName = Host.ResolveAssemblyReference("$(MSBuildProjectName)");
+var firmwarePath = Host.ResolveAssemblyReference("$(HarpFirmwarePath)");
+var metadataPath = !string.IsNullOrEmpty(firmwarePath)
+    ? Host.ResolvePath(firmwarePath)
+    : Path.GetDirectoryName(Host.TemplateFile);
+var templateFileName = Path.GetFileNameWithoutExtension(Host.TemplateFile);
+var metadataFileName = Path.Combine(metadataPath, "device.yml");
+var ioFileName = Path.Combine(metadataPath, "ios.yml");
+
+var deviceMetadata = TemplateHelper.ReadDeviceMetadata(metadataFileName);
+var portPinMetadata = TemplateHelper.ReadPortPinMetadata(ioFileName);
+var inputPins = TemplateHelper.GetPortPinsOfType<InputPinInfo>(portPinMetadata).ToList();
+var outputPins = TemplateHelper.GetPortPinsOfType<OutputPinInfo>(portPinMetadata).ToList();
+var deviceName = deviceMetadata.Device;
+#>
+
+void init_ios(void);
+<#
+if (inputPins.Count > 0)
+{
+#>
+/************************************************************************/
+/* Definition of input pins                                             */
+/************************************************************************/
+<#
+    foreach (var pin in inputPins)
+    {
+#>
+// <#= FirmwareNamingConvention.Instance.Apply(pin.Key) #>                  Description: <#= pin.Value.Description #>
+<#
+    }
+#>
+
+<#
+    foreach (var pin in inputPins)
+    {
+        var pinInfo = pin.Value;
+        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+#>
+#define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)            // <#= pinName #>
+<#
+    }
+#>
+
+<#
+}
+#>
+<#
+if (outputPins.Count > 0)
+{
+#>
+/************************************************************************/
+/* Definition of output pins                                            */
+/************************************************************************/
+<#
+    foreach (var pin in outputPins)
+    {
+#>
+// <#= FirmwareNamingConvention.Instance.Apply(pin.Key) #>                  Description: <#= pin.Value.Description #>
+<#
+    }
+#>
+<#
+    foreach (var pin in outputPins)
+    {
+        var pinInfo = pin.Value;
+        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+#>
+
+/* <#= pinName #> */
+#define set_<#= pinName #> set_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+#define clr_<#= pinName #> clear_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+#define tgl_<#= pinName #> toggle_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+#define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+<#
+    }
+#>
+
+<#
+}
+#>
+/************************************************************************/
+/* Registers' structure                                                 */
+/************************************************************************/
+typedef struct
+{
+<#
+foreach (var registerMetadata in deviceMetadata.Registers)
+{
+    var register = registerMetadata.Value;
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var arrayType = register.PayloadLength > 0 ? $"[{register.PayloadLength}]" : string.Empty;
+    var firmwareType = TemplateHelper.GetFirmwareType(register.PayloadType);
+#>
+    <#= firmwareType #> REG_<#= registerName #><#= arrayType #>;
+<#
+}
+#>
+} AppRegs;
+
+/************************************************************************/
+/* Registers' address                                                   */
+/************************************************************************/
+/* Registers */
+<#
+foreach (var registerMetadata in deviceMetadata.Registers)
+{
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var register = registerMetadata.Value;
+#>
+#define ADD_REG_<#= registerName #>      <#= register.Address #> // <#= register.PayloadType #>    <#= register.Description #>
+<#
+}
+#>
+
+/************************************************************************/
+/* Registers' bits                                                      */
+/************************************************************************/
+<#
+foreach (var bitMask in deviceMetadata.BitMasks)
+{
+    var mask = bitMask.Value;
+    foreach (var bitField in mask.Bits)
+    {
+        var fieldInfo = bitField.Value;
+        var fieldName = FirmwareNamingConvention.Instance.Apply(bitField.Key);
+        var bitShift = (int)Math.Log(fieldInfo.Value, 2);
+#>
+#define B_<#= fieldName #>    (1<<<#= bitShift #>)       // <#= fieldInfo.Description ?? string.Empty #>
+<#
+    }
+}
+#>
+
+#endif /* _APP_REGS_H_ */

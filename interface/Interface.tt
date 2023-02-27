@@ -89,7 +89,7 @@ public class MaskValue
     public string Description;
 }
 
-public static class TemplateHelper
+public static partial class TemplateHelper
 {
     public static DeviceInfo ReadDeviceMetadata(string path)
     {
