@@ -1,0 +1,767 @@
+<h1>Device</h1>
+<p><font size="4"> - device: ExampleDevice </font> </p>
+<p><font size="4"> - whoAmI: 0 </font> </p>
+<p><font size="4"> - firmwareVersion: 0.1 </font> </p>
+<p><font size="4"> - hardwareTargets: 0.1 </font> </p>
+<p><font size="4"> - architecture: atmega </font> </p>
+<hr />
+<h1>Registers</h1>
+<h2>Summary table</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">name</th>
+<th style="text-align: right;">address</th>
+<th style="text-align: left;">payloadType</th>
+<th style="text-align: right;">payloadLength</th>
+<th style="text-align: left;">registerType</th>
+<th style="text-align: left;">payloadSpec</th>
+<th style="text-align: left;">maskType</th>
+<th style="text-align: left;">description</th>
+<th style="text-align: left;">converter</th>
+<th style="text-align: left;">defaultValue</th>
+<th style="text-align: left;">maxValue</th>
+<th style="text-align: left;">minValue</th>
+<th style="text-align: left;">interfaceType</th>
+<th style="text-align: left;">visibility</th>
+<th style="text-align: left;">group</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-Cam0Event">Cam0Event</a></td>
+<td style="text-align: right;">32</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Event">Event</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-Cam0TriggerFrequency">Cam0TriggerFrequency</a></td>
+<td style="text-align: right;">33</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U16">U16</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">[&lsquo;<a href="#ref-Device-Mask-DO">DO</a>&rsquo;]</td>
+<td style="text-align: left;">Sets the trigger frequency for camera 0 between 1 and 1000.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-Cam0TriggerDuration">Cam0TriggerDuration</a></td>
+<td style="text-align: right;">34</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U16">U16</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Sets the duration of the trigger pulse (minimum is 100) for camera 0.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-StartAndStop">StartAndStop</a></td>
+<td style="text-align: right;">35</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Starts or stops the camera immediately.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-InState">InState</a></td>
+<td style="text-align: right;">36</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Event">Event</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Contains the state of the input ports.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-Valve0Pulse">Valve0Pulse</a></td>
+<td style="text-align: right;">37</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Configures the valve 0 open time in milliseconds.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-OutSet">OutSet</a></td>
+<td style="text-align: right;">38</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Bitmask to set the available outputs.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-OutClear">OutClear</a></td>
+<td style="text-align: right;">39</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Bitmask to clear the available outputs.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-OutToggle">OutToggle</a></td>
+<td style="text-align: right;">40</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Bitmask to toggle the available outputs.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-OutWrite">OutWrite</a></td>
+<td style="text-align: right;">41</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">[&lsquo;<a href="#ref-Device-Mask-DO">DO</a>&rsquo;]</td>
+<td style="text-align: left;">Bitmask to write the available outputs.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Register-AnalogIn">AnalogIn</a></td>
+<td style="text-align: right;">42</td>
+<td style="text-align: left;"><a href="#ref-PayloadType-U16">U16</a></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;"><a href="#ref-RegisterType-Event">Event</a></td>
+<td style="text-align: left;">[&lsquo;<a href="#ref-Device-PayloadMember-ADC">ADC</a>&rsquo;, &lsquo;<a href="#ref-Device-PayloadMember-Encoder">Encoder</a>&rsquo;]</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="#ref-VisibilityType-Public">Public</a></td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<h2>Technical documentation</h2>
+<h3><a name="ref-Device-Register-Cam0Event"></a>Cam0Event</h3>
+<blockquote>
+<p>address = 32 </p>
+<p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Event">Event</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = None </p>
+<p>description = None </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-Cam0TriggerFrequency"></a>Cam0TriggerFrequency</h3>
+<blockquote>
+<p>address = 33 </p>
+<p>payloadType = <a href="#ref-PayloadType-U16">U16</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = [<a href="#ref-Device-Mask-DO">DO</a>] </p>
+<p>description = Sets the trigger frequency for camera 0 between 1 and 1000. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-Cam0TriggerDuration"></a>Cam0TriggerDuration</h3>
+<blockquote>
+<p>address = 34 </p>
+<p>payloadType = <a href="#ref-PayloadType-U16">U16</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = None </p>
+<p>description = Sets the duration of the trigger pulse (minimum is 100) for camera 0. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-StartAndStop"></a>StartAndStop</h3>
+<blockquote>
+<p>address = 35 </p>
+<p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = None </p>
+<p>description = Starts or stops the camera immediately. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-InState"></a>InState</h3>
+<blockquote>
+<p>address = 36 </p>
+<p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Event">Event</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = None </p>
+<p>description = Contains the state of the input ports. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-Valve0Pulse"></a>Valve0Pulse</h3>
+<blockquote>
+<p>address = 37 </p>
+<p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = None </p>
+<p>description = Configures the valve 0 open time in milliseconds. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-OutSet"></a>OutSet</h3>
+<blockquote>
+<p>address = 38 </p>
+<p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = None </p>
+<p>description = Bitmask to set the available outputs. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-OutClear"></a>OutClear</h3>
+<blockquote>
+<p>address = 39 </p>
+<p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = None </p>
+<p>description = Bitmask to clear the available outputs. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-OutToggle"></a>OutToggle</h3>
+<blockquote>
+<p>address = 40 </p>
+<p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = None </p>
+<p>description = Bitmask to toggle the available outputs. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-OutWrite"></a>OutWrite</h3>
+<blockquote>
+<p>address = 41 </p>
+<p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
+<p>payloadLength = 1 </p>
+<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>payloadSpec = None </p>
+<p>maskType = [<a href="#ref-Device-Mask-DO">DO</a>] </p>
+<p>description = Bitmask to write the available outputs. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<h3><a name="ref-Device-Register-AnalogIn"></a>AnalogIn</h3>
+<blockquote>
+<p>address = 42 </p>
+<p>payloadType = <a href="#ref-PayloadType-U16">U16</a> </p>
+<p>payloadLength = 2 </p>
+<p>registerType = <a href="#ref-RegisterType-Event">Event</a> </p>
+<p>payloadSpec = [PayloadMember(name=&rsquo;ADC&rsquo;, mask=None, offset=0, maskType=None, description=&rsquo;The value of the board ADC.&rsquo;, converter=None, defaultValue=None, maxValue=None, minValue=None, interfaceType=None, uid=ref-Device-PayloadMember-ADC), PayloadMember(name=&rsquo;Encoder&rsquo;, mask=None, offset=1, maskType=None, description=&rsquo;The value of the quadrature counter in Port 2.&rsquo;, converter=None, defaultValue=None, maxValue=None, minValue=None, interfaceType=None, uid=ref-Device-PayloadMember-Encoder)] </p>
+<p>maskType = None </p>
+<p>description = None </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+<p>visibility = <a href="#ref-VisibilityType-Public">Public</a> </p>
+<p>group = None </p>
+</blockquote>
+<hr />
+<h1>BitMasks</h1>
+<h2>Summary table</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">name</th>
+<th style="text-align: left;">description</th>
+<th style="text-align: left;">value</th>
+<th style="text-align: left;">bits</th>
+<th style="text-align: left;">maskCategory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-Mask-DO">DO</a></td>
+<td style="text-align: left;">Bitmask representing the state of the digital outputs.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">[&lsquo;0x1&rsquo;, &lsquo;0x2&rsquo;]</td>
+<td style="text-align: left;"><a href="#ref-MaskCategory-BitMask">BitMask</a></td>
+</tr>
+</tbody>
+</table>
+<h2>Technical documentation</h2>
+<h3><a name="ref-Device-Mask-DO"></a>DO</h3>
+<blockquote>
+<p>description = Bitmask representing the state of the digital outputs. </p>
+<p>bits = </p>
+</blockquote>
+<ul>
+<li>
+<p><em>DO0</em></p>
+<pre><code>    value = 0x1
+
+    description = The state of digital output pin 0.
+</code></pre>
+</li>
+<li>
+<p><em>DO1</em></p>
+<pre><code>    value = 0x2
+
+    description = The state of digital output pin 1.
+</code></pre>
+</li>
+</ul>
+<hr />
+<h1>PayloadMembers</h1>
+<h2>Summary table</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">name</th>
+<th style="text-align: left;">mask</th>
+<th style="text-align: right;">offset</th>
+<th style="text-align: left;">maskType</th>
+<th style="text-align: left;">description</th>
+<th style="text-align: left;">converter</th>
+<th style="text-align: left;">defaultValue</th>
+<th style="text-align: left;">maxValue</th>
+<th style="text-align: left;">minValue</th>
+<th style="text-align: left;">interfaceType</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-PayloadMember-ADC">ADC</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">The value of the board ADC.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-PayloadMember-Encoder">Encoder</a></td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">The value of the quadrature counter in Port 2.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<h2>Technical documentation</h2>
+<h3><a name="ref-Device-PayloadMember-ADC"></a>ADC</h3>
+<blockquote>
+<p>mask = None </p>
+<p>offset = 0 </p>
+<p>maskType = None </p>
+<p>description = The value of the board ADC. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+</blockquote>
+<h3><a name="ref-Device-PayloadMember-Encoder"></a>Encoder</h3>
+<blockquote>
+<p>mask = None </p>
+<p>offset = 1 </p>
+<p>maskType = None </p>
+<p>description = The value of the quadrature counter in Port 2. </p>
+<p>converter = None </p>
+<p>defaultValue = None </p>
+<p>maxValue = None </p>
+<p>minValue = None </p>
+<p>interfaceType = None </p>
+</blockquote>
+<h1>IOs</h1>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">name</th>
+<th style="text-align: left;">port</th>
+<th style="text-align: right;">pinNumber</th>
+<th style="text-align: left;">direction</th>
+<th style="text-align: left;">pinMode</th>
+<th style="text-align: left;">triggerMode</th>
+<th style="text-align: left;">interruptPriority</th>
+<th style="text-align: right;">interruptNumber</th>
+<th style="text-align: left;">description</th>
+<th style="text-align: right;">allowRead</th>
+<th style="text-align: left;">initialState</th>
+<th style="text-align: right;">invert</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-InputPin-Lick0">Lick0</a></td>
+<td style="text-align: left;">PORTA</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"><a href="#ref-DirectionType-input">input</a></td>
+<td style="text-align: left;"><a href="#ref-InputPinModeType-tristate">tristate</a></td>
+<td style="text-align: left;"><a href="#ref-TriggerModeType-toggle">toggle</a></td>
+<td style="text-align: left;"><a href="#ref-InterruptPriorityType-low">low</a></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">Input for the Lick 0.</td>
+<td style="text-align: right;">nan</td>
+<td style="text-align: left;">nan</td>
+<td style="text-align: right;">nan</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-InputPin-Lick1">Lick1</a></td>
+<td style="text-align: left;">PORTA</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;"><a href="#ref-DirectionType-input">input</a></td>
+<td style="text-align: left;"><a href="#ref-InputPinModeType-tristate">tristate</a></td>
+<td style="text-align: left;"><a href="#ref-TriggerModeType-toggle">toggle</a></td>
+<td style="text-align: left;"><a href="#ref-InterruptPriorityType-low">low</a></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Input for the Lick 1.</td>
+<td style="text-align: right;">nan</td>
+<td style="text-align: left;">nan</td>
+<td style="text-align: right;">nan</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="#ref-Device-OutputPin-Valve0">Valve0</a></td>
+<td style="text-align: left;">PORTA</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;"><a href="#ref-DirectionType-output">output</a></td>
+<td style="text-align: left;"><a href="#ref-OutputPinModeType-wiredOr">wiredOr</a></td>
+<td style="text-align: left;">nan</td>
+<td style="text-align: left;">nan</td>
+<td style="text-align: right;">nan</td>
+<td style="text-align: left;">Controls the transistor of Valve 0.</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"><a href="#ref-InitialStateType-low">low</a></td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<h2>Technical documentation</h2>
+<h3><a name="ref-Device-InputPin-Lick0"></a>Lick0</h3>
+<blockquote>
+<p>port = PORTA </p>
+<p>pinNumber = 0 </p>
+<p>direction = <a href="#ref-DirectionType-input">input</a> </p>
+<p>pinMode = <a href="#ref-InputPinModeType-tristate">tristate</a> </p>
+<p>triggerMode = <a href="#ref-TriggerModeType-toggle">toggle</a> </p>
+<p>interruptPriority = <a href="#ref-InterruptPriorityType-low">low</a> </p>
+<p>interruptNumber = 0 </p>
+<p>description = Input for the Lick 0. </p>
+</blockquote>
+<h3><a name="ref-Device-InputPin-Lick1"></a>Lick1</h3>
+<blockquote>
+<p>port = PORTA </p>
+<p>pinNumber = 1 </p>
+<p>direction = <a href="#ref-DirectionType-input">input</a> </p>
+<p>pinMode = <a href="#ref-InputPinModeType-tristate">tristate</a> </p>
+<p>triggerMode = <a href="#ref-TriggerModeType-toggle">toggle</a> </p>
+<p>interruptPriority = <a href="#ref-InterruptPriorityType-low">low</a> </p>
+<p>interruptNumber = 1 </p>
+<p>description = Input for the Lick 1. </p>
+</blockquote>
+<h3><a name="ref-Device-OutputPin-Valve0"></a>Valve0</h3>
+<blockquote>
+<p>port = PORTA </p>
+<p>pinNumber = 6 </p>
+<p>direction = <a href="#ref-DirectionType-output">output</a> </p>
+<p>allowRead = False </p>
+<p>pinMode = <a href="#ref-OutputPinModeType-wiredOr">wiredOr</a> </p>
+<p>initialState = <a href="#ref-InitialStateType-low">low</a> </p>
+<p>invert = False </p>
+<p>description = Controls the transistor of Valve 0. </p>
+</blockquote>
+<h2>References</h2>
+<h3><a name="ref-PayloadType-PayloadType"></a>PayloadType</h3>
+<ul>
+<li>
+<p><a name="ref-PayloadType-U8"></a>U8</p>
+</li>
+<li>
+<p><a name="ref-PayloadType-U16"></a>U16</p>
+</li>
+<li>
+<p><a name="ref-PayloadType-U32"></a>U32</p>
+</li>
+<li>
+<p><a name="ref-PayloadType-U64"></a>U64</p>
+</li>
+<li>
+<p><a name="ref-PayloadType-S8"></a>S8</p>
+</li>
+<li>
+<p><a name="ref-PayloadType-S16"></a>S16</p>
+</li>
+<li>
+<p><a name="ref-PayloadType-S32"></a>S32</p>
+</li>
+<li>
+<p><a name="ref-PayloadType-S64"></a>S64</p>
+</li>
+<li>
+<p><a name="ref-PayloadType-Float"></a>Float</p>
+</li>
+</ul>
+<h3><a name="ref-RegisterType-RegisterType"></a>RegisterType</h3>
+<ul>
+<li>
+<p><a name="ref-RegisterType-NONE"></a>NONE</p>
+</li>
+<li>
+<p><a name="ref-RegisterType-Command"></a>Command</p>
+</li>
+<li>
+<p><a name="ref-RegisterType-Event"></a>Event</p>
+</li>
+<li>
+<p><a name="ref-RegisterType-Config"></a>Config</p>
+</li>
+<li>
+<p><a name="ref-RegisterType-Both"></a>Both</p>
+</li>
+</ul>
+<h3><a name="ref-VisibilityType-VisibilityType"></a>VisibilityType</h3>
+<ul>
+<li>
+<p><a name="ref-VisibilityType-Public"></a>Public</p>
+</li>
+<li>
+<p><a name="ref-VisibilityType-Private"></a>Private</p>
+</li>
+</ul>
+<h3><a name="ref-MaskCategory-MaskCategory"></a>MaskCategory</h3>
+<ul>
+<li>
+<p><a name="ref-MaskCategory-BitMask"></a>BitMask</p>
+</li>
+<li>
+<p><a name="ref-MaskCategory-GroupMask"></a>GroupMask</p>
+</li>
+</ul>
+<h3><a name="ref-DirectionType-DirectionType"></a>DirectionType</h3>
+<ul>
+<li>
+<p><a name="ref-DirectionType-input"></a>input</p>
+</li>
+<li>
+<p><a name="ref-DirectionType-output"></a>output</p>
+</li>
+</ul>
+<h3><a name="ref-InputPinModeType-InputPinModeType"></a>InputPinModeType</h3>
+<ul>
+<li>
+<p><a name="ref-InputPinModeType-pullup"></a>pullup</p>
+</li>
+<li>
+<p><a name="ref-InputPinModeType-pulldown"></a>pulldown</p>
+</li>
+<li>
+<p><a name="ref-InputPinModeType-tristate"></a>tristate</p>
+</li>
+<li>
+<p><a name="ref-InputPinModeType-busholder"></a>busholder</p>
+</li>
+</ul>
+<h3><a name="ref-TriggerModeType-TriggerModeType"></a>TriggerModeType</h3>
+<ul>
+<li>
+<p><a name="ref-TriggerModeType-none"></a>none</p>
+</li>
+<li>
+<p><a name="ref-TriggerModeType-rising"></a>rising</p>
+</li>
+<li>
+<p><a name="ref-TriggerModeType-falling"></a>falling</p>
+</li>
+<li>
+<p><a name="ref-TriggerModeType-toggle"></a>toggle</p>
+</li>
+<li>
+<p><a name="ref-TriggerModeType-low"></a>low</p>
+</li>
+</ul>
+<h3><a name="ref-InterruptPriorityType-InterruptPriorityType"></a>InterruptPriorityType</h3>
+<ul>
+<li>
+<p><a name="ref-InterruptPriorityType-off"></a>off</p>
+</li>
+<li>
+<p><a name="ref-InterruptPriorityType-low"></a>low</p>
+</li>
+<li>
+<p><a name="ref-InterruptPriorityType-medium"></a>medium</p>
+</li>
+<li>
+<p><a name="ref-InterruptPriorityType-high"></a>high</p>
+</li>
+</ul>
+<h3><a name="ref-OutputPinModeType-OutputPinModeType"></a>OutputPinModeType</h3>
+<ul>
+<li>
+<p><a name="ref-OutputPinModeType-wiredOr"></a>wiredOr</p>
+</li>
+<li>
+<p><a name="ref-OutputPinModeType-wiredAnd"></a>wiredAnd</p>
+</li>
+<li>
+<p><a name="ref-OutputPinModeType-wiredOrPull"></a>wiredOrPull</p>
+</li>
+<li>
+<p><a name="ref-OutputPinModeType-wiredAndPull"></a>wiredAndPull</p>
+</li>
+</ul>
+<h3><a name="ref-InitialStateType-InitialStateType"></a>InitialStateType</h3>
+<ul>
+<li>
+<p><a name="ref-InitialStateType-low"></a>low</p>
+</li>
+<li>
+<p><a name="ref-InitialStateType-high"></a>high</p>
+</li>
+</ul>
