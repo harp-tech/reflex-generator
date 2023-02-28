@@ -182,7 +182,7 @@ class BitOrValue:
 
     def __str__(self) -> str:
         #return self.uid.render_pointer(self.name)
-        self.format_dict()
+        return self.format_dict()
 
     def __repr__(self) -> str:
         return self.format_dict()
@@ -338,6 +338,8 @@ class PayloadMember:
     def __str__(self) -> str:
         return self.uid.render_pointer(self.name)
 
+    def __repr__(self) -> str:
+        return self.uid.render_pointer(self.name)
 
 def _payloadSpec_parser(
         value: Optional[List[PayloadMember] | PayloadMember | Dict[str, any]]

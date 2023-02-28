@@ -332,7 +332,7 @@
 
 > registerType = [Event](#ref-RegisterType-Event) 
 
-> payloadSpec = [PayloadMember(name='ADC', mask=None, offset=0, maskType=None, description='The value of the board ADC.', converter=None, defaultValue=None, maxValue=None, minValue=None, interfaceType=None, uid=ref-Device-PayloadMember-ADC), PayloadMember(name='Encoder', mask=None, offset=1, maskType=None, description='The value of the quadrature counter in Port 2.', converter=None, defaultValue=None, maxValue=None, minValue=None, interfaceType=None, uid=ref-Device-PayloadMember-Encoder)] 
+> payloadSpec = [[ADC](#ref-Device-PayloadMember-ADC), [Encoder](#ref-Device-PayloadMember-Encoder)] 
 
 > maskType = None 
 
