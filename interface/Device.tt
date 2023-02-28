@@ -51,42 +51,14 @@ namespace <#= namespaceName #>
     [Combinator(MethodName = nameof(Generate))]
     [WorkflowElementCategory(ElementCategory.Source)]
     [Description("Generates events and processes commands for the <#= deviceName #> device.")]
-    public partial class <#= deviceClassName #>
+    public partial class <#= deviceClassName #> : Device, INamedElement
     {
-        readonly Device device = new Device(whoAmI: <#= deviceMetadata.WhoAmI #>);
-
         /// <summary>
-        /// Gets or sets the name of the serial port used to communicate with the
-        /// <#= deviceName #> device.
+        /// Initializes a new instance of the <see cref="<#= deviceClassName #>" class.
         /// </summary>
-        [TypeConverter(typeof(PortNameConverter))]
-        [Description("The name of the serial port used to communicate with the <#= deviceName #> device.")]
-        public string PortName
-        {
-            get { return device.PortName; }
-            set { device.PortName = value; }
-        }
+        public <#= deviceClassName #>() : base(whoAmI: <#= deviceMetadata.WhoAmI #>) { }
 
-        /// <summary>
-        /// Connects to the specified serial port and returns an observable sequence of Harp messages
-        /// coming from the device.
-        /// </summary>
-        /// <returns>The observable sequence of Harp messages produced by the device.</returns>
-        public IObservable<HarpMessage> Generate()
-        {
-            return device.Generate();
-        }
-
-        /// <summary>
-        /// Connects to the specified serial port and sends the observable sequence of Harp messages.
-        /// The return value is an observable sequence of Harp messages coming from the device.
-        /// </summary>
-        /// <param name="source">An observable sequence of Harp messages to send to the device.</param>
-        /// <returns>The observable sequence of Harp messages produced by the device.</returns>
-        public IObservable<HarpMessage> Generate(IObservable<HarpMessage> source)
-        {
-            return device.Generate(source);
-        }
+        string INamedElement.Name => nameof(<#= deviceClassName #>);
     }
 <#
 if (eventMetadata.Count > 0)
