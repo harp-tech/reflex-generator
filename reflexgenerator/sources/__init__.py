@@ -174,6 +174,15 @@ class BitOrValue:
             value=_value,
             description=_description)
 
+    def to_dict(self) -> Dict[str, any]:
+        return attr.asdict(self, recurse=False)
+
+    def format_dict(self) -> str:
+        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
+                                k, v in self.to_dict().items()
+                                if k not in ["uid", "name"]]))
+        return f"""### {self.name}\n{_param_text}"""
+
 
 def _make_bitorvalue_array(
         value: Optional[Dict[str, int]]
@@ -235,6 +244,12 @@ class Mask:
                 raise ValueError("maskCategory cannot be 'None' \
                                  if 'infer_maskCategory' is False")
 
+    def format_dict(self) -> str:
+        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
+                                k, v in self.to_dict().items()
+                                if k not in ["uid", "name"]]))
+        return f"""### {self.name}\n{_param_text}"""
+
 
 def get_mask(value: Optional[str | list[str]]) -> Optional[list[Mask]]:
     if value is None:
@@ -287,6 +302,12 @@ class PayloadMember:
                   json_object: Tuple[str, Dict[str, any]]) -> PayloadMember:
         _name = json_object[0]
         return PayloadMember(name=_name, **json_object[1])
+
+    def format_dict(self) -> str:
+        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
+                                k, v in self.to_dict().items()
+                                if k not in ["uid", "name"]]))
+        return f"""### {self.name}\n{_param_text}"""
 
 
 def _payloadSpec_parser(
@@ -349,6 +370,11 @@ class Register:
     def render_pointer(self, label: Optional[str] = None) -> str:
         return self.uid.render_pointer(label)
 
+    def format_dict(self) -> str:
+        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
+                                k, v in self.to_dict().items()
+                                if k not in ["uid", "name"]]))
+        return f"""### {self.name}\n{_param_text}"""
 
 # ---------------------------------------------------------------------------- #
 #                                      PinMapping                              #
