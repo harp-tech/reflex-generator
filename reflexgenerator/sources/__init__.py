@@ -10,9 +10,6 @@ from enum import Enum
 from reflexgenerator.generator.xref import UidReference, make_anchor, create_link
 
 
-
-
-
 # ---------------------------------------------------------------------------- #
 #                            Special types and Enums                           #
 # ---------------------------------------------------------------------------- #
@@ -139,6 +136,12 @@ class Metadata:
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False)
 
+    def format_dict(self) -> str:
+        return(
+            "".join(
+            [f'''<font size="4"> - {k}: {v} </font> \n\n'''
+             for k,v in self.to_dict().items()
+             if k != "uid"]))
 
 # ---------------------------------------------------------------------------- #
 #                                     Masks                                    #
@@ -181,8 +184,10 @@ class BitOrValue:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
                                 k, v in self.to_dict().items()
                                 if k not in ["uid", "name"]]))
-        return f"""### {self.name}\n{_param_text}"""
+        return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
 
+    def __str__(self) -> str:
+        return self.uid.render_pointer(self.name)
 
 def _make_bitorvalue_array(
         value: Optional[Dict[str, int]]
@@ -248,7 +253,13 @@ class Mask:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
                                 k, v in self.to_dict().items()
                                 if k not in ["uid", "name"]]))
-        return f"""### {self.name}\n{_param_text}"""
+        return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
+
+    def __str__(self) -> str:
+        return self.uid.render_pointer(self.name)
+
+    def __repr__(self) -> str:
+        return self.uid.render_pointer(self.name)
 
 
 def get_mask(value: Optional[str | list[str]]) -> Optional[list[Mask]]:
@@ -307,7 +318,10 @@ class PayloadMember:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
                                 k, v in self.to_dict().items()
                                 if k not in ["uid", "name"]]))
-        return f"""### {self.name}\n{_param_text}"""
+        return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
+
+    def __str__(self) -> str:
+        return self.uid.render_pointer(self.name)
 
 
 def _payloadSpec_parser(
@@ -374,11 +388,15 @@ class Register:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
                                 k, v in self.to_dict().items()
                                 if k not in ["uid", "name"]]))
-        return f"""### {self.name}\n{_param_text}"""
+        return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
+
+    def __str__(self) -> str:
+        return self.uid.render_pointer(self.name)
 
 # ---------------------------------------------------------------------------- #
 #                                      PinMapping                              #
 # ---------------------------------------------------------------------------- #
+
 
 class DirectionType(BaseEnum):
     input = "input"
@@ -529,6 +547,14 @@ class InputPin:
         _name = json_object[0]
         return InputPin(name=_name, **json_object[1])
 
+    def format_dict(self) -> str:
+        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
+                                k, v in self.to_dict().items()
+                                if k not in ["uid", "name"]]))
+        return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
+
+    def __str__(self) -> str:
+        return self.uid.render_pointer(self.name)
 
 @define
 class OutputPin:
@@ -556,6 +582,15 @@ class OutputPin:
 
         _name = json_object[0]
         return OutputPin(name=_name, **json_object[1])
+
+    def format_dict(self) -> str:
+        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
+                                k, v in self.to_dict().items()
+                                if k not in ["uid", "name"]]))
+        return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
+
+    def __str__(self) -> str:
+        return self.uid.render_pointer(self.name)
 # ---------------------------------------------------------------------------- #
 #                               Collection types                               #
 # ---------------------------------------------------------------------------- #

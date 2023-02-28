@@ -101,4 +101,5 @@ def filter_refs_by_type(instance_type: str) -> dict:
     Returns:
         dict: filtered dictionary.
     """
-    return {k: v for k, v in UidReference.REFERENCES.items() if isinstance(v.parent, instance_type)}
+    return {k: v for k, v in UidReference.REFERENCES.items()
+            if isinstance(v.parent, instance_type)}
