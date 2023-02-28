@@ -180,14 +180,18 @@ class BitOrValue:
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False)
 
-    def format_dict(self) -> str:
-        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
-                                k, v in self.to_dict().items()
-                                if k not in ["uid", "name"]]))
-        return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
-
     def __str__(self) -> str:
-        return self.uid.render_pointer(self.name)
+        #return self.uid.render_pointer(self.name)
+        self.format_dict()
+
+    def __repr__(self) -> str:
+        return self.format_dict()
+
+    def format_dict(self) -> str:
+        return (f"""*{self.name}*\n
+        \tvalue = {self.value}\n
+        \tdescription = {self.description}""")
+
 
 def _make_bitorvalue_array(
         value: Optional[Dict[str, int]]
@@ -250,9 +254,20 @@ class Mask:
                                  if 'infer_maskCategory' is False")
 
     def format_dict(self) -> str:
-        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
-                                k, v in self.to_dict().items()
-                                if k not in ["uid", "name"]]))
+        if self.maskCategory == MaskCategory.BitMask:
+            _attr = self.bits
+            _f = "bits"
+        elif self.maskCategory == MaskCategory.GroupMask:
+            _attr = self.value
+            _f = "values"
+        else:
+            raise ValueError("Invalid MaskCategory.")
+
+        _param_text = f"""> description = {self.description} \n\n"""
+        if _attr is not None:
+            _param_text += f"""> {_f} = \n\n"""
+            for value in _attr:
+                _param_text += "\n * " + value.format_dict() + "\n"
         return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
 
     def __str__(self) -> str:
