@@ -176,8 +176,8 @@ public static partial class TemplateHelper
 
     public static string GetRangeAttributeDeclaration(float? minValue, float? maxValue)
     {
-        var minValueDeclaration = minValue.HasValue ? minValue.Value.ToString() : "float.MinValue";
-        var maxValueDeclaration = maxValue.HasValue ? maxValue.Value.ToString() : "float.MaxValue";
+        var minValueDeclaration = minValue.HasValue ? minValue.Value.ToString() : "long.MinValue";
+        var maxValueDeclaration = maxValue.HasValue ? maxValue.Value.ToString() : "long.MaxValue";
         return $"[Range(min: {minValueDeclaration}, max: {maxValueDeclaration})]";
     }
 
