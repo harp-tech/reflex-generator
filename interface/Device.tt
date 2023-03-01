@@ -17,17 +17,13 @@ var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
 
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(metadataFileName);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public);
-var commandMetadata = publicRegisters.Where(register => (register.Value.RegisterType & RegisterType.Command) != 0).ToList();
-var eventMetadata = publicRegisters
-    .Where(register => (register.Value.RegisterType & RegisterType.Event) != 0)
-    .Select(register => (register.Value.RegisterType & RegisterType.Command) != 0
-        ? new KeyValuePair<string, RegisterInfo>(register.Key + nameof(RegisterType.Event), register.Value)
-        : register)
+var eventMetadata = publicRegisters.ToList();
+var commandMetadata = publicRegisters
+    .Where(register => (register.Value.RegisterType & RegisterType.Command) != 0)
     .ToList();
 
 var deviceName = deviceMetadata.Device;
 var deviceClassName = deviceName + "Device";
-var eventClassName = deviceName + "Event";
 var commandClassName = deviceName + "Command";
 #>
 using Bonsai;
@@ -66,7 +62,7 @@ if (eventMetadata.Count > 0)
 #>
 
     /// <summary>
-    /// Represents an operator which filters and selects specific event messages
+    /// Represents an operator which filters and selects specific messages
     /// reported by the <#= deviceName #> device.
     /// </summary>
 <#
@@ -85,7 +81,7 @@ foreach (var register in eventMetadata)
 <#
 }
 #>
-    [Description("Filters and selects specific event messages reported by the <#= deviceName #> device.")]
+    [Description("Filters and selects specific messages reported by the <#= deviceName #> device.")]
     public partial class <#= eventClassName #> : EventBuilder
     {
         /// <summary>
@@ -100,6 +96,7 @@ foreach (var register in eventMetadata)
 foreach (var registerMetadata in eventMetadata)
 {
     var register = registerMetadata.Value;
+    var defaultMessageType = (register.RegisterType & RegisterType.Command) != 0 ? "Write" : "Event";
     var payloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType, register.PayloadLength);
     var payloadSelector = $"message.GetPayload{payloadSuffix}()";
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
@@ -110,13 +107,20 @@ foreach (var registerMetadata in eventMetadata)
 #>
 
     /// <summary>
-    /// Represents an operator which filters and selects a sequence of event messages
+    /// Represents an operator which filters and selects a sequence of messages
     /// <#= summaryDescription #>.
     /// </summary>
     [DesignTimeVisible(false)]
-    [Description("Filters and selects a sequence of event messages <#= summaryDescription #>.")]
+    [Description("Filters and selects a sequence of messages <#= summaryDescription #>.")]
     public partial class <#= registerMetadata.Key #> : Combinator<HarpMessage, <#= interfaceType #>>
-    {<#
+    {
+        /// <summary>
+        /// Gets or sets the type of device message to filter.
+        /// </summary>
+        [Category(nameof(CategoryAttribute.Design))]
+        [Description("Specifies the type of device message to filter.")]
+        public MessageType MessageType { get; set; } = MessageType.<#= defaultMessageType #>;
+<#
     if (register.PayloadSpec != null && string.IsNullOrEmpty(register.Converter))
     {
 #>
@@ -142,10 +146,11 @@ foreach (var registerMetadata in eventMetadata)
     }#>
         
         /// <summary>
-        /// Returns the payload data for the <see cref="<#= registerMetadata.Key #>"/> event message.
+        /// Returns the payload data for <see cref="<#= registerMetadata.Key #>"/>
+        /// register messages.
         /// </summary>
         /// <param name="message">
-        /// A <see cref="HarpMessage"/> encoding the event payload.
+        /// A <see cref="HarpMessage"/> object representing the register message.
         /// </param>
         /// <returns>
         /// A value representing the message payload <#= summaryDescription #>.
@@ -156,17 +161,17 @@ foreach (var registerMetadata in eventMetadata)
         }
 
         /// <summary>
-        /// Filters and selects an observable sequence of event messages
+        /// Filters and selects an observable sequence of messages
         /// <#= summaryDescription #>.
         /// </summary>
-        /// <param name="source">The sequence of Harp event messages.</param>
+        /// <param name="source">The sequence of Harp device messages.</param>
         /// <returns>
         /// A sequence of <see cref="<#= interfaceType #>"/> objects representing the
         /// register payload.
         /// </returns>
         public override IObservable<<#= interfaceType #>> Process(IObservable<HarpMessage> source)
         {
-            return source.Event(address: <#= register.Address #>).Select(Parse);
+            return source.Where(address: <#= register.Address #>, MessageType).Select(Parse);
         }
     }
 <#
@@ -188,7 +193,7 @@ if (commandMetadata.Count > 0)
 foreach (var register in commandMetadata)
 {
 #>
-    /// <seealso cref="<#= register.Key #>"/>
+    /// <seealso cref="<#= register.Key #>Command"/>
 <#
 }
 #>
@@ -196,7 +201,7 @@ foreach (var register in commandMetadata)
 foreach (var register in commandMetadata)
 {
 #>
-    [XmlInclude(typeof(<#= register.Key #>))]
+    [XmlInclude(typeof(<#= register.Key #>Command))]
 <#
 }
 #>
@@ -220,7 +225,7 @@ foreach (var registerMetadata in commandMetadata)
     var conversion = TemplateHelper.GetCommandConversion(register, "value");
     var defaultValue = TemplateHelper.GetDefaultValueAssignment(register.DefaultValue, register.MinValue);
     var summaryDescription = string.IsNullOrEmpty(register.Description)
-        ? $"to write on register {registerMetadata.Key}"
+        ? $"for register {registerMetadata.Key}"
         : $"that {char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
 #>
 
@@ -231,8 +236,15 @@ foreach (var registerMetadata in commandMetadata)
     [DesignTimeVisible(false)]
     [WorkflowElementCategory(ElementCategory.Transform)]
     [Description("Creates a sequence of command messages <#= summaryDescription #>.")]
-    public partial class <#= registerMetadata.Key #> : Combinator<HarpMessage>
-    {<#
+    public partial class <#= registerMetadata.Key #>Command : Combinator<HarpMessage>
+    {
+        /// <summary>
+        /// Gets or sets the type of command message to create.
+        /// </summary>
+        [Category(nameof(CategoryAttribute.Design))]
+        [Description("Specifies the type of command message to create.")]
+        public MessageType MessageType { get; set; } = MessageType.Write;
+<#
     if (register.PayloadSpec != null)
     {
         foreach (var member in register.PayloadSpec)
@@ -323,6 +335,9 @@ foreach (var registerMetadata in commandMetadata)
         /// <summary>
         /// Creates a command message for the <see cref="<#= registerMetadata.Key #>"/> register.
         /// </summary>
+        /// <param name="messageType">
+        /// The type of the command message.
+        /// </param>
         /// <param name="value">
         /// A value representing the command message payload
         /// <#= summaryDescription #>.
@@ -330,9 +345,9 @@ foreach (var registerMetadata in commandMetadata)
         /// <returns>
         /// A <see cref="HarpMessage"/> object representing the command message.
         /// </returns>
-        public static HarpMessage Format(<#= interfaceType #> value)
+        public static HarpMessage Format(MessageType messageType, <#= interfaceType #> value)
         {
-            return HarpCommand.Write<#= payloadSuffix #>(address: <#= register.Address #>, <#= conversion #>);
+            return HarpMessage.From<#= payloadSuffix #>(address: <#= register.Address #>, messageType, <#= conversion #>);
         }
 
         /// <summary>
@@ -364,14 +379,14 @@ foreach (var registerMetadata in commandMetadata)
 <#
         }
 #>
-                return Format(value);
+                return Format(MessageType, value);
             });
 <#
     }
     else
     {
 #>
-            return source.Select(_ => Format(Value));
+            return source.Select(_ => Format(MessageType, Value));
 <#
     }
 #>
