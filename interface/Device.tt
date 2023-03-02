@@ -240,6 +240,19 @@ foreach (var registerMetadata in publicRegisters)
         }
 
         /// <summary>
+        /// Creates a timestamped command message for the <see cref="<#= registerMetadata.Key #>"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the command message.</param>
+        /// <param name="value">A value representing the command message payload.</param>
+        /// <returns>A <see cref="HarpMessage"/> object representing the command message.</returns>
+        public static HarpMessage Format(double timestamp, MessageType messageType, <#= interfaceType #> value)
+        {
+            return HarpMessage.From<#= formatPayloadSuffix #>(address: <#= register.Address #>, timestamp, messageType, <#= formatConversion #>);
+        }
+
+        /// <summary>
         /// Filters and selects an observable sequence of messages from register
         /// <see cref="<#= registerMetadata.Key #>"/>.
         /// </summary>
@@ -268,6 +281,23 @@ foreach (var registerMetadata in publicRegisters)
         public IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
         {
             return source.Select(value => Format(MessageType, value));
+        }
+
+        /// <summary>
+        /// Formats an observable sequence of values into timestamped command messages
+        /// for the <see cref="<#= registerMetadata.Key #>"/> register.
+        /// </summary>
+        /// <param name="source">
+        /// A sequence of timestamped <see cref="<#= interfaceType #>"/> objects representing
+        /// the register payload.
+        /// </param>
+        /// <returns>
+        /// A sequence of <see cref="HarpMessage"/> objects representing each
+        /// timestamped command message.
+        /// </returns>
+        public IObservable<HarpMessage> Process(IObservable<Timestamped<<#= interfaceType #>>> source)
+        {
+            return source.Select(payload => Format(payload.Seconds, MessageType, payload.Value));
         }
     }
 <#
