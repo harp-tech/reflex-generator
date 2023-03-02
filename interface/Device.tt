@@ -75,6 +75,14 @@ foreach (var register in publicRegisters)
 <#
 }
 #>
+<#
+foreach (var register in publicRegisters)
+{
+#>
+    [XmlInclude(typeof(Timestamped<#= register.Key #>))]
+<#
+}
+#>
     [Description("Filters and selects specific messages reported by the <#= deviceName #> device.")]
     public partial class Parse : ParseBuilder, INamedElement
     {
@@ -130,6 +138,11 @@ foreach (var registerMetadata in publicRegisters)
     var parsePayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType, register.PayloadLength);
     var parsePayloadSelector = $"message.GetPayload{parsePayloadSuffix}()";
     var parseConversion = TemplateHelper.GetEventConversion(register, parsePayloadSelector);
+
+    var payloadValueSelector = "payload.Value";
+    var timestampedPayloadSelector = $"message.GetTimestampedPayload{parsePayloadSuffix}()";
+    var timestampedParseConversion = TemplateHelper.GetEventConversion(register, payloadValueSelector);
+
     var formatPayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType);
     var formatConversion = TemplateHelper.GetCommandConversion(register, "value");
     var summaryDescription = string.IsNullOrEmpty(register.Description)
@@ -229,6 +242,30 @@ foreach (var registerMetadata in publicRegisters)
         }
 
         /// <summary>
+        /// Returns the timestamped payload data for <see cref="<#= registerMetadata.Key #>"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<<#= interfaceType #>> ParseTimestamped(HarpMessage message)
+        {
+<#
+    if (timestampedParseConversion != payloadValueSelector)
+    {
+#>
+            var payload = <#= timestampedPayloadSelector #>;
+            return Timestamped.Create(<#= timestampedParseConversion #>, payload.Seconds);
+<#
+    }
+    else
+    {
+#>
+            return <#= timestampedPayloadSelector #>;
+<#
+    }
+#>
+        }
+
+        /// <summary>
         /// Creates a command message for the <see cref="<#= registerMetadata.Key #>"/> register.
         /// </summary>
         /// <param name="messageType">The type of the command message.</param>
@@ -253,8 +290,8 @@ foreach (var registerMetadata in publicRegisters)
         }
 
         /// <summary>
-        /// Filters and selects an observable sequence of messages from register
-        /// <see cref="<#= registerMetadata.Key #>"/>.
+        /// Filters and selects an observable sequence of messages from the
+        /// <see cref="<#= registerMetadata.Key #>"/> register.
         /// </summary>
         /// <param name="source">The sequence of Harp device messages.</param>
         /// <returns>
@@ -298,6 +335,28 @@ foreach (var registerMetadata in publicRegisters)
         public IObservable<HarpMessage> Process(IObservable<Timestamped<<#= interfaceType #>>> source)
         {
             return source.Select(payload => Format(payload.Seconds, MessageType, payload.Value));
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that filters and selects a sequence of timestamped messages
+    /// from the <#= registerMetadata.Key #> register.
+    /// </summary>
+    [Description("Filters and selects timestamped messages from the <#= registerMetadata.Key #> register.")]
+    public partial class Timestamped<#= registerMetadata.Key #> : HarpCombinator
+    {
+        /// <summary>
+        /// Filters and selects an observable sequence of timestamped messages from
+        /// the <see cref="<#= registerMetadata.Key #>"/> register.
+        /// </summary>
+        /// <param name="source">The sequence of Harp device messages.</param>
+        /// <returns>
+        /// A sequence of timestamped <see cref="<#= interfaceType #>"/> objects
+        /// representing the register payload.
+        /// </returns>
+        public IObservable<Timestamped<<#= interfaceType #>>> Process(IObservable<HarpMessage> source)
+        {
+            return source.Where(address: <#= register.Address #>, MessageType).Select(<#= registerMetadata.Key #>.ParseTimestamped);
         }
     }
 <#
