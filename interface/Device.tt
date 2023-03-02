@@ -155,7 +155,12 @@ foreach (var registerMetadata in publicRegisters)
     /// </summary>
     [Description("<#= register.Description #>")]
     public partial class <#= registerMetadata.Key #> : HarpCombinator
-    {<#
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="<#= registerMetadata.Key #>"/> register. This field is constant.
+        /// </summary>
+        public const int Address = <#= register.Address #>;
+<#
     if ((register.RegisterType & RegisterType.Event) != 0)
     {
 #>
@@ -273,7 +278,7 @@ foreach (var registerMetadata in publicRegisters)
         /// <returns>A <see cref="HarpMessage"/> object representing the command message.</returns>
         public static HarpMessage Format(MessageType messageType, <#= interfaceType #> value)
         {
-            return HarpMessage.From<#= formatPayloadSuffix #>(address: <#= register.Address #>, messageType, <#= formatConversion #>);
+            return HarpMessage.From<#= formatPayloadSuffix #>(Address, messageType, <#= formatConversion #>);
         }
 
         /// <summary>
@@ -286,7 +291,7 @@ foreach (var registerMetadata in publicRegisters)
         /// <returns>A <see cref="HarpMessage"/> object representing the command message.</returns>
         public static HarpMessage Format(double timestamp, MessageType messageType, <#= interfaceType #> value)
         {
-            return HarpMessage.From<#= formatPayloadSuffix #>(address: <#= register.Address #>, timestamp, messageType, <#= formatConversion #>);
+            return HarpMessage.From<#= formatPayloadSuffix #>(Address, timestamp, messageType, <#= formatConversion #>);
         }
 
         /// <summary>
@@ -300,7 +305,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </returns>
         public IObservable<<#= interfaceType #>> Process(IObservable<HarpMessage> source)
         {
-            return source.Where(address: <#= register.Address #>, MessageType).Select(Parse);
+            return source.Where(Address, MessageType).Select(Parse);
         }
 
         /// <summary>
@@ -356,7 +361,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </returns>
         public IObservable<Timestamped<<#= interfaceType #>>> Process(IObservable<HarpMessage> source)
         {
-            return source.Where(address: <#= register.Address #>, MessageType).Select(<#= registerMetadata.Key #>.ParseTimestamped);
+            return source.Where(<#= registerMetadata.Key #>.Address, MessageType).Select(<#= registerMetadata.Key #>.ParseTimestamped);
         }
     }
 <#
