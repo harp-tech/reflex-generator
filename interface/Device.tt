@@ -241,7 +241,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </summary>
         /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
         /// <returns>A value representing the message payload.</returns>
-        public static <#= interfaceType #> Parse(HarpMessage message)
+        public static <#= interfaceType #> GetPayload(HarpMessage message)
         {
             return <#= parseConversion #>;
         }
@@ -251,7 +251,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </summary>
         /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
         /// <returns>A value representing the timestamped message payload.</returns>
-        public static Timestamped<<#= interfaceType #>> ParseTimestamped(HarpMessage message)
+        public static Timestamped<<#= interfaceType #>> GetTimestampedPayload(HarpMessage message)
         {
 <#
     if (timestampedParseConversion != payloadValueSelector)
@@ -276,7 +276,7 @@ foreach (var registerMetadata in publicRegisters)
         /// <param name="messageType">The type of the command message.</param>
         /// <param name="value">A value representing the command message payload.</param>
         /// <returns>A <see cref="HarpMessage"/> object representing the command message.</returns>
-        public static HarpMessage Format(MessageType messageType, <#= interfaceType #> value)
+        public static HarpMessage FromPayload(MessageType messageType, <#= interfaceType #> value)
         {
             return HarpMessage.From<#= formatPayloadSuffix #>(Address, messageType, <#= formatConversion #>);
         }
@@ -289,7 +289,7 @@ foreach (var registerMetadata in publicRegisters)
         /// <param name="messageType">The type of the command message.</param>
         /// <param name="value">A value representing the command message payload.</param>
         /// <returns>A <see cref="HarpMessage"/> object representing the command message.</returns>
-        public static HarpMessage Format(double timestamp, MessageType messageType, <#= interfaceType #> value)
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, <#= interfaceType #> value)
         {
             return HarpMessage.From<#= formatPayloadSuffix #>(Address, timestamp, messageType, <#= formatConversion #>);
         }
@@ -305,7 +305,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </returns>
         public IObservable<<#= interfaceType #>> Process(IObservable<HarpMessage> source)
         {
-            return source.Where(Address, MessageType).Select(Parse);
+            return source.Where(Address, MessageType).Select(GetPayload);
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </returns>
         public IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
         {
-            return source.Select(value => Format(MessageType, value));
+            return source.Select(value => FromPayload(MessageType, value));
         }
 
         /// <summary>
@@ -339,7 +339,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </returns>
         public IObservable<HarpMessage> Process(IObservable<Timestamped<<#= interfaceType #>>> source)
         {
-            return source.Select(payload => Format(payload.Seconds, MessageType, payload.Value));
+            return source.Select(payload => FromPayload(payload.Seconds, MessageType, payload.Value));
         }
     }
 
@@ -361,7 +361,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </returns>
         public IObservable<Timestamped<<#= interfaceType #>>> Process(IObservable<HarpMessage> source)
         {
-            return source.Where(<#= registerMetadata.Key #>.Address, MessageType).Select(<#= registerMetadata.Key #>.ParseTimestamped);
+            return source.Where(<#= registerMetadata.Key #>.Address, MessageType).Select(<#= registerMetadata.Key #>.GetTimestampedPayload);
         }
     }
 <#
@@ -506,14 +506,14 @@ foreach (var registerMetadata in commandRegisters)
 <#
         }
 #>
-                return <#= registerMetadata.Key #>.Format(MessageType, value);
+                return <#= registerMetadata.Key #>.FromPayload(MessageType, value);
             });
 <#
     }
     else
     {
 #>
-            return source.Select(_ => <#= registerMetadata.Key #>.Format(MessageType, Value));
+            return source.Select(_ => <#= registerMetadata.Key #>.FromPayload(MessageType, Value));
 <#
     }
 #>
