@@ -13,24 +13,25 @@
 <font size="4"> - architecture: atmega </font> 
 
 
+
 --------
 
 # Registers
 
 ## Summary table
-| name                                                              |   address | payloadType                 |   payloadLength | registerType                         | payloadSpec                                                                              | maskType                      | description                                                           | converter   | defaultValue   | maxValue   | minValue   | interfaceType   | visibility                           | group   |
-|:------------------------------------------------------------------|----------:|:----------------------------|----------------:|:-------------------------------------|:-----------------------------------------------------------------------------------------|:------------------------------|:----------------------------------------------------------------------|:------------|:---------------|:-----------|:-----------|:----------------|:-------------------------------------|:--------|
-| [Cam0Event](#ref-Device-Register-Cam0Event)                       |        32 | [U8](#ref-PayloadType-U8)   |               1 | [Event](#ref-RegisterType-Event)     |                                                                                          |                               | None                                                                  |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [Cam0TriggerFrequency](#ref-Device-Register-Cam0TriggerFrequency) |        33 | [U16](#ref-PayloadType-U16) |               1 | [Command](#ref-RegisterType-Command) |                                                                                          | ['[DO](#ref-Device-Mask-DO)'] | Sets the trigger frequency for camera 0 between 1 and 1000.           |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [Cam0TriggerDuration](#ref-Device-Register-Cam0TriggerDuration)   |        34 | [U16](#ref-PayloadType-U16) |               1 | [Command](#ref-RegisterType-Command) |                                                                                          |                               | Sets the duration of the trigger pulse (minimum is 100) for camera 0. |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [StartAndStop](#ref-Device-Register-StartAndStop)                 |        35 | [U8](#ref-PayloadType-U8)   |               1 | [Command](#ref-RegisterType-Command) |                                                                                          |                               | Starts or stops the camera immediately.                               |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [InState](#ref-Device-Register-InState)                           |        36 | [U8](#ref-PayloadType-U8)   |               1 | [Event](#ref-RegisterType-Event)     |                                                                                          |                               | Contains the state of the input ports.                                |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [Valve0Pulse](#ref-Device-Register-Valve0Pulse)                   |        37 | [U8](#ref-PayloadType-U8)   |               1 | [Command](#ref-RegisterType-Command) |                                                                                          |                               | Configures the valve 0 open time in milliseconds.                     |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [OutSet](#ref-Device-Register-OutSet)                             |        38 | [U8](#ref-PayloadType-U8)   |               1 | [Command](#ref-RegisterType-Command) |                                                                                          |                               | Bitmask to set the available outputs.                                 |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [OutClear](#ref-Device-Register-OutClear)                         |        39 | [U8](#ref-PayloadType-U8)   |               1 | [Command](#ref-RegisterType-Command) |                                                                                          |                               | Bitmask to clear the available outputs.                               |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [OutToggle](#ref-Device-Register-OutToggle)                       |        40 | [U8](#ref-PayloadType-U8)   |               1 | [Command](#ref-RegisterType-Command) |                                                                                          |                               | Bitmask to toggle the available outputs.                              |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [OutWrite](#ref-Device-Register-OutWrite)                         |        41 | [U8](#ref-PayloadType-U8)   |               1 | [Command](#ref-RegisterType-Command) |                                                                                          | ['[DO](#ref-Device-Mask-DO)'] | Bitmask to write the available outputs.                               |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
-| [AnalogIn](#ref-Device-Register-AnalogIn)                         |        42 | [U16](#ref-PayloadType-U16) |               2 | [Event](#ref-RegisterType-Event)     | ['[ADC](#ref-Device-PayloadMember-ADC)', '[Encoder](#ref-Device-PayloadMember-Encoder)'] |                               | None                                                                  |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| name                                                              |   address | payloadType                 |   payloadLength | registerType                                                       | payloadSpec                                                                              | maskType                      | description                                                           | converter   | defaultValue   | maxValue   | minValue   | interfaceType   | visibility                           | group   |
+|:------------------------------------------------------------------|----------:|:----------------------------|----------------:|:-------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|:------------------------------|:----------------------------------------------------------------------|:------------|:---------------|:-----------|:-----------|:----------------|:-------------------------------------|:--------|
+| [Cam0Event](#ref-Device-Register-Cam0Event)                       |        32 | [U8](#ref-PayloadType-U8)   |               1 | [[Read](#ref-RegisterType-Read), [Event](#ref-RegisterType-Event)] |                                                                                          |                               | None                                                                  |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [Cam0TriggerFrequency](#ref-Device-Register-Cam0TriggerFrequency) |        33 | [U16](#ref-PayloadType-U16) |               1 | [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] |                                                                                          | ['[DO](#ref-Device-Mask-DO)'] | Sets the trigger frequency for camera 0 between 1 and 1000.           |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [Cam0TriggerDuration](#ref-Device-Register-Cam0TriggerDuration)   |        34 | [U16](#ref-PayloadType-U16) |               1 | [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] |                                                                                          |                               | Sets the duration of the trigger pulse (minimum is 100) for camera 0. |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [StartAndStop](#ref-Device-Register-StartAndStop)                 |        35 | [U8](#ref-PayloadType-U8)   |               1 | [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] |                                                                                          |                               | Starts or stops the camera immediately.                               |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [InState](#ref-Device-Register-InState)                           |        36 | [U8](#ref-PayloadType-U8)   |               1 | [[Read](#ref-RegisterType-Read), [Event](#ref-RegisterType-Event)] |                                                                                          |                               | Contains the state of the input ports.                                |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [Valve0Pulse](#ref-Device-Register-Valve0Pulse)                   |        37 | [U8](#ref-PayloadType-U8)   |               1 | [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] |                                                                                          |                               | Configures the valve 0 open time in milliseconds.                     |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [OutSet](#ref-Device-Register-OutSet)                             |        38 | [U8](#ref-PayloadType-U8)   |               1 | [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] |                                                                                          |                               | Bitmask to set the available outputs.                                 |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [OutClear](#ref-Device-Register-OutClear)                         |        39 | [U8](#ref-PayloadType-U8)   |               1 | [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] |                                                                                          |                               | Bitmask to clear the available outputs.                               |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [OutToggle](#ref-Device-Register-OutToggle)                       |        40 | [U8](#ref-PayloadType-U8)   |               1 | [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] |                                                                                          |                               | Bitmask to toggle the available outputs.                              |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [OutWrite](#ref-Device-Register-OutWrite)                         |        41 | [U8](#ref-PayloadType-U8)   |               1 | [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] |                                                                                          | ['[DO](#ref-Device-Mask-DO)'] | Bitmask to write the available outputs.                               |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
+| [AnalogIn](#ref-Device-Register-AnalogIn)                         |        42 | [U16](#ref-PayloadType-U16) |               2 | [[Read](#ref-RegisterType-Read), [Event](#ref-RegisterType-Event)] | ['[ADC](#ref-Device-PayloadMember-ADC)', '[Encoder](#ref-Device-PayloadMember-Encoder)'] |                               | None                                                                  |             |                |            |            |                 | [Public](#ref-VisibilityType-Public) | None    |
 
 ## Technical documentation
 ### <a name="ref-Device-Register-Cam0Event"></a>Cam0Event
@@ -40,7 +41,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Event](#ref-RegisterType-Event) 
+> registerType = [[Read](#ref-RegisterType-Read), [Event](#ref-RegisterType-Event)] 
 
 > payloadSpec = None 
 
@@ -69,7 +70,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Command](#ref-RegisterType-Command) 
+> registerType = [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] 
 
 > payloadSpec = None 
 
@@ -98,7 +99,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Command](#ref-RegisterType-Command) 
+> registerType = [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] 
 
 > payloadSpec = None 
 
@@ -127,7 +128,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Command](#ref-RegisterType-Command) 
+> registerType = [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] 
 
 > payloadSpec = None 
 
@@ -156,7 +157,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Event](#ref-RegisterType-Event) 
+> registerType = [[Read](#ref-RegisterType-Read), [Event](#ref-RegisterType-Event)] 
 
 > payloadSpec = None 
 
@@ -185,7 +186,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Command](#ref-RegisterType-Command) 
+> registerType = [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] 
 
 > payloadSpec = None 
 
@@ -214,7 +215,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Command](#ref-RegisterType-Command) 
+> registerType = [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] 
 
 > payloadSpec = None 
 
@@ -243,7 +244,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Command](#ref-RegisterType-Command) 
+> registerType = [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] 
 
 > payloadSpec = None 
 
@@ -272,7 +273,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Command](#ref-RegisterType-Command) 
+> registerType = [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] 
 
 > payloadSpec = None 
 
@@ -301,7 +302,7 @@
 
 > payloadLength = 1 
 
-> registerType = [Command](#ref-RegisterType-Command) 
+> registerType = [[Read](#ref-RegisterType-Read), [Write](#ref-RegisterType-Write)] 
 
 > payloadSpec = None 
 
@@ -330,7 +331,7 @@
 
 > payloadLength = 2 
 
-> registerType = [Event](#ref-RegisterType-Event) 
+> registerType = [[Read](#ref-RegisterType-Read), [Event](#ref-RegisterType-Event)] 
 
 > payloadSpec = [[ADC](#ref-Device-PayloadMember-ADC), [Encoder](#ref-Device-PayloadMember-Encoder)] 
 
@@ -516,15 +517,11 @@
 
 
 ### <a name="ref-RegisterType-RegisterType"></a>RegisterType
-- <a name="ref-RegisterType-NONE"></a>NONE
+- <a name="ref-RegisterType-Read"></a>Read
 
-- <a name="ref-RegisterType-Command"></a>Command
+- <a name="ref-RegisterType-Write"></a>Write
 
 - <a name="ref-RegisterType-Event"></a>Event
-
-- <a name="ref-RegisterType-Config"></a>Config
-
-- <a name="ref-RegisterType-Both"></a>Both
 
 
 
@@ -599,8 +596,6 @@
 - <a name="ref-InitialStateType-low"></a>low
 
 - <a name="ref-InitialStateType-high"></a>high
-
-
 
 
 

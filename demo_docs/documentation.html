@@ -33,7 +33,7 @@
 <td style="text-align: right;">32</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Event">Event</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Event">Event</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">None</td>
@@ -50,7 +50,7 @@
 <td style="text-align: right;">33</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U16">U16</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">[&lsquo;<a href="#ref-Device-Mask-DO">DO</a>&rsquo;]</td>
 <td style="text-align: left;">Sets the trigger frequency for camera 0 between 1 and 1000.</td>
@@ -67,7 +67,7 @@
 <td style="text-align: right;">34</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U16">U16</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Sets the duration of the trigger pulse (minimum is 100) for camera 0.</td>
@@ -84,7 +84,7 @@
 <td style="text-align: right;">35</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Starts or stops the camera immediately.</td>
@@ -101,7 +101,7 @@
 <td style="text-align: right;">36</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Event">Event</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Event">Event</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Contains the state of the input ports.</td>
@@ -118,7 +118,7 @@
 <td style="text-align: right;">37</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Configures the valve 0 open time in milliseconds.</td>
@@ -135,7 +135,7 @@
 <td style="text-align: right;">38</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Bitmask to set the available outputs.</td>
@@ -152,7 +152,7 @@
 <td style="text-align: right;">39</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Bitmask to clear the available outputs.</td>
@@ -169,7 +169,7 @@
 <td style="text-align: right;">40</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Bitmask to toggle the available outputs.</td>
@@ -186,7 +186,7 @@
 <td style="text-align: right;">41</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U8">U8</a></td>
 <td style="text-align: right;">1</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Command">Command</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">[&lsquo;<a href="#ref-Device-Mask-DO">DO</a>&rsquo;]</td>
 <td style="text-align: left;">Bitmask to write the available outputs.</td>
@@ -203,7 +203,7 @@
 <td style="text-align: right;">42</td>
 <td style="text-align: left;"><a href="#ref-PayloadType-U16">U16</a></td>
 <td style="text-align: right;">2</td>
-<td style="text-align: left;"><a href="#ref-RegisterType-Event">Event</a></td>
+<td style="text-align: left;">[<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Event">Event</a>]</td>
 <td style="text-align: left;">[&lsquo;<a href="#ref-Device-PayloadMember-ADC">ADC</a>&rsquo;, &lsquo;<a href="#ref-Device-PayloadMember-Encoder">Encoder</a>&rsquo;]</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">None</td>
@@ -223,7 +223,7 @@
 <p>address = 32 </p>
 <p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Event">Event</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Event">Event</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = None </p>
 <p>description = None </p>
@@ -240,7 +240,7 @@
 <p>address = 33 </p>
 <p>payloadType = <a href="#ref-PayloadType-U16">U16</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = [<a href="#ref-Device-Mask-DO">DO</a>] </p>
 <p>description = Sets the trigger frequency for camera 0 between 1 and 1000. </p>
@@ -257,7 +257,7 @@
 <p>address = 34 </p>
 <p>payloadType = <a href="#ref-PayloadType-U16">U16</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = None </p>
 <p>description = Sets the duration of the trigger pulse (minimum is 100) for camera 0. </p>
@@ -274,7 +274,7 @@
 <p>address = 35 </p>
 <p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = None </p>
 <p>description = Starts or stops the camera immediately. </p>
@@ -291,7 +291,7 @@
 <p>address = 36 </p>
 <p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Event">Event</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Event">Event</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = None </p>
 <p>description = Contains the state of the input ports. </p>
@@ -308,7 +308,7 @@
 <p>address = 37 </p>
 <p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = None </p>
 <p>description = Configures the valve 0 open time in milliseconds. </p>
@@ -325,7 +325,7 @@
 <p>address = 38 </p>
 <p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = None </p>
 <p>description = Bitmask to set the available outputs. </p>
@@ -342,7 +342,7 @@
 <p>address = 39 </p>
 <p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = None </p>
 <p>description = Bitmask to clear the available outputs. </p>
@@ -359,7 +359,7 @@
 <p>address = 40 </p>
 <p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = None </p>
 <p>description = Bitmask to toggle the available outputs. </p>
@@ -376,7 +376,7 @@
 <p>address = 41 </p>
 <p>payloadType = <a href="#ref-PayloadType-U8">U8</a> </p>
 <p>payloadLength = 1 </p>
-<p>registerType = <a href="#ref-RegisterType-Command">Command</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Write">Write</a>] </p>
 <p>payloadSpec = None </p>
 <p>maskType = [<a href="#ref-Device-Mask-DO">DO</a>] </p>
 <p>description = Bitmask to write the available outputs. </p>
@@ -393,7 +393,7 @@
 <p>address = 42 </p>
 <p>payloadType = <a href="#ref-PayloadType-U16">U16</a> </p>
 <p>payloadLength = 2 </p>
-<p>registerType = <a href="#ref-RegisterType-Event">Event</a> </p>
+<p>registerType = [<a href="#ref-RegisterType-Read">Read</a>, <a href="#ref-RegisterType-Event">Event</a>] </p>
 <p>payloadSpec = [<a href="#ref-Device-PayloadMember-ADC">ADC</a>, <a href="#ref-Device-PayloadMember-Encoder">Encoder</a>] </p>
 <p>maskType = None </p>
 <p>description = None </p>
@@ -651,19 +651,13 @@
 <h3><a name="ref-RegisterType-RegisterType"></a>RegisterType</h3>
 <ul>
 <li>
-<p><a name="ref-RegisterType-NONE"></a>NONE</p>
+<p><a name="ref-RegisterType-Read"></a>Read</p>
 </li>
 <li>
-<p><a name="ref-RegisterType-Command"></a>Command</p>
+<p><a name="ref-RegisterType-Write"></a>Write</p>
 </li>
 <li>
 <p><a name="ref-RegisterType-Event"></a>Event</p>
-</li>
-<li>
-<p><a name="ref-RegisterType-Config"></a>Config</p>
-</li>
-<li>
-<p><a name="ref-RegisterType-Both"></a>Both</p>
 </li>
 </ul>
 <h3><a name="ref-VisibilityType-VisibilityType"></a>VisibilityType</h3>

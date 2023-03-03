@@ -66,21 +66,29 @@ def _payloadType_converter(value: PayloadType | str) -> PayloadType:
 
 
 class RegisterType(BaseEnum):
-    NONE = "INVALID"
-    Command = "Command"
+    Read = "Read"
+    Write = "Write"
     Event = "Event"
-    Config = "Config"
-    Both = "Both"
 
 
 def _registerType_converter(
-        value: RegisterType | str
-        ) -> RegisterType:
-    if isinstance(value, str):
-        return RegisterType[value]
-    if isinstance(value, RegisterType):
-        return value
-    raise TypeError("Must be RegisterType or str.")
+        value: RegisterType | str | List[RegisterType, str]
+        ) -> List[RegisterType]:
+
+    def _singleton_converter(value: RegisterType | str) -> RegisterType:
+        if isinstance(value, str):
+            return RegisterType[value]
+        if isinstance(value, RegisterType):
+            return value
+        raise TypeError("Must be RegisterType or str.")
+
+    if isinstance(value, list):
+        return [_singleton_converter(it) for it in value]
+    elif isinstance(value, str) or isinstance(value, RegisterType):
+        return [_singleton_converter(value)]
+    else:
+        raise TypeError(
+            "Must be RegisterType, str, or a List with these elements.")
 
 
 class VisibilityType(BaseEnum):
@@ -363,8 +371,9 @@ class Register:
     payloadType = attr.ib(type=PayloadType | str,
                           converter=_payloadType_converter)
     payloadLength = attr.ib(default=1, type=int, converter=int)
-    registerType = attr.ib(default=RegisterType.NONE,
-                           type=str, converter=_registerType_converter)
+    registerType = attr.ib(default=[RegisterType.Read],
+                           type=str | List[str],
+                           converter=_registerType_converter)
     payloadSpec = attr.ib(default=None,
                           type=Optional[Dict[str, any]],
                           converter=_payloadSpec_parser)
@@ -382,6 +391,8 @@ class Register:
     uid = attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
+        if (RegisterType.Read not in self.registerType):
+            self.registerType.insert(0, RegisterType.Read)
         if self.uid is None:
             self.uid = UidReference(self)
 
@@ -445,6 +456,7 @@ def _inputPinModeType_converter(
     if isinstance(value, InputPinModeType):
         return value
     raise TypeError("Must be InputPinModeType or str.")
+
 
 class TriggerModeType(BaseEnum):
     none = "none"
