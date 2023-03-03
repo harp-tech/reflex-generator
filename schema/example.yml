@@ -11,18 +11,18 @@ registers:
     registerType: Event
   Cam0TriggerFrequency:
     address: 33
-    registerType: Command
+    registerType: Write
     payloadType: U16
     maskType: DO
     description: Sets the trigger frequency for camera 0 between 1 and 1000.
   Cam0TriggerDuration:
     address: 34
-    registerType: Command
+    registerType: Write
     payloadType: U16
     description: Sets the duration of the trigger pulse (minimum is 100) for camera 0.
   StartAndStop:
     address: 35
-    registerType: Command
+    registerType: Write
     payloadType: U8
     description: Starts or stops the camera immediately.
   InState:
@@ -32,27 +32,27 @@ registers:
     description: Contains the state of the input ports.
   Valve0Pulse:
     address: 37
-    registerType: Command
+    registerType: Write
     payloadType: U8
     description: Configures the valve 0 open time in milliseconds.
   OutSet:
     address: 38
-    registerType: Command
+    registerType: Write
     payloadType: U8
     description: Bitmask to set the available outputs.
   OutClear:
     address: 39
-    registerType: Command
+    registerType: Write
     payloadType: U8
     description: Bitmask to clear the available outputs.
   OutToggle:
     address: 40
-    registerType: Command
+    registerType: Write
     payloadType: U8
     description: Bitmask to toggle the available outputs.
   OutWrite:
     address: 41
-    registerType: Command
+    registerType: Write
     payloadType: U8
     maskType: DO
     description: Bitmask to write the available outputs.

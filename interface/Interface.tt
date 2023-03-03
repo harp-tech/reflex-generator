@@ -25,8 +25,9 @@ public class DeviceInfo
 [Flags]
 public enum RegisterType
 {
-    Command = 0x1,
-    Event = 0x2
+    Read = 0x1,
+    Write = 0x2,
+    Event = 0x4
 }
 
 public enum RegisterVisibility
@@ -39,7 +40,7 @@ public class RegisterInfo
 {
     public int Address;
     public string Description = "";
-    public RegisterType RegisterType;
+    public RegisterType RegisterType = RegisterType.Read;
     public PayloadType PayloadType;
     public int PayloadLength;
     public Dictionary<string, PayloadMemberInfo> PayloadSpec;
@@ -176,8 +177,8 @@ public static partial class TemplateHelper
 
     public static string GetRangeAttributeDeclaration(float? minValue, float? maxValue)
     {
-        var minValueDeclaration = minValue.HasValue ? minValue.Value.ToString() : "float.MinValue";
-        var maxValueDeclaration = maxValue.HasValue ? maxValue.Value.ToString() : "float.MaxValue";
+        var minValueDeclaration = minValue.HasValue ? minValue.Value.ToString() : "long.MinValue";
+        var maxValueDeclaration = maxValue.HasValue ? maxValue.Value.ToString() : "long.MaxValue";
         return $"[Range(min: {minValueDeclaration}, max: {maxValueDeclaration})]";
     }
 
@@ -363,7 +364,7 @@ class RegisterTypeConverter : IYamlTypeConverter
     {
         if (parser.TryConsume(out SequenceStart _))
         {
-            RegisterType value = default;
+            RegisterType value = RegisterType.Read;
             while (parser.TryConsume(out Scalar scalar))
             {
                 value |= (RegisterType)Enum.Parse(typeof(RegisterType), scalar.Value);
