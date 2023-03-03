@@ -17,7 +17,7 @@ var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
 
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(metadataFileName);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
-var commandRegisters = publicRegisters.Where(register => (register.Value.RegisterType & RegisterType.Command) != 0).ToList();
+var writeRegisters = publicRegisters.Where(register => (register.Value.RegisterType & RegisterType.Write) != 0).ToList();
 var deviceName = deviceMetadata.Device;
 #>
 using Bonsai;
@@ -134,6 +134,9 @@ foreach (var register in publicRegisters)
 foreach (var registerMetadata in publicRegisters)
 {
     var register = registerMetadata.Value;
+    var hasEvent = (register.RegisterType & RegisterType.Event) != 0;
+    var allowWrite = (register.RegisterType & RegisterType.Write) != 0;
+    var defaultMessageType = hasEvent ? "Event" : (allowWrite ? "Write" : "Read");
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
     var parsePayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType, register.PayloadLength);
     var parsePayloadSelector = $"message.GetPayload{parsePayloadSuffix}()";
@@ -161,7 +164,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </summary>
         public const int Address = <#= register.Address #>;
 <#
-    if ((register.RegisterType & RegisterType.Event) != 0)
+    if (hasEvent || !allowWrite)
     {
 #>
 
@@ -170,7 +173,7 @@ foreach (var registerMetadata in publicRegisters)
         /// </summary>
         public <#= registerMetadata.Key #>()
         {
-            MessageType = MessageType.Event;
+            MessageType = MessageType.<#= defaultMessageType #>;
         }
 <#
     }#>
@@ -371,7 +374,7 @@ foreach (var registerMetadata in publicRegisters)
 } // publicRegisters.Count > 0
 #>
 <#
-if (commandRegisters.Count > 0)
+if (writeRegisters.Count > 0)
 {
 #>
 
@@ -380,7 +383,7 @@ if (commandRegisters.Count > 0)
     /// <#= deviceName #> device.
     /// </summary>
 <#
-foreach (var register in commandRegisters)
+foreach (var register in writeRegisters)
 {
 #>
     /// <seealso cref="<#= register.Key #>Command"/>
@@ -388,7 +391,7 @@ foreach (var register in commandRegisters)
 }
 #>
 <#
-foreach (var register in commandRegisters)
+foreach (var register in writeRegisters)
 {
 #>
     [XmlInclude(typeof(<#= register.Key #>Command))]
@@ -403,13 +406,13 @@ foreach (var register in commandRegisters)
         /// </summary>
         public CreateMessage()
         {
-            Command = new <#= commandRegisters.First().Key #>Command();
+            Command = new <#= writeRegisters.First().Key #>Command();
         }
 
         string INamedElement.Name => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Command)}";
     }
 <#
-foreach (var registerMetadata in commandRegisters)
+foreach (var registerMetadata in writeRegisters)
 {
     var register = registerMetadata.Value;
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
