@@ -23,7 +23,7 @@ public class DeviceInfo
 }
 
 [Flags]
-public enum RegisterType
+public enum RegisterAccess
 {
     Read = 0x1,
     Write = 0x2,
@@ -40,9 +40,9 @@ public class RegisterInfo
 {
     public int Address;
     public string Description = "";
-    public RegisterType RegisterType = RegisterType.Read;
-    public PayloadType PayloadType;
-    public int PayloadLength;
+    public RegisterAccess Access = RegisterAccess.Read;
+    public PayloadType Type;
+    public int Length;
     public Dictionary<string, PayloadMemberInfo> PayloadSpec;
     public RegisterVisibility Visibility;
     public string MaskType;
@@ -52,7 +52,7 @@ public class RegisterInfo
     public float? MaxValue;
     public float? DefaultValue;
 
-    public string PayloadInterfaceType => TemplateHelper.GetInterfaceType(PayloadType, PayloadLength);
+    public string PayloadInterfaceType => TemplateHelper.GetInterfaceType(Type, Length);
 }
 
 public class PayloadMemberInfo
@@ -98,7 +98,7 @@ public static partial class TemplateHelper
         {
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .WithTypeConverter(RegisterTypeConverter.Instance)
+                .WithTypeConverter(RegisterAccessTypeConverter.Instance)
                 .WithTypeConverter(MaskValueTypeConverter.Instance)
                 .Build();
             return deserializer.Deserialize<DeviceInfo>(reader);
@@ -110,7 +110,7 @@ public static partial class TemplateHelper
         if (!string.IsNullOrEmpty(register.InterfaceType)) return register.InterfaceType;
         else if (register.PayloadSpec != null) return $"{name}Payload";
         else if (!string.IsNullOrEmpty(register.MaskType)) return register.MaskType;
-        else return GetInterfaceType(register.PayloadType, register.PayloadLength);
+        else return GetInterfaceType(register.Type, register.Length);
     }
 
     public static string GetInterfaceType(PayloadMemberInfo member, PayloadType payloadType)
@@ -351,23 +351,23 @@ class MaskValueTypeConverter : IYamlTypeConverter
     }
 }
 
-class RegisterTypeConverter : IYamlTypeConverter
+class RegisterAccessTypeConverter : IYamlTypeConverter
 {
-    public static RegisterTypeConverter Instance = new RegisterTypeConverter();
+    public static RegisterAccessTypeConverter Instance = new RegisterAccessTypeConverter();
 
     public bool Accepts(Type type)
     {
-        return type == typeof(RegisterType);
+        return type == typeof(RegisterAccess);
     }
 
     public object ReadYaml(IParser parser, Type type)
     {
         if (parser.TryConsume(out SequenceStart _))
         {
-            RegisterType value = RegisterType.Read;
+            RegisterAccess value = RegisterAccess.Read;
             while (parser.TryConsume(out Scalar scalar))
             {
-                value |= (RegisterType)Enum.Parse(typeof(RegisterType), scalar.Value);
+                value |= (RegisterAccess)Enum.Parse(typeof(RegisterAccess), scalar.Value);
             }
             parser.Consume<SequenceEnd>();
             return value;
@@ -375,7 +375,7 @@ class RegisterTypeConverter : IYamlTypeConverter
         else
         {
             var scalar = parser.Consume<Scalar>();
-            return (RegisterType)Enum.Parse(typeof(RegisterType), scalar.Value);
+            return (RegisterAccess)Enum.Parse(typeof(RegisterAccess), scalar.Value);
         }
     }
 

@@ -13,11 +13,11 @@ var metadataPath = !string.IsNullOrEmpty(firmwarePath)
     ? Host.ResolvePath(firmwarePath)
     : Path.GetDirectoryName(Host.TemplateFile);
 var templateFileName = Path.GetFileNameWithoutExtension(Host.TemplateFile);
-var metadataFileName = Path.Combine(metadataPath, templateFileName) + ".yml";
+var metadataFileName = Path.Combine(metadataPath, "device.yml");
 
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(metadataFileName);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
-var writeRegisters = publicRegisters.Where(register => (register.Value.RegisterType & RegisterType.Write) != 0).ToList();
+var writeRegisters = publicRegisters.Where(register => (register.Value.Access & RegisterAccess.Write) != 0).ToList();
 var deviceName = deviceMetadata.Device;
 #>
 using Bonsai;
@@ -134,11 +134,11 @@ foreach (var register in publicRegisters)
 foreach (var registerMetadata in publicRegisters)
 {
     var register = registerMetadata.Value;
-    var hasEvent = (register.RegisterType & RegisterType.Event) != 0;
-    var allowWrite = (register.RegisterType & RegisterType.Write) != 0;
+    var hasEvent = (register.Access & RegisterAccess.Event) != 0;
+    var allowWrite = (register.Access & RegisterAccess.Write) != 0;
     var defaultMessageType = hasEvent ? "Event" : (allowWrite ? "Write" : "Read");
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
-    var parsePayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType, register.PayloadLength);
+    var parsePayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.Type, register.Length);
     var parsePayloadSelector = $"message.GetPayload{parsePayloadSuffix}()";
     var parseConversion = TemplateHelper.GetEventConversion(register, parsePayloadSelector);
 
@@ -146,7 +146,7 @@ foreach (var registerMetadata in publicRegisters)
     var timestampedPayloadSelector = $"message.GetTimestampedPayload{parsePayloadSuffix}()";
     var timestampedParseConversion = TemplateHelper.GetEventConversion(register, payloadValueSelector);
 
-    var formatPayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.PayloadType);
+    var formatPayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.Type);
     var formatConversion = TemplateHelper.GetCommandConversion(register, "value");
     var summaryDescription = string.IsNullOrEmpty(register.Description)
         ? $"manipulates messages from register {registerMetadata.Key}"
@@ -191,7 +191,7 @@ foreach (var registerMetadata in publicRegisters)
             var memberConversion = TemplateHelper.GetPayloadMemberParser(
                 member.Value,
                 "payload",
-                register.PayloadType);
+                register.Type);
 #>
             result.<#= member.Key #> = <#= memberConversion #>;
 <#
@@ -210,15 +210,15 @@ foreach (var registerMetadata in publicRegisters)
         {
             <#= register.PayloadInterfaceType #> result;
 <#
-        if (register.PayloadLength > 0)
+        if (register.Length > 0)
         {
 #>
-            result = new <#= TemplateHelper.GetInterfaceType(register.PayloadType) #>[<#= register.PayloadLength #>];
+            result = new <#= TemplateHelper.GetInterfaceType(register.Type) #>[<#= register.Length #>];
 <#
         }
 #>
 <#
-        var assigned = new bool[Math.Max(1, register.PayloadLength)];
+        var assigned = new bool[Math.Max(1, register.Length)];
         foreach (var member in register.PayloadSpec)
         {
             var payloadIndex = member.Value.Offset.GetValueOrDefault(0);
@@ -226,7 +226,7 @@ foreach (var registerMetadata in publicRegisters)
             var memberConversion = TemplateHelper.GetPayloadMemberFormatter(
                 member.Value,
                 $"value.{member.Key}",
-                register.PayloadType,
+                register.Type,
                 assigned[payloadIndex]);
             assigned[payloadIndex] = true;
 #>
@@ -434,7 +434,7 @@ foreach (var registerMetadata in writeRegisters)
     {
         foreach (var member in register.PayloadSpec)
         {
-            var memberType = TemplateHelper.GetInterfaceType(member.Value, register.PayloadType);
+            var memberType = TemplateHelper.GetInterfaceType(member.Value, register.Type);
             defaultValue = TemplateHelper.GetDefaultValueAssignment(member.Value.DefaultValue, member.Value.MinValue);
             var memberDescription = string.IsNullOrEmpty(member.Value.Description)
                 ? $"to write on payload member {member.Key}"
@@ -543,7 +543,7 @@ foreach (var registerMetadata in deviceMetadata.Registers)
     {<#
     foreach (var member in register.PayloadSpec)
     {
-        var memberType = TemplateHelper.GetInterfaceType(member.Value, register.PayloadType);
+        var memberType = TemplateHelper.GetInterfaceType(member.Value, register.Type);
 #>
 
         /// <summary>
