@@ -101,8 +101,8 @@ foreach (var registerMetadata in deviceMetadata.Registers)
 {
     var register = registerMetadata.Value;
     var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
-    var arrayType = register.PayloadLength > 0 ? $"[{register.PayloadLength}]" : string.Empty;
-    var firmwareType = TemplateHelper.GetFirmwareType(register.PayloadType);
+    var arrayType = register.Length > 0 ? $"[{register.Length}]" : string.Empty;
+    var firmwareType = TemplateHelper.GetFirmwareType(register.Type);
 #>
     <#= firmwareType #> REG_<#= registerName #><#= arrayType #>;
 <#
@@ -120,7 +120,7 @@ foreach (var registerMetadata in deviceMetadata.Registers)
     var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
     var register = registerMetadata.Value;
 #>
-#define ADD_REG_<#= registerName #>      <#= register.Address #> // <#= register.PayloadType #>    <#= register.Description #>
+#define ADD_REG_<#= registerName #>      <#= register.Address #> // <#= register.Type #>    <#= register.Description #>
 <#
 }
 #>
