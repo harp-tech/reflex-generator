@@ -65,30 +65,30 @@ def _payloadType_converter(value: PayloadType | str) -> PayloadType:
     raise TypeError("Must be PayloadType or str.")
 
 
-class RegisterType(BaseEnum):
+class AccessType(BaseEnum):
     Read = "Read"
     Write = "Write"
     Event = "Event"
 
 
-def _registerType_converter(
-        value: RegisterType | str | List[RegisterType, str]
-        ) -> List[RegisterType]:
+def _accessType_converter(
+        value: AccessType | str | List[AccessType, str]
+        ) -> List[AccessType]:
 
-    def _singleton_converter(value: RegisterType | str) -> RegisterType:
+    def _singleton_converter(value: AccessType | str) -> AccessType:
         if isinstance(value, str):
-            return RegisterType[value]
-        if isinstance(value, RegisterType):
+            return AccessType[value]
+        if isinstance(value, AccessType):
             return value
-        raise TypeError("Must be RegisterType or str.")
+        raise TypeError("Must be AccessType or str.")
 
     if isinstance(value, list):
         return [_singleton_converter(it) for it in value]
-    elif isinstance(value, str) or isinstance(value, RegisterType):
+    elif isinstance(value, str) or isinstance(value, AccessType):
         return [_singleton_converter(value)]
     else:
         raise TypeError(
-            "Must be RegisterType, str, or a List with these elements.")
+            "Must be AccessType, str, or a List with these elements.")
 
 
 class VisibilityType(BaseEnum):
@@ -104,6 +104,25 @@ def _visibilityType_converter(
     if isinstance(value, VisibilityType):
         return value
     raise TypeError("Must be VisibilityType or str.")
+
+class VolatilityType(BaseEnum):
+    Yes = "Yes"
+    No = "No"
+
+
+def _volatilityType_converter(
+        value: VolatilityType | str | bool
+        ) -> VolatilityType:
+    if isinstance(value, str):
+        return VolatilityType[value]
+    if isinstance(value, VolatilityType):
+        return value
+    if isinstance(value, bool):
+        if value:
+            return VolatilityType.Yes
+        else:
+            return VolatilityType.No
+    raise TypeError("Must be VolatilityType or str.")
 
 
 class MaskCategory(BaseEnum):
@@ -215,7 +234,7 @@ class Mask:
     name = attr.ib(type=str, converter=str)
     description = attr.ib(default=None,
                           type=Optional[str], converter=str)
-    value = attr.ib(default=None,
+    values = attr.ib(default=None,
                     type=Optional[List[BitOrValue]],
                     converter=_make_bitorvalue_array)
     bits = attr.ib(default=None,
@@ -266,7 +285,7 @@ class Mask:
             _attr = self.bits
             _f = "bits"
         elif self.maskCategory == MaskCategory.GroupMask:
-            _attr = self.value
+            _attr = self.values
             _f = "values"
         else:
             raise ValueError("Invalid MaskCategory.")
@@ -299,7 +318,7 @@ def _get_mask_helper(value: str) -> Mask:
     if value in list(_MASKS.keys()):
         return (_MASKS[value])
     else:
-        raise KeyError("Specified mask has not been defined.")
+        raise KeyError(f"Specified mask, {value}, has not been defined.")
 
 
 # ---------------------------------------------------------------------------- #
@@ -368,12 +387,12 @@ def _payloadSpec_parser(
 class Register:
     name = attr.ib(type=str)
     address = attr.ib(type=int, converter=int)
-    payloadType = attr.ib(type=PayloadType | str,
+    type = attr.ib(type=PayloadType | str,
                           converter=_payloadType_converter)
-    payloadLength = attr.ib(default=1, type=int, converter=int)
-    registerType = attr.ib(default=[RegisterType.Read],
-                           type=str | List[str],
-                           converter=_registerType_converter)
+    length = attr.ib(default=1, type=int, converter=int)
+    access = attr.ib(default=[AccessType.Read],
+                     type=str | List[str],
+                     converter=_accessType_converter)
     payloadSpec = attr.ib(default=None,
                           type=Optional[Dict[str, any]],
                           converter=_payloadSpec_parser)
@@ -387,12 +406,14 @@ class Register:
     interfaceType = attr.ib(default=None, type=Optional[str])
     visibility = attr.ib(default=VisibilityType.Public,
                          type=str, converter=_visibilityType_converter)
+    volatile = attr.ib(default=VolatilityType.Yes,
+                       type=str|bool, converter=_volatilityType_converter)
     group = attr.ib(default=None, type=Optional[str], converter=str)
     uid = attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
-        if (RegisterType.Read not in self.registerType):
-            self.registerType.insert(0, RegisterType.Read)
+        if (AccessType.Read not in self.access):
+            self.access.insert(0, AccessType.Read)
         if self.uid is None:
             self.uid = UidReference(self)
 
