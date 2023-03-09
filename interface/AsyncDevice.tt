@@ -1,0 +1,115 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Interface.tt" #><##>
+<#@ output extension=".Interface.cs" #>
+<#
+var namespaceName = Host.ResolveAssemblyReference("$(MSBuildProjectName)");
+var firmwarePath = Host.ResolveAssemblyReference("$(HarpFirmwarePath)");
+var metadataPath = !string.IsNullOrEmpty(firmwarePath)
+    ? Host.ResolvePath(firmwarePath)
+    : Path.GetDirectoryName(Host.TemplateFile);
+var metadataFileName = Path.Combine(metadataPath, "device.yml");
+
+var deviceMetadata = TemplateHelper.ReadDeviceMetadata(metadataFileName);
+var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
+var deviceName = deviceMetadata.Device;
+var deviceClassName = deviceName + "Device";
+#>
+using Bonsai.Harp;
+using System.Threading.Tasks;
+
+namespace <#= namespaceName #>
+{
+    /// <summary>
+    /// Represents an asynchronous API to configure and interface with <#= deviceName #> devices.
+    /// </summary>
+    public partial class <#= deviceClassName #> : AsyncDevice
+    {
+        private <#= deviceClassName #>(string portName)
+            : base(portName)
+        {
+        }
+
+        /// <summary>
+        /// Asynchronously initializes a new instance of the <see cref="<#= deviceClassName #>"/>
+        /// class on the specified port.
+        /// </summary>
+        /// <param name="portName">
+        /// The name of the serial port used to communicate with the Harp device.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous initialization operation. The value of
+        /// the <see cref="Task{TResult}.Result"/> parameter contains the device object.
+        /// </returns>
+        public static async Task<<#= deviceClassName #>> CreateAsync(string portName)
+        {
+            var device = new <#= deviceClassName #>(portName);
+            var whoAmI = await device.ReadUInt16Async(DeviceRegisters.WhoAmI);
+            if (whoAmI != <#= deviceMetadata.WhoAmI #>)
+            {
+                var errorMessage = string.Format(
+                    "The device ID {1} on {0} was unexpected. Check whether a <#= deviceName #> device is connected to the specified serial port.",
+                    portName, whoAmI);
+                throw new HarpException(errorMessage);
+            }
+
+            return device;
+        }
+<#
+foreach (var registerMetadata in publicRegisters)
+{
+    var register = registerMetadata.Value;
+    var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
+    var parsePayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.Type);
+#>
+
+        /// <summary>
+        /// Asynchronously reads the contents of the <#= registerMetadata.Key #> register.
+        /// </summary>
+        /// <returns>
+        /// A task that represents the asynchronous read operation. The <see cref="Task{TResult}.Result"/>
+        /// property contains the register payload.
+        /// </returns>
+        public async Task<<#= interfaceType #>> Read<#= registerMetadata.Key #>Async()
+        {
+            var reply = await CommandAsync(HarpCommand.Read<#= parsePayloadSuffix #>(<#= registerMetadata.Key #>.Address));
+            return <#= registerMetadata.Key #>.GetPayload(reply);
+        }
+
+        /// <summary>
+        /// Asynchronously reads the timestamped contents of the <#= registerMetadata.Key #> register.
+        /// </summary>
+        /// <returns>
+        /// A task that represents the asynchronous read operation. The <see cref="Task{TResult}.Result"/>
+        /// property contains the timestamped register payload.
+        /// </returns>
+        public async Task<Timestamped<<#= interfaceType #>>> ReadTimestamped<#= registerMetadata.Key #>Async()
+        {
+            var reply = await CommandAsync(HarpCommand.Read<#= parsePayloadSuffix #>(<#= registerMetadata.Key #>.Address));
+            return <#= registerMetadata.Key #>.GetTimestampedPayload(reply);
+        }
+<#
+    if ((register.Access & RegisterAccess.Write) != 0)
+    {
+#>
+
+        /// <summary>
+        /// Asynchronously writes a value to the <#= registerMetadata.Key #> register.
+        /// </summary>
+        /// <param name="value">The value to be stored in the register.</param>
+        /// <returns>The task object representing the asynchronous write operation.</returns>
+        public async Task Write<#= registerMetadata.Key #>Async(<#= interfaceType #> value)
+        {
+            var request = <#= registerMetadata.Key #>.FromPayload(MessageType.Write, value);
+            await CommandAsync(request);
+        }
+<#
+    }
+}
+#>
+    }
+}
