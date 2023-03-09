@@ -38,3 +38,10 @@ You should now be able to access the fields of the schema by pressing `Ctrl+Spac
 4. Start adding the fields of the schema to your file.
    1. Add `device` and fill in the respective fields;
    2. Add `registers`, and start adding all the registers you need by filling in, at least, the obligatory fields.
+
+## Installing the Harp Viewer Extension in VSCode
+
+1. Download the Harp Viewer Extension VSIX file
+2. Open VSCode
+3. Click F1 and search for `Extensions: Install from VSIX...`
+4. Once installed, you can run the extension by opening a valid `.yml` device file, and clicking `Device Preview` at the top right corner of the VSCode window.
