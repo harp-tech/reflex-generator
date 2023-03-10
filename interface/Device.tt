@@ -94,6 +94,30 @@ if (publicRegisters.Count > 0)
 #>
 
     /// <summary>
+    /// Represents an operator that filters register-specific messages
+    /// reported by the <see cref="<#= deviceName #>"/> device.
+    /// </summary>
+<#
+foreach (var register in publicRegisters)
+{
+#>
+    [XmlInclude(typeof(Bonsai.Expressions.TypeMapping<<#= register.Key #>>))]
+<#
+}
+#>
+    [Description("Filters register-specific messages reported by the <#= deviceName #> device.")]
+    public class FilterMessage : FilterMessageBuilder
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FilterMessage"/> class.
+        /// </summary>
+        public FilterMessage()
+        {
+            Register = new Bonsai.Expressions.TypeMapping<<#= publicRegisters.First().Key #>>();
+        }
+    }
+
+    /// <summary>
     /// Represents an operator which filters and selects specific messages
     /// reported by the <#= deviceName #> device.
     /// </summary>
