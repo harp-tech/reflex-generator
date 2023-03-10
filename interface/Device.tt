@@ -28,6 +28,7 @@ foreach (var ns in Host.StandardImports)
     WriteLine("using " + ns + ";");
 }
 #>
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
@@ -49,6 +50,43 @@ namespace <#= namespaceName #>
         public Device() : base(whoAmI: <#= deviceMetadata.WhoAmI #>) { }
 
         string INamedElement.Name => nameof(<#= deviceName #>);
+
+        /// <summary>
+        /// Gets a read-only mapping from address to register name.
+        /// </summary>
+        public static IReadOnlyDictionary<int, string> RegisterMap { get; } = new Dictionary<int, string>
+        {
+<#
+int registerIndex = 0;
+foreach (var register in publicRegisters)
+{
+#>
+            { <#= register.Value.Address #>, "<#= register.Key #>" }<#= ++registerIndex < publicRegisters.Count ? "," : string.Empty #>
+<#
+}
+#>
+        };
+    }
+
+    /// <summary>
+    /// Represents an operator that groups the sequence of <see cref="<#= deviceName #>"/>" messages by register name.
+    /// </summary>
+    [Description("Groups the sequence of <#= deviceName #> messages by register name.")]
+    public partial class GroupByRegister : Combinator<HarpMessage, IGroupedObservable<string, HarpMessage>>
+    {
+        /// <summary>
+        /// Groups an observable sequence of <see cref="<#= deviceName #>"/> messages
+        /// by register name.
+        /// </summary>
+        /// <param name="source">The sequence of Harp device messages.</param>
+        /// <returns>
+        /// A sequence of observable groups, each of which corresponds to a unique
+        /// <see cref="<#= deviceName #>"/> register.
+        /// </returns>
+        public override IObservable<IGroupedObservable<string, HarpMessage>> Process(IObservable<HarpMessage> source)
+        {
+            return source.GroupBy(message => Device.RegisterMap[message.Address]);
+        }
     }
 <#
 if (publicRegisters.Count > 0)
