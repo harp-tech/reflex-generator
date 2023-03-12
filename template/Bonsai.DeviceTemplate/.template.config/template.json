@@ -34,6 +34,12 @@
             "replaces": "$projectname$",
             "fileRename": "DeviceTemplate"
         },
+        "projectTitle": {
+            "type": "derived",
+            "valueSource": "name",
+            "valueTransform": "replaceDotsWithSpaces",
+            "replaces": "$title$"
+        },
         "deviceName": {
             "type": "derived",
             "valueSource": "name",
@@ -104,6 +110,11 @@
             "identifier": "replace",
             "pattern": "^.*\\.(?=[^\\.]+$)",
             "replacement": ""
+        },
+        "replaceDotsWithSpaces": {
+            "identifier": "replace",
+            "pattern": "\\.",
+            "replacement": " "
         }
     },
     "sourceName": "$projectname$",
