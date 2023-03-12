@@ -53,26 +53,42 @@
             },
             "replaces": "$year$"
         },
-        "guid1": {
+        "swguid1": {
             "type": "generated",
             "generator": "guid",
-            "replaces": "$guid1$",
+            "replaces": "$swguid1$",
             "parameters": {
                 "defaultFormat": "B"
             }
         },
-        "guid2": {
+        "swguid2": {
             "type": "generated",
             "generator": "guid",
-            "replaces": "$guid2$",
+            "replaces": "$swguid2$",
             "parameters": {
                 "defaultFormat": "B"
             }
         },
-        "guid3": {
+        "swguid3": {
             "type": "generated",
             "generator": "guid",
-            "replaces": "$guid3$",
+            "replaces": "$swguid3$",
+            "parameters": {
+                "defaultFormat": "B"
+            }
+        },
+        "fwguid1": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "$fwguid1$",
+            "parameters": {
+                "defaultFormat": "B"
+            }
+        },
+        "fwguid2": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "$fwguid2$",
             "parameters": {
                 "defaultFormat": "B"
             }
