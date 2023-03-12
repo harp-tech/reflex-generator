@@ -17,10 +17,10 @@
   <Target Name="TextTransform" BeforeTargets="AfterBuild">
     <Exec WorkingDirectory="$(ProjectDir)"
           Condition="Exists($(DeviceMetadata))"
-          Command="t4 Device.tt -P=$(TargetDir) -p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -o=../Interface/$projectname$/Device" />
+          Command="t4 Device.tt -P=$(TargetDir) -p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -o=../Interface/$projectname$/Device.Generated.cs" />
     <Exec WorkingDirectory="$(ProjectDir)"
           Condition="Exists($(DeviceMetadata))"
-          Command="t4 AsyncDevice.tt -P=$(TargetDir) -p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -o=../Interface/$projectname$/AsyncDevice" />
+          Command="t4 AsyncDevice.tt -P=$(TargetDir) -p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -o=../Interface/$projectname$/AsyncDevice.Generated.cs" />
     <Exec WorkingDirectory="$(ProjectDir)"
           Condition="Exists($(IOMetadata))"
           Command="t4 Firmware.tt -P=$(TargetDir) -p:RegisterMetadataPath=$(DeviceMetadata) -p:IOMetadataPath=$(IOMetadata) -o=../Firmware/$projectname$/app_ios_and_regs.h" />
