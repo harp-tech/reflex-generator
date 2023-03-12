@@ -6,5 +6,5 @@ hardwareTargets: "0.0"
 registers:
   DigitalInputs:
     address: 32
-    registerType: Event
-    payloadType: U8
+    access: Event
+    type: U8
