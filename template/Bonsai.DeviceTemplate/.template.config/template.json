@@ -34,6 +34,12 @@
             "replaces": "$projectname$",
             "fileRename": "DeviceTemplate"
         },
+        "deviceName": {
+            "type": "derived",
+            "valueSource": "name",
+            "valueTransform": "valueAfterLastDot",
+            "replaces": "$devicename$"
+        },
         "authors": {
             "type": "parameter",
             "defaultValue": "",
@@ -76,6 +82,11 @@
         "replace": {
             "identifier": "replace",
             "pattern": "",
+            "replacement": ""
+        },
+        "valueAfterLastDot": {
+            "identifier": "replace",
+            "pattern": "^.*\\.(?=[^\\.]+$)",
             "replacement": ""
         }
     },

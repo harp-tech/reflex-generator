@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/harp-tech/reflex-generator/main/schema/device.json
-device: $projectname$
+device: $devicename$
 whoAmI: 0000
 firmwareVersion: "0.1"
 hardwareTargets: "0.0"
