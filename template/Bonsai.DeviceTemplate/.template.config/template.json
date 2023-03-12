@@ -1,0 +1,85 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "harp-tech",
+    "classifications": [ "Harp", "Device" ],
+    "description": "A project for creating a C# Bonsai package (.dll)",
+    "identity": "Harp.DeviceTemplate",
+    "name": "Harp Device",
+    "tags": {
+        "type": "solution"
+    },
+    "sources": [
+        {
+            "modifiers": [
+                {
+                    "exclude": [
+                        "**/[Bb]in/**",
+                        "**/[Oo]bj/**",
+                        "**/[Pp]roperties/**",
+                        "**/*.ico"
+                    ],
+                    "rename": {
+                        "template.editorconfig": ".editorconfig",
+                        "template.gitignore": ".gitignore"
+                    }
+                }
+            ]
+        }
+    ],
+    "symbols": {
+        "projectName": {
+            "type": "derived",
+            "valueSource": "name",
+            "valueTransform": "replace",
+            "replaces": "$projectname$",
+            "fileRename": "DeviceTemplate"
+        },
+        "authors": {
+            "type": "parameter",
+            "defaultValue": "",
+            "replaces": "$registeredorganization$"
+        },
+        "year": {
+            "type": "generated",
+            "generator": "now",
+            "parameters": {
+                "format": "yyyy"
+            },
+            "replaces": "$year$"
+        },
+        "guid1": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "$guid1$",
+            "parameters": {
+                "defaultFormat": "B"
+            }
+        },
+        "guid2": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "$guid2$",
+            "parameters": {
+                "defaultFormat": "B"
+            }
+        },
+        "guid3": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "$guid3$",
+            "parameters": {
+                "defaultFormat": "B"
+            }
+        }
+    },
+    "forms": {
+        "replace": {
+            "identifier": "replace",
+            "pattern": "",
+            "replacement": ""
+        }
+    },
+    "sourceName": "$projectname$",
+    "shortName": "harpdevice",
+    "preferNameDirectory": true
+}
