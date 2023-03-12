@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RootNamespace>$projectname$</RootNamespace>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>bin</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DeviceMetadata>..\device.yml</DeviceMetadata>
+    <IOMetadata>..\ios.yml</IOMetadata>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Bonsai.Harp" Version="3.4.0" />
+    <PackageReference Include="YamlDotNet" Version="13.0.2" />
+  </ItemGroup>
+  <Target Name="TextTransform" BeforeTargets="AfterBuild">
+    <Exec WorkingDirectory="$(ProjectDir)"
+          Condition="Exists($(DeviceMetadata))"
+          Command="t4 Device.tt -P=$(TargetDir) -p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -o=../Interface/$projectname$/Device" />
+    <Exec WorkingDirectory="$(ProjectDir)"
+          Condition="Exists($(DeviceMetadata))"
+          Command="t4 AsyncDevice.tt -P=$(TargetDir) -p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -o=../Interface/$projectname$/AsyncDevice" />
+    <Exec WorkingDirectory="$(ProjectDir)"
+          Condition="Exists($(IOMetadata))"
+          Command="t4 Firmware.tt -P=$(TargetDir) -p:RegisterMetadataPath=$(DeviceMetadata) -p:IOMetadataPath=$(IOMetadata) -o=../Firmware/$projectname$/app_ios_and_regs.h" />
+  </Target>
+</Project>
