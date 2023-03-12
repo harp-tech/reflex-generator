@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("$guid1$") = "Harp.$projectname$", "Harp.$projectname$\Harp.$projectname$.csproj", "$guid2$"
+Project("$guid1$") = "$projectname$", "$projectname$\$projectname$.csproj", "$guid2$"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
