@@ -585,11 +585,13 @@ foreach (var registerMetadata in writeRegisters)
 } // commandRegisters.Count > 0
 #>
 <#
+var payloadTypes = new HashSet<string>();
 foreach (var registerMetadata in deviceMetadata.Registers)
 {
     var register = registerMetadata.Value;
     if (register.PayloadSpec == null) continue;
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
+    if (!payloadTypes.Add(interfaceType)) continue;
 #>
 
     /// <summary>
