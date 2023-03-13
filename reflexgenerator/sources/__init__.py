@@ -2,12 +2,18 @@ from __future__ import annotations
 import attr
 
 from attr import define
-from typing import Optional, List, Dict, Tuple, List
 from numbers import Number
-
 from enum import Enum
-
-from reflexgenerator.generator.xref import UidReference, make_anchor, create_link
+from typing import (
+    Optional,
+    List,
+    Dict,
+    Tuple,
+    List)
+from reflexgenerator.generator.xref import (
+    UidReference,
+    make_anchor,
+    create_link)
 
 
 # ---------------------------------------------------------------------------- #
@@ -31,7 +37,9 @@ class BaseEnum(Enum):
 
     @classmethod
     def generate_anchor_references(self) -> List[str]:
-        return [make_anchor(self._format_ref(entry.name), entry.name) for entry in self]
+        return [make_anchor(
+            self._format_ref(entry.name), entry.name
+            ) for entry in self]
 
     @classmethod
     def format_anchor_references(self):
@@ -39,7 +47,10 @@ class BaseEnum(Enum):
         def _formater(value: str) -> str:
             return f"""- {value}\n\n"""
 
-        return f"""### {make_anchor(self._format_ref(self.__name__), self.__name__)}\n""" + "".join([_formater(it) for it in self.generate_anchor_references()])
+        return f"""### {make_anchor(
+            self._format_ref(self.__name__),
+            self.__name__)}\n""" + "".join(
+                [_formater(it) for it in self.generate_anchor_references()])
 
     def generate_link_reference(self) -> str:
         return create_link(self._format_ref(self.name), self.name)
@@ -105,6 +116,7 @@ def _visibilityType_converter(
         return value
     raise TypeError("Must be VisibilityType or str.")
 
+
 class VolatilityType(BaseEnum):
     Yes = "Yes"
     No = "No"
@@ -164,10 +176,9 @@ class Metadata:
         return attr.asdict(self, recurse=False)
 
     def format_dict(self) -> str:
-        return(
-            "".join(
+        return ("".join(
             [f'''<font size="4"> - {k}: {v} </font> \n\n'''
-             for k,v in self.to_dict().items()
+             for k, v in self.to_dict().items()
              if k != "uid"]))
 
 # ---------------------------------------------------------------------------- #
@@ -208,7 +219,7 @@ class BitOrValue:
         return attr.asdict(self, recurse=False)
 
     def __str__(self) -> str:
-        #return self.uid.render_pointer(self.name)
+        # return self.uid.render_pointer(self.name)
         return self.format_dict()
 
     def __repr__(self) -> str:
@@ -235,8 +246,8 @@ class Mask:
     description = attr.ib(default=None,
                           type=Optional[str], converter=str)
     values = attr.ib(default=None,
-                    type=Optional[List[BitOrValue]],
-                    converter=_make_bitorvalue_array)
+                     type=Optional[List[BitOrValue]],
+                     converter=_make_bitorvalue_array)
     bits = attr.ib(default=None,
                    type=Optional[List[BitOrValue]],
                    converter=_make_bitorvalue_array)
@@ -368,6 +379,7 @@ class PayloadMember:
     def __repr__(self) -> str:
         return self.uid.render_pointer(self.name)
 
+
 def _payloadSpec_parser(
         value: Optional[List[PayloadMember] | PayloadMember | Dict[str, any]]
         ) -> Optional[List[PayloadMember]]:
@@ -388,7 +400,7 @@ class Register:
     name = attr.ib(type=str)
     address = attr.ib(type=int, converter=int)
     type = attr.ib(type=PayloadType | str,
-                          converter=_payloadType_converter)
+                   converter=_payloadType_converter)
     length = attr.ib(default=1, type=int, converter=int)
     access = attr.ib(default=[AccessType.Read],
                      type=str | List[str],
@@ -407,7 +419,7 @@ class Register:
     visibility = attr.ib(default=VisibilityType.Public,
                          type=str, converter=_visibilityType_converter)
     volatile = attr.ib(default=VolatilityType.Yes,
-                       type=str|bool, converter=_volatilityType_converter)
+                       type=str | bool, converter=_volatilityType_converter)
     group = attr.ib(default=None, type=Optional[str], converter=str)
     uid = attr.ib(default=None, type=Optional[UidReference])
 
@@ -578,7 +590,9 @@ class InputPin:
     direction = attr.ib(type=str, converter=_directionType_converter)
     pinMode = attr.ib(type=str, converter=_inputPinModeType_converter)
     triggerMode = attr.ib(type=str, converter=_triggerModeType_converter)
-    interruptPriority = attr.ib(type=str, converter=_interruptPriorityType_converter)
+    interruptPriority = attr.ib(
+        type=str,
+        converter=_interruptPriorityType_converter)
     interruptNumber = attr.ib(type=int, converter=int)
     description = attr.ib(default=None, type=Optional[str], converter=str)
     uid = attr.ib(default=None, type=Optional[UidReference])
@@ -605,6 +619,7 @@ class InputPin:
 
     def __str__(self) -> str:
         return self.uid.render_pointer(self.name)
+
 
 @define
 class OutputPin:
@@ -653,9 +668,8 @@ _ELEMENT_TYPE = Register | Mask | Metadata | InputPin | OutputPin
 class Collection:
     "Parent class that represents a collection of HarpElements"
     def __init__(
-        self,
-        element_array: Optional[_COLLECTION_TYPE],
-        ) -> None:
+            self,
+            element_array: Optional[_COLLECTION_TYPE]) -> None:
 
         self.elements = []
         if element_array:
