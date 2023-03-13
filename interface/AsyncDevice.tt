@@ -12,7 +12,6 @@
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(MetadataPath);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
 var deviceName = deviceMetadata.Device;
-var deviceClassName = deviceName + "Device";
 #>
 using Bonsai.Harp;
 using System.Threading.Tasks;
@@ -22,15 +21,15 @@ namespace <#= Namespace #>
     /// <summary>
     /// Represents an asynchronous API to configure and interface with <#= deviceName #> devices.
     /// </summary>
-    public partial class <#= deviceClassName #> : AsyncDevice
+    public partial class AsyncDevice : Bonsai.Harp.AsyncDevice
     {
-        private <#= deviceClassName #>(string portName)
+        private AsyncDevice(string portName)
             : base(portName)
         {
         }
 
         /// <summary>
-        /// Asynchronously initializes a new instance of the <see cref="<#= deviceClassName #>"/>
+        /// Asynchronously initializes a new instance of the <see cref="AsyncDevice"/>
         /// class on the specified port.
         /// </summary>
         /// <param name="portName">
@@ -40,9 +39,9 @@ namespace <#= Namespace #>
         /// A task that represents the asynchronous initialization operation. The value of
         /// the <see cref="Task{TResult}.Result"/> parameter contains the device object.
         /// </returns>
-        public static async Task<<#= deviceClassName #>> CreateAsync(string portName)
+        public static async Task<AsyncDevice> CreateAsync(string portName)
         {
-            var device = new <#= deviceClassName #>(portName);
+            var device = new AsyncDevice(portName);
             var whoAmI = await device.ReadUInt16Async(DeviceRegisters.WhoAmI);
             if (whoAmI != <#= deviceMetadata.WhoAmI #>)
             {
