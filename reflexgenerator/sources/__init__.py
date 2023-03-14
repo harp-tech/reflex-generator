@@ -205,10 +205,16 @@ class BitOrValue:
               value: Tuple[str, Dict[Number | str, Optional[str]]]
               ) -> BitOrValue:
         _name = value[0]
-        _value = list(value[1].keys())[0]
-        try:
-            _description = value[1]["description"]
-        except KeyError:
+
+        if isinstance(value[1], Dict):  # allow optional parameters
+            _value = list(value[1].keys())[0]
+            try:
+                _description = value[1]["description"]
+            except KeyError:
+                _value = value[1]
+                _description = None
+        else:  # Assume only the value has been passed
+            _value = value[1]
             _description = None
         return BitOrValue(
             name=_name,
