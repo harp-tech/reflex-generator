@@ -598,7 +598,43 @@ foreach (var registerMetadata in deviceMetadata.Registers)
     /// Represents the payload of the <#= registerMetadata.Key #> register.
     /// </summary>
     public struct <#= interfaceType #>
-    {<#
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="<#= interfaceType #>"/> structure.
+        /// </summary>
+<#
+    foreach (var member in register.PayloadSpec)
+    {
+        var paramName = CamelCaseNamingConvention.Instance.Apply(member.Key);
+#>
+        /// <param name="<#= paramName #>"><#= member.Value.Description #></param>
+<#
+    }
+#>
+        public <#= interfaceType #>(
+<#
+    var paramIndex = 0;
+    foreach (var member in register.PayloadSpec)
+    {
+        var paramName = CamelCaseNamingConvention.Instance.Apply(member.Key);
+        var paramType = TemplateHelper.GetInterfaceType(member.Value, register.Type);
+#>
+            <#= paramType #> <#= paramName #><#= ++paramIndex < register.PayloadSpec.Count ? "," : ")" #>
+<#
+    }
+#>
+        {
+<#
+    foreach (var member in register.PayloadSpec)
+    {
+        var paramName = CamelCaseNamingConvention.Instance.Apply(member.Key);
+#>
+            <#= member.Key #> = <#= paramName #>;
+<#
+    }
+#>
+        }
+<#
     foreach (var member in register.PayloadSpec)
     {
         var memberType = TemplateHelper.GetInterfaceType(member.Value, register.Type);
