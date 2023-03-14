@@ -103,8 +103,8 @@ def _accessType_converter(
 
 
 class VisibilityType(BaseEnum):
-    Public = "Public"
-    Private = "Private"
+    public = "public"
+    private = "private"
 
 
 def _visibilityType_converter(
@@ -422,7 +422,7 @@ class Register:
     maxValue = attr.ib(default=None, type=Optional[Number])
     minValue = attr.ib(default=None, type=Optional[Number])
     interfaceType = attr.ib(default=None, type=Optional[str])
-    visibility = attr.ib(default=VisibilityType.Public,
+    visibility = attr.ib(default=VisibilityType.public,
                          type=str, converter=_visibilityType_converter)
     volatile = attr.ib(default=VolatilityType.Yes,
                        type=str | bool, converter=_volatilityType_converter)
