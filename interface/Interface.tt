@@ -307,6 +307,13 @@ public static partial class TemplateHelper
         }
         else return $" = {expression}";
     }
+
+    public static string RemoveSuffix(string value, string suffix)
+    {
+        return value.EndsWith(suffix)
+            ? value.Substring(0, value.Length - suffix.Length)
+            : value;
+    }
 }
 
 class MaskValueTypeConverter : IYamlTypeConverter
