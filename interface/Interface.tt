@@ -96,12 +96,13 @@ public static partial class TemplateHelper
     {
         using (var reader = new StreamReader(path))
         {
+            var parser = new MergingParser(new Parser(reader));
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .WithTypeConverter(RegisterAccessTypeConverter.Instance)
                 .WithTypeConverter(MaskValueTypeConverter.Instance)
                 .Build();
-            return deserializer.Deserialize<DeviceInfo>(reader);
+            return deserializer.Deserialize<DeviceInfo>(parser);
         }
     }
 
