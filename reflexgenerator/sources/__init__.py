@@ -4,6 +4,8 @@ import attr
 from attr import define
 from numbers import Number
 from enum import Enum
+from functools import partial
+
 from typing import (
     Optional,
     List,
@@ -195,14 +197,17 @@ class BitOrValue:
     value = attr.ib(default=None, type=Optional[int], converter=hex)
     description = attr.ib(default=None, type=Optional[str], converter=str)
     uid = attr.ib(default=None, type=Optional[UidReference])
+    skip_uid = attr.ib(default=False, type=bool)
 
     def __attrs_post_init__(self):
-        if self.uid is None:
-            self.uid = UidReference(self)
+        if self.skip_uid is not True:
+            if self.uid is None:
+                self.uid = UidReference(self)
 
     @classmethod
     def parse(self,
-              value: Tuple[str, Dict[Number | str, Optional[str]]]
+              value: Tuple[str, Dict[Number | str, Optional[str]]],
+              skip_uid: bool = False
               ) -> BitOrValue:
         _name = value[0]
 
@@ -219,7 +224,8 @@ class BitOrValue:
         return BitOrValue(
             name=_name,
             value=_value,
-            description=_description)
+            description=_description,
+            skip_uid=skip_uid)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False)
@@ -238,12 +244,14 @@ class BitOrValue:
 
 
 def _make_bitorvalue_array(
-        value: Optional[Dict[str, int]]
+        value: Optional[Dict[str, int]],
+        skip_uid: bool = False
         ) -> Optional[List[BitOrValue]]:
     if value is None:
         return None
     if isinstance(value, dict):
-        return [BitOrValue.parse(bit) for bit in value.items()]
+        return [BitOrValue.parse(bit, skip_uid=skip_uid)
+                for bit in value.items()]
 
 
 @define
@@ -253,10 +261,10 @@ class Mask:
                           type=Optional[str], converter=str)
     values = attr.ib(default=None,
                      type=Optional[List[BitOrValue]],
-                     converter=_make_bitorvalue_array)
+                     converter=partial(_make_bitorvalue_array, skip_uid=True))
     bits = attr.ib(default=None,
                    type=Optional[List[BitOrValue]],
-                   converter=_make_bitorvalue_array)
+                   converter=partial(_make_bitorvalue_array, skip_uid=True))
     maskCategory = attr.ib(default=None,
                            type=Optional[MaskCategory],
                            converter=_maskCategory_converter)
@@ -266,6 +274,14 @@ class Mask:
         _MASKS.update({self.name: self})
         if self.uid is None:
             self.uid = UidReference(self)
+        if self.maskCategory not in [MaskCategory.BitMask,
+                                     MaskCategory.GroupMask]:
+            raise ValueError("maskCategory must be either BitMask or GroupMask")
+        _bits_values = self.bits if self.maskCategory == MaskCategory.BitMask \
+            else self.values
+        if _bits_values is not None:
+            for bit_value in _bits_values:
+                bit_value.uid = UidReference(bit_value, self.name)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False)
@@ -359,19 +375,22 @@ class PayloadMember:
     minValue = attr.ib(default=None, type=Optional[Number])
     interfaceType = attr.ib(default=None, type=Optional[str])
     uid = attr.ib(default=None, type=Optional[UidReference])
+    skip_uid = attr.ib(default=False, type=bool)
 
     def __attrs_post_init__(self):
-        if self.uid is None:
-            self.uid = UidReference(self)
+        if self.skip_uid is not True:
+            if self.uid is None:
+                self.uid = UidReference(self)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False, )
 
     @classmethod
     def from_json(self,
-                  json_object: Tuple[str, Dict[str, any]]) -> PayloadMember:
+                  json_object: Tuple[str, Dict[str, any]],
+                  skip_uid=False) -> PayloadMember:
         _name = json_object[0]
-        return PayloadMember(name=_name, **json_object[1])
+        return PayloadMember(name=_name, skip_uid=skip_uid, **json_object[1])
 
     def format_dict(self) -> str:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
@@ -387,8 +406,8 @@ class PayloadMember:
 
 
 def _payloadSpec_parser(
-        value: Optional[List[PayloadMember] | PayloadMember | Dict[str, any]]
-        ) -> Optional[List[PayloadMember]]:
+        value: Optional[List[PayloadMember] | PayloadMember | Dict[str, any]],
+        skip_uid: bool = True,) -> Optional[List[PayloadMember]]:
     if value is None:
         return None
     if isinstance(value, PayloadMember):
@@ -396,7 +415,8 @@ def _payloadSpec_parser(
     if isinstance(value, list):
         return value
     if isinstance(value, dict):
-        return [PayloadMember.from_json(s) for s in value.items()]
+        return [PayloadMember.from_json(s, skip_uid=skip_uid)
+                for s in value.items()]
     print(value, type(value))
     raise TypeError("Unexpected input type.")
 
@@ -413,7 +433,7 @@ class Register:
                      converter=_accessType_converter)
     payloadSpec = attr.ib(default=None,
                           type=Optional[Dict[str, any]],
-                          converter=_payloadSpec_parser)
+                          converter=partial(_payloadSpec_parser, skip_uid=True))
     maskType = attr.ib(default=None,
                        type=Optional[List[Mask]], converter=get_mask)
     description = attr.ib(default=None, type=Optional[str], converter=str)
@@ -434,6 +454,9 @@ class Register:
             self.access.insert(0, AccessType.Read)
         if self.uid is None:
             self.uid = UidReference(self)
+        if self.payloadSpec is not None:
+            for entry in self.payloadSpec:
+                entry.uid = UidReference(entry, self.name)
 
     def to_dict(self) -> Dict[str, any]:
         return attr.asdict(self, recurse=False, )

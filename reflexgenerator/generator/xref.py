@@ -11,10 +11,11 @@ class UidReference:
 
     def __init__(
             self,
-            parent) -> None:
+            parent,
+            add_mod_uid_str=None) -> None:
 
         self._parent = parent
-        self._uid = self._generate_uid()
+        self._uid = self._generate_uid(add_mod_uid_str)
         self._pointers = []
 
     @property
@@ -29,13 +30,16 @@ class UidReference:
     def current_pointers(self) -> list:
         return self._pointers
 
-    def _generate_uid(self) -> str:
-        _ref = f"ref-{DEVICE}-{self.parent.__class__.__name__}-{self.parent.name}"
+    def _generate_uid(self, add_mod_uid_str=None) -> str:
+        if add_mod_uid_str is None:
+            _ref = f"ref-{DEVICE}-{self.parent.__class__.__name__}-{self.parent.name}"
+        else:
+            _ref = f"ref-{DEVICE}-{self.parent.__class__.__name__}-{add_mod_uid_str}.{self.parent.name}"
         if _ref not in self.REFERENCES:
             self.REFERENCES[_ref] = self
         else:
-            raise KeyError("A key with the same name as the current reference\
-                            already exists!")
+            raise KeyError(f"A key ({_ref}) with the same name as the current\
+                            reference already exists!")
         return _ref
 
     def render_reference(self,
