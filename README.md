@@ -1,8 +1,6 @@
 # reflex-generator
 Library to automatically generate firmware, interface and documentation for harp devices
 
-
-
 ## Pre-requisites
 
 
@@ -45,3 +43,19 @@ You should now be able to access the fields of the schema by pressing `Ctrl+Spac
 2. Open VSCode
 3. Click F1 and search for `Extensions: Install from VSIX...`
 4. Once installed, you can run the extension by opening a valid `.yml` device file, and clicking `Device Preview` at the top right corner of the VSCode window.
+
+
+## How to install the firmware and interface generator
+
+1. Install Bonsai in your system. You can find the instructions [here](https://bonsai-rx.org/docs/getting-started/installation/).
+2. install DotNet >6 in your system. You can find the instructions [here](https://dotnet.microsoft.com/download/dotnet/6.0).
+3. Download the Nuget package `Harp.Templates` (available in Nuget soon...).
+4. Open a command-line and run `dotnet new --install Harp.Templates` to install `Harp.Templates` package that contains the template. (For now, you must specify the local template, by running `dotnet new --install ./local/path/to/Harp.Templates.nupkg`).
+5. Confirm the package has been installed by running `dotnet new --list`.
+6. To create a new project, run `dotnet new harpdevice -n <project-name>`. We strongly advise you to follow the convention `Harp.Device` for `<project-name>`.
+7. Open the project folder in VSCode. (`cd project-name` & `code .`).
+8. The project template should create a file with instructions (`README.md`) to generate the Bonsai interface and Device firmware.
+9. Install the code generator: ```dotnet tool install -g dotnet-t4```
+10. Go into the folder `Generators` and run `dotnet build`.
+11. Confirm that a solution has been created inside `Firmware` and `Interface` folders. Importantly, each time you run `build`, it will override any automatically generated code currently present in the folders.
+12. Simply replace the relevant `.yml` files necessary to generate the firmware and try to build the solution.
