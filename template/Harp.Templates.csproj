@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Bonsai.DeviceTemplate\**\*" Exclude="**\**\bin\**;**\**\obj\**;**\**\Properties\**;**\*.ico;**\*.user" />
+    <Content Include="Bonsai.DeviceTemplate\**\*" Exclude="**\**\bin\**;**\**\obj\**;**\*.ico;**\*.user" />
     <Content Include="..\interface\*.tt" PackagePath="$(ContentTargetFolders)\Bonsai.DeviceTemplate\Interface\Harp.DeviceTemplate" />
     <Compile Remove="**\*" />
   </ItemGroup>

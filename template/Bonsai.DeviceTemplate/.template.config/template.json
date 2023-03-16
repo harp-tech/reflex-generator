@@ -15,7 +15,6 @@
                     "exclude": [
                         "**/[Bb]in/**",
                         "**/[Oo]bj/**",
-                        "**/[Pp]roperties/**",
                         "**/*.ico"
                     ],
                     "rename": {
