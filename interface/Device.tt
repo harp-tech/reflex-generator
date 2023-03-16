@@ -592,10 +592,11 @@ foreach (var registerMetadata in deviceMetadata.Registers)
     if (register.PayloadSpec == null) continue;
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
     if (!payloadTypes.Add(interfaceType)) continue;
+    var registerName = TemplateHelper.RemoveSuffix(interfaceType, "Payload");
 #>
 
     /// <summary>
-    /// Represents the payload of the <#= registerMetadata.Key #> register.
+    /// Represents the payload of the <#= registerName #> register.
     /// </summary>
     public struct <#= interfaceType #>
     {
