@@ -45,6 +45,7 @@ public class RegisterInfo
     public int Length;
     public Dictionary<string, PayloadMemberInfo> PayloadSpec;
     public RegisterVisibility Visibility;
+    public bool Volatile;
     public string MaskType;
     public string InterfaceType;
     public string Converter;
