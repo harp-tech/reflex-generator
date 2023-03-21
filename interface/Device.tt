@@ -450,11 +450,11 @@ foreach (var register in writeRegisters)
 foreach (var register in writeRegisters)
 {
 #>
-    [XmlInclude(typeof(<#= register.Key #>Command))]
+    [XmlInclude(typeof(Create<#= register.Key #>Payload))]
 <#
 }
 #>
-    [Description("Creates standard command messages for the <#= deviceName #> device.")]
+    [Description("Creates standard message payloads for the <#= deviceName #> device.")]
     public partial class CreateMessage : CreateMessageBuilder, INamedElement
     {
         /// <summary>
@@ -462,10 +462,10 @@ foreach (var register in writeRegisters)
         /// </summary>
         public CreateMessage()
         {
-            Command = new <#= writeRegisters.First().Key #>Command();
+            Payload = new Create<#= writeRegisters.First().Key #>Payload();
         }
 
-        string INamedElement.Name => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Command)}";
+        string INamedElement.Name => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Payload)}";
     }
 <#
 foreach (var registerMetadata in writeRegisters)
@@ -479,12 +479,13 @@ foreach (var registerMetadata in writeRegisters)
 #>
 
     /// <summary>
-    /// Represents an operator that creates a sequence of command messages
+    /// Represents an operator that creates a sequence of message payloads
     /// <#= summaryDescription #>.
     /// </summary>
+    [DisplayName("<#= registerMetadata.Key #>Payload")]
     [WorkflowElementCategory(ElementCategory.Transform)]
-    [Description("Creates a sequence of command messages <#= summaryDescription #>.")]
-    public partial class <#= registerMetadata.Key #>Command : HarpCombinator
+    [Description("Creates a sequence of message payloads <#= summaryDescription #>.")]
+    public partial class Create<#= registerMetadata.Key #>Payload : HarpCombinator
     {<#
     if (register.PayloadSpec != null)
     {
