@@ -435,7 +435,7 @@ if (writeRegisters.Count > 0)
 #>
 
     /// <summary>
-    /// Represents an operator which creates standard command messages for the
+    /// Represents an operator which creates standard message payloads for the
     /// <#= deviceName #> device.
     /// </summary>
 <#
@@ -538,16 +538,31 @@ foreach (var registerMetadata in writeRegisters)
 #>
 
         /// <summary>
-        /// Creates an observable sequence of command messages
+        /// Creates an observable sequence that contains a single message
         /// <#= summaryDescription #>.
         /// </summary>
+        /// <returns>
+        /// A sequence containing a single <see cref="HarpMessage"/> object
+        /// representing the created message payload.
+        /// </returns>
+        public IObservable<HarpMessage> Process()
+        {
+            return Process(Observable.Return(System.Reactive.Unit.Default));
+        }
+
+        /// <summary>
+        /// Creates an observable sequence of message payloads
+        /// <#= summaryDescription #>.
+        /// </summary>
+        /// <typeparam name="TSource">
+        /// The type of the elements in the <paramref name="source"/> sequence.
+        /// </typeparam>
         /// <param name="source">
-        /// A sequence of <see cref="<#= interfaceType #>"/> objects representing the
-        /// register payload.
+        /// The sequence containing the notifications used for emitting message payloads.
         /// </param>
         /// <returns>
         /// A sequence of <see cref="HarpMessage"/> objects representing each
-        /// command message.
+        /// created message payload.
         /// </returns>
         public IObservable<HarpMessage> Process<TSource>(IObservable<TSource> source)
         {
