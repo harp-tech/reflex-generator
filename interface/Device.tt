@@ -224,6 +224,16 @@ foreach (var registerMetadata in publicRegisters)
         /// Represents the address of the <see cref="<#= registerMetadata.Key #>"/> register. This field is constant.
         /// </summary>
         public const int Address = <#= register.Address #>;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="<#= registerMetadata.Key #>"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.<#= register.Type #>;
+
+        /// <summary>
+        /// Represents the length of the <see cref="<#= registerMetadata.Key #>"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = <#= Math.Max(1, register.Length) #>;
 <#
     if (hasEvent || !allowWrite)
     {
