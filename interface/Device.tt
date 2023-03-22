@@ -196,14 +196,14 @@ foreach (var registerMetadata in publicRegisters)
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
     var parsePayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.Type, register.Length);
     var parsePayloadSelector = $"message.GetPayload{parsePayloadSuffix}()";
-    var parseConversion = TemplateHelper.GetEventConversion(register, parsePayloadSelector);
+    var parseConversion = TemplateHelper.GetParseConversion(register, parsePayloadSelector);
 
     var payloadValueSelector = "payload.Value";
     var timestampedPayloadSelector = $"message.GetTimestampedPayload{parsePayloadSuffix}()";
-    var timestampedParseConversion = TemplateHelper.GetEventConversion(register, payloadValueSelector);
+    var timestampedParseConversion = TemplateHelper.GetParseConversion(register, payloadValueSelector);
 
     var formatPayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.Type);
-    var formatConversion = TemplateHelper.GetCommandConversion(register, "value");
+    var formatConversion = TemplateHelper.GetFormatConversion(register, "value");
     var summaryDescription = string.IsNullOrEmpty(register.Description)
         ? $"manipulates messages from register {registerMetadata.Key}"
         : $"{char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
@@ -232,7 +232,8 @@ foreach (var registerMetadata in publicRegisters)
             MessageType = MessageType.<#= defaultMessageType #>;
         }
 <#
-    }#>
+    }
+#>
 <#
     if (register.PayloadSpec != null && string.IsNullOrEmpty(register.Converter))
     {
@@ -294,7 +295,7 @@ foreach (var registerMetadata in publicRegisters)
         }
 <#
     }#>
-        
+
         /// <summary>
         /// Returns the payload data for <see cref="<#= registerMetadata.Key #>"/> register messages.
         /// </summary>
@@ -330,24 +331,30 @@ foreach (var registerMetadata in publicRegisters)
         }
 
         /// <summary>
-        /// Creates a command message for the <see cref="<#= registerMetadata.Key #>"/> register.
+        /// Returns a Harp message for the <see cref="<#= registerMetadata.Key #>"/> register.
         /// </summary>
-        /// <param name="messageType">The type of the command message.</param>
-        /// <param name="value">A value representing the command message payload.</param>
-        /// <returns>A <see cref="HarpMessage"/> object representing the command message.</returns>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="<#= registerMetadata.Key #>"/> register
+        /// with the specified message type and payload.
+        /// </returns>
         public static HarpMessage FromPayload(MessageType messageType, <#= interfaceType #> value)
         {
             return HarpMessage.From<#= formatPayloadSuffix #>(Address, messageType, <#= formatConversion #>);
         }
 
         /// <summary>
-        /// Creates a timestamped command message for the <see cref="<#= registerMetadata.Key #>"/>
+        /// Returns a timestamped Harp message for the <see cref="<#= registerMetadata.Key #>"/>
         /// register.
         /// </summary>
         /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
-        /// <param name="messageType">The type of the command message.</param>
-        /// <param name="value">A value representing the command message payload.</param>
-        /// <returns>A <see cref="HarpMessage"/> object representing the command message.</returns>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="<#= registerMetadata.Key #>"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
         public static HarpMessage FromPayload(double timestamp, MessageType messageType, <#= interfaceType #> value)
         {
             return HarpMessage.From<#= formatPayloadSuffix #>(Address, timestamp, messageType, <#= formatConversion #>);
@@ -360,7 +367,7 @@ foreach (var registerMetadata in publicRegisters)
         /// <param name="source">The sequence of Harp device messages.</param>
         /// <returns>
         /// A sequence of <see cref="<#= interfaceType #>"/> objects representing the
-        /// register payload.
+        /// message payload.
         /// </returns>
         public IObservable<<#= interfaceType #>> Process(IObservable<HarpMessage> source)
         {
@@ -368,16 +375,16 @@ foreach (var registerMetadata in publicRegisters)
         }
 
         /// <summary>
-        /// Formats an observable sequence of values into command messages
+        /// Formats an observable sequence of values into Harp messages
         /// for the <see cref="<#= registerMetadata.Key #>"/> register.
         /// </summary>
         /// <param name="source">
         /// A sequence of <see cref="<#= interfaceType #>"/> objects representing the
-        /// register payload.
+        /// message payload.
         /// </param>
         /// <returns>
-        /// A sequence of <see cref="HarpMessage"/> objects representing each
-        /// command message.
+        /// A sequence of <see cref="HarpMessage"/> objects formatted for the
+        /// <see cref="<#= registerMetadata.Key #>"/> register.
         /// </returns>
         public IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
         {
@@ -385,16 +392,16 @@ foreach (var registerMetadata in publicRegisters)
         }
 
         /// <summary>
-        /// Formats an observable sequence of values into timestamped command messages
+        /// Formats an observable sequence of values into timestamped Harp messages
         /// for the <see cref="<#= registerMetadata.Key #>"/> register.
         /// </summary>
         /// <param name="source">
         /// A sequence of timestamped <see cref="<#= interfaceType #>"/> objects representing
-        /// the register payload.
+        /// the message payload.
         /// </param>
         /// <returns>
-        /// A sequence of <see cref="HarpMessage"/> objects representing each
-        /// timestamped command message.
+        /// A sequence of timestamped <see cref="HarpMessage"/> objects formatted for
+        /// the <see cref="<#= registerMetadata.Key #>"/> register.
         /// </returns>
         public IObservable<HarpMessage> Process(IObservable<Timestamped<<#= interfaceType #>>> source)
         {
@@ -435,14 +442,14 @@ if (writeRegisters.Count > 0)
 #>
 
     /// <summary>
-    /// Represents an operator which creates standard command messages for the
+    /// Represents an operator which creates standard message payloads for the
     /// <#= deviceName #> device.
     /// </summary>
 <#
 foreach (var register in writeRegisters)
 {
 #>
-    /// <seealso cref="<#= register.Key #>Command"/>
+    /// <seealso cref="Create<#= register.Key #>Payload"/>
 <#
 }
 #>
@@ -450,11 +457,11 @@ foreach (var register in writeRegisters)
 foreach (var register in writeRegisters)
 {
 #>
-    [XmlInclude(typeof(<#= register.Key #>Command))]
+    [XmlInclude(typeof(Create<#= register.Key #>Payload))]
 <#
 }
 #>
-    [Description("Creates standard command messages for the <#= deviceName #> device.")]
+    [Description("Creates standard message payloads for the <#= deviceName #> device.")]
     public partial class CreateMessage : CreateMessageBuilder, INamedElement
     {
         /// <summary>
@@ -462,10 +469,10 @@ foreach (var register in writeRegisters)
         /// </summary>
         public CreateMessage()
         {
-            Command = new <#= writeRegisters.First().Key #>Command();
+            Payload = new Create<#= writeRegisters.First().Key #>Payload();
         }
 
-        string INamedElement.Name => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Command)}";
+        string INamedElement.Name => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Payload)}";
     }
 <#
 foreach (var registerMetadata in writeRegisters)
@@ -479,12 +486,13 @@ foreach (var registerMetadata in writeRegisters)
 #>
 
     /// <summary>
-    /// Represents an operator that creates a sequence of command messages
+    /// Represents an operator that creates a sequence of message payloads
     /// <#= summaryDescription #>.
     /// </summary>
+    [DisplayName("<#= registerMetadata.Key #>Payload")]
     [WorkflowElementCategory(ElementCategory.Transform)]
-    [Description("Creates a sequence of command messages <#= summaryDescription #>.")]
-    public partial class <#= registerMetadata.Key #>Command : HarpCombinator
+    [Description("Creates a sequence of message payloads <#= summaryDescription #>.")]
+    public partial class Create<#= registerMetadata.Key #>Payload : HarpCombinator
     {<#
     if (register.PayloadSpec != null)
     {
@@ -537,16 +545,31 @@ foreach (var registerMetadata in writeRegisters)
 #>
 
         /// <summary>
-        /// Creates an observable sequence of command messages
+        /// Creates an observable sequence that contains a single message
         /// <#= summaryDescription #>.
         /// </summary>
+        /// <returns>
+        /// A sequence containing a single <see cref="HarpMessage"/> object
+        /// representing the created message payload.
+        /// </returns>
+        public IObservable<HarpMessage> Process()
+        {
+            return Process(Observable.Return(System.Reactive.Unit.Default));
+        }
+
+        /// <summary>
+        /// Creates an observable sequence of message payloads
+        /// <#= summaryDescription #>.
+        /// </summary>
+        /// <typeparam name="TSource">
+        /// The type of the elements in the <paramref name="source"/> sequence.
+        /// </typeparam>
         /// <param name="source">
-        /// A sequence of <see cref="<#= interfaceType #>"/> objects representing the
-        /// register payload.
+        /// The sequence containing the notifications used for emitting message payloads.
         /// </param>
         /// <returns>
         /// A sequence of <see cref="HarpMessage"/> objects representing each
-        /// command message.
+        /// created message payload.
         /// </returns>
         public IObservable<HarpMessage> Process<TSource>(IObservable<TSource> source)
         {
@@ -582,7 +605,7 @@ foreach (var registerMetadata in writeRegisters)
 }
 #>
 <#
-} // commandRegisters.Count > 0
+} // writeRegisters.Count > 0
 #>
 <#
 var payloadTypes = new HashSet<string>();

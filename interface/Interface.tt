@@ -190,7 +190,7 @@ public static partial class TemplateHelper
         return defaultValue.HasValue? $" = {defaultValue};" : string.Empty;
     }
 
-    public static string GetEventConversion(RegisterInfo register, string expression)
+    public static string GetParseConversion(RegisterInfo register, string expression)
     {
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
@@ -198,7 +198,7 @@ public static partial class TemplateHelper
         return GetConversionToInterfaceType(register.InterfaceType ?? register.MaskType, expression);
     }
 
-    public static string GetCommandConversion(RegisterInfo register, string expression)
+    public static string GetFormatConversion(RegisterInfo register, string expression)
     {
         var converter = register.Converter;
         if (!string.IsNullOrEmpty(converter)) return $"{converter}({expression})";
