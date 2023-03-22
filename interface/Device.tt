@@ -190,11 +190,15 @@ foreach (var register in publicRegisters)
 foreach (var registerMetadata in publicRegisters)
 {
     var register = registerMetadata.Value;
+    var hasConverter = register.HasConverter;
+    var rawPayload = register.Converter == MemberConverter.RawPayload;
     var hasEvent = (register.Access & RegisterAccess.Event) != 0;
     var allowWrite = (register.Access & RegisterAccess.Write) != 0;
     var defaultMessageType = hasEvent ? "Event" : (allowWrite ? "Write" : "Read");
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
-    var parsePayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.Type, register.Length);
+    var parsePayloadSuffix = rawPayload
+        ? string.Empty
+        : TemplateHelper.GetPayloadTypeSuffix(register.Type, register.Length);
     var parsePayloadSelector = $"message.GetPayload{parsePayloadSuffix}()";
     var parseConversion = TemplateHelper.GetParseConversion(register, parsePayloadSelector);
 
@@ -202,8 +206,9 @@ foreach (var registerMetadata in publicRegisters)
     var timestampedPayloadSelector = $"message.GetTimestampedPayload{parsePayloadSuffix}()";
     var timestampedParseConversion = TemplateHelper.GetParseConversion(register, payloadValueSelector);
 
-    var formatPayloadSuffix = TemplateHelper.GetPayloadTypeSuffix(register.Type);
+    var formatPayloadSuffix = rawPayload ? "Payload" : TemplateHelper.GetPayloadTypeSuffix(register.Type);
     var formatConversion = TemplateHelper.GetFormatConversion(register, "value");
+    if (rawPayload) formatConversion = $"PayloadType.{register.Type}, {formatConversion}";
     var summaryDescription = string.IsNullOrEmpty(register.Description)
         ? $"manipulates messages from register {registerMetadata.Key}"
         : $"{char.ToLower(register.Description[0])}{register.Description.Substring(1).TrimEnd('.')}";
@@ -235,8 +240,26 @@ foreach (var registerMetadata in publicRegisters)
     }
 #>
 <#
-    if (register.PayloadSpec != null && string.IsNullOrEmpty(register.Converter))
+    if (hasConverter)
     {
+#>
+
+        private static partial <#= interfaceType #> ParsePayload(<#= register.PayloadInterfaceType #> payload);
+<#
+    }
+    else if (register.PayloadSpec != null)
+    {
+        foreach (var member in register.PayloadSpec)
+        {
+            if (member.Value.HasConverter)
+            {
+                var memberType = TemplateHelper.GetInterfaceType(member.Value, register.Type);
+#>
+
+        private static partial <#= memberType #> ParsePayload<#= member.Key #>(<#= register.PayloadInterfaceType #> payload<#= member.Key #>);
+<#
+            }
+        }
 #>
 
         static <#= interfaceType #> ParsePayload(<#= register.PayloadInterfaceType #> payload)
@@ -246,6 +269,7 @@ foreach (var registerMetadata in publicRegisters)
         foreach (var member in register.PayloadSpec)
         {
             var memberConversion = TemplateHelper.GetPayloadMemberParser(
+                member.Key,
                 member.Value,
                 "payload",
                 register.Type);
@@ -259,8 +283,27 @@ foreach (var registerMetadata in publicRegisters)
 <#
     }
 
-    if (register.PayloadSpec != null && string.IsNullOrEmpty(register.Converter))
+    if (hasConverter)
     {
+#>
+
+        private static partial <#= register.PayloadInterfaceType #> FormatPayload(<#= interfaceType #> value);
+<#
+    }
+    else if (register.PayloadSpec != null)
+    {
+        foreach (var member in register.PayloadSpec)
+        {
+            if (member.Value.HasConverter)
+            {
+                var paramName = CamelCaseNamingConvention.Instance.Apply(member.Key);
+                var memberType = TemplateHelper.GetInterfaceType(member.Value, register.Type);
+#>
+
+        private static partial <#= register.PayloadInterfaceType #> FormatPayload<#= member.Key #>(<#= memberType #> <#= paramName #>);
+<#
+            }
+        }
 #>
 
         static <#= register.PayloadInterfaceType #> FormatPayload(<#= interfaceType #> value)
@@ -281,6 +324,7 @@ foreach (var registerMetadata in publicRegisters)
             var payloadIndex = member.Value.Offset.GetValueOrDefault(0);
             var memberIndexer = member.Value.Offset.HasValue ? $"[{member.Value.Offset}]" : string.Empty;
             var memberConversion = TemplateHelper.GetPayloadMemberFormatter(
+                member.Key,
                 member.Value,
                 $"value.{member.Key}",
                 register.Type,
