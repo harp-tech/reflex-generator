@@ -1,3 +1,5 @@
+%YAML 1.1
+---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/harp-tech/reflex-generator/main/schema/device.json
 device: $devicename$
 whoAmI: 0000
@@ -6,5 +8,5 @@ hardwareTargets: "0.0"
 registers:
   DigitalInputs:
     address: 32
-    access: Event
     type: U8
+    access: Event
