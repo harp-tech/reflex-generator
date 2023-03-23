@@ -24,6 +24,7 @@ foreach (var ns in Host.StandardImports)
 #>
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
 
@@ -54,7 +55,8 @@ namespace <#= Namespace #>
         /// <summary>
         /// Gets a read-only mapping from address to register name.
         /// </summary>
-        public static IReadOnlyDictionary<int, string> RegisterMap { get; } = new Dictionary<int, string>
+        public static new IReadOnlyDictionary<int, string> RegisterMap { get; } = new Dictionary<int, string>
+            (Bonsai.Harp.Device.RegisterMap.ToDictionary(entry => entry.Key, entry => entry.Value))
         {
 <#
 int registerIndex = 0;
