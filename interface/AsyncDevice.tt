@@ -36,8 +36,8 @@ namespace <#= Namespace #>
         public static async Task<AsyncDevice> CreateAsync(string portName)
         {
             var device = new AsyncDevice(portName);
-            var whoAmI = await device.ReadUInt16Async(DeviceRegisters.WhoAmI);
-            if (whoAmI != <#= deviceMetadata.WhoAmI #>)
+            var whoAmI = await device.ReadWhoAmIAsync();
+            if (whoAmI != Device.WhoAmI)
             {
                 var errorMessage = string.Format(
                     "The device ID {1} on {0} was unexpected. Check whether a <#= deviceName #> device is connected to the specified serial port.",

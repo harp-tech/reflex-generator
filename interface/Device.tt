@@ -39,9 +39,15 @@ namespace <#= Namespace #>
     public partial class Device : Bonsai.Harp.Device, INamedElement
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Device" class.
+        /// Represents the unique identity class of the <see cref="<#= deviceName #>"/> device.
+        /// This field is constant.
         /// </summary>
-        public Device() : base(whoAmI: <#= deviceMetadata.WhoAmI #>) { }
+        public const int WhoAmI = <#= deviceMetadata.WhoAmI #>;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Device"/> class.
+        /// </summary>
+        public Device() : base(WhoAmI) { }
 
         string INamedElement.Name => nameof(<#= deviceName #>);
 
