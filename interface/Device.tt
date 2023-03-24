@@ -108,7 +108,7 @@ foreach (var register in publicRegisters)
 }
 #>
     [Description("Filters register-specific messages reported by the <#= deviceName #> device.")]
-    public class FilterMessage : FilterMessageBuilder
+    public class FilterMessage : FilterMessageBuilder, INamedElement
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FilterMessage"/> class.
@@ -116,6 +116,11 @@ foreach (var register in publicRegisters)
         public FilterMessage()
         {
             Register = new Bonsai.Expressions.TypeMapping<<#= publicRegisters.First().Key #>>();
+        }
+
+        string INamedElement.Name
+        {
+            get => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Register?.GetType().GenericTypeArguments[0])}";
         }
     }
 
