@@ -26,7 +26,7 @@
           Condition="Exists($(DeviceMetadata)) And $([System.String]::new('%(Content.Link)').EndsWith('Device.tt'))"
           Command="t4 %(Content.Identity) $(InterfaceFlags) -o=$(InterfacePath)\%(Content.Link)" />
     <Exec WorkingDirectory="$(ProjectDir)"
-          Condition="Exists($(DeviceMetadata)) And '%(Content.Link)' == 'Firmware.tt'"
+          Condition="Exists($(IOMetadata)) And '%(Content.Link)' == 'Firmware.tt'"
           Command="t4 %(Content.Identity) $(FirmwareFlags) -o=$(FirmwarePath)\app_ios_and_regs.h" />
   </Target>
 </Project>
