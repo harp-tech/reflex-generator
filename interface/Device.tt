@@ -70,21 +70,21 @@ foreach (var register in publicRegisters)
     }
 
     /// <summary>
-    /// Represents an operator that groups the sequence of <see cref="<#= deviceName #>"/>" messages by register name.
+    /// Represents an operator that groups the sequence of <see cref="<#= deviceName #>"/>" messages by register type.
     /// </summary>
-    [Description("Groups the sequence of <#= deviceName #> messages by register name.")]
-    public partial class GroupByRegister : Combinator<HarpMessage, IGroupedObservable<string, HarpMessage>>
+    [Description("Groups the sequence of <#= deviceName #> messages by register type.")]
+    public partial class GroupByRegister : Combinator<HarpMessage, IGroupedObservable<Type, HarpMessage>>
     {
         /// <summary>
         /// Groups an observable sequence of <see cref="<#= deviceName #>"/> messages
-        /// by register name.
+        /// by register type.
         /// </summary>
         /// <param name="source">The sequence of Harp device messages.</param>
         /// <returns>
         /// A sequence of observable groups, each of which corresponds to a unique
         /// <see cref="<#= deviceName #>"/> register.
         /// </returns>
-        public override IObservable<IGroupedObservable<string, HarpMessage>> Process(IObservable<HarpMessage> source)
+        public override IObservable<IGroupedObservable<Type, HarpMessage>> Process(IObservable<HarpMessage> source)
         {
             return source.GroupBy(message => Device.RegisterMap[message.Address]);
         }
