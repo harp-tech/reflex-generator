@@ -52,9 +52,9 @@ namespace <#= Namespace #>
         string INamedElement.Name => nameof(<#= deviceName #>);
 
         /// <summary>
-        /// Gets a read-only mapping from address to register name.
+        /// Gets a read-only mapping from address to register type.
         /// </summary>
-        public static new IReadOnlyDictionary<int, string> RegisterMap { get; } = new Dictionary<int, string>
+        public static new IReadOnlyDictionary<int, Type> RegisterMap { get; } = new Dictionary<int, Type>
             (Bonsai.Harp.Device.RegisterMap.ToDictionary(entry => entry.Key, entry => entry.Value))
         {
 <#
@@ -62,7 +62,7 @@ int registerIndex = 0;
 foreach (var register in publicRegisters)
 {
 #>
-            { <#= register.Value.Address #>, "<#= register.Key #>" }<#= ++registerIndex < publicRegisters.Count ? "," : string.Empty #>
+            { <#= register.Value.Address #>, typeof(<#= register.Key #>) }<#= ++registerIndex < publicRegisters.Count ? "," : string.Empty #>
 <#
 }
 #>
