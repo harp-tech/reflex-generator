@@ -7,7 +7,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ include file="Interface.tt" #><##>
-<#@ output extension=".cs" #>
+<#@ output extension=".Generated.cs" #>
 <#
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(MetadataPath);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
