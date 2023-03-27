@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <PackageId>Harp.Generators</PackageId>
+    <Title>Harp Generators</Title>
+    <Authors>harp-tech</Authors>
+    <Copyright>Copyright © harp-tech 2023</Copyright>
+    <Description>Provides source generators for Harp device firmware and software interface.</Description>
+    <PackageTags>Harp Device Firmware Interface Generators</PackageTags>
+    <PackageOutputPath>.\</PackageOutputPath>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>contentFiles</ContentTargetFolders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bonsai.Harp" Version="3.5.0" />
+    <PackageReference Include="YamlDotNet" Version="13.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="*.tt" />
+  </ItemGroup>
+
+</Project>

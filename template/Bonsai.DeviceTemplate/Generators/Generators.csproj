@@ -10,19 +10,23 @@
     <DeviceMetadata>..\device.yml</DeviceMetadata>
     <IOMetadata>..\ios.yml</IOMetadata>
   </PropertyGroup>
+  <PropertyGroup>
+    <InterfacePath>..\Interface\$projectname$</InterfacePath>
+    <FirmwarePath>..\Firmware\$projectname$</FirmwarePath>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bonsai.Harp" Version="3.4.0" />
-    <PackageReference Include="YamlDotNet" Version="13.0.2" />
+    <PackageReference Include="Harp.Generators" Version="0.1.0" GeneratePathProperty="true" />
   </ItemGroup>
   <Target Name="TextTransform" BeforeTargets="AfterBuild">
+    <PropertyGroup>
+      <InterfaceFlags>-p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -P=$(TargetDir)</InterfaceFlags>
+      <FirmwareFlags>-p:RegisterMetadataPath=$(DeviceMetadata) -p:IOMetadataPath=$(IOMetadata) -P=$(TargetDir)</FirmwareFlags>
+    </PropertyGroup>
     <Exec WorkingDirectory="$(ProjectDir)"
-          Condition="Exists($(DeviceMetadata))"
-          Command="t4 Device.tt -P=$(TargetDir) -p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -o=../Interface/$projectname$/Device.Generated.cs" />
+          Condition="Exists($(DeviceMetadata)) And $([System.String]::new('%(Content.Link)').EndsWith('Device.tt'))"
+          Command="t4 %(Content.Identity) $(InterfaceFlags) -o=$(InterfacePath)\%(Content.Link)" />
     <Exec WorkingDirectory="$(ProjectDir)"
-          Condition="Exists($(DeviceMetadata))"
-          Command="t4 AsyncDevice.tt -P=$(TargetDir) -p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -o=../Interface/$projectname$/AsyncDevice.Generated.cs" />
-    <Exec WorkingDirectory="$(ProjectDir)"
-          Condition="Exists($(IOMetadata))"
-          Command="t4 Firmware.tt -P=$(TargetDir) -p:RegisterMetadataPath=$(DeviceMetadata) -p:IOMetadataPath=$(IOMetadata) -o=../Firmware/$projectname$/app_ios_and_regs.h" />
+          Condition="Exists($(DeviceMetadata)) And '%(Content.Link)' == 'Firmware.tt'"
+          Command="t4 %(Content.Identity) $(FirmwareFlags) -o=$(FirmwarePath)\app_ios_and_regs.h" />
   </Target>
 </Project>
