@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>0.1.0</PackageVersion>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
     <PackageId>Harp.Templates</PackageId>
     <Title>Harp Templates</Title>
     <Authors>harp-tech</Authors>
@@ -19,7 +20,6 @@
 
   <ItemGroup>
     <Content Include="Bonsai.DeviceTemplate\**\*" Exclude="**\**\bin\**;**\**\obj\**;**\*.ico;**\*.user" />
-    <Content Include="..\interface\*.tt" PackagePath="$(ContentTargetFolders)\Bonsai.DeviceTemplate\Interface\Harp.DeviceTemplate" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
