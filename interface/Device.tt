@@ -122,7 +122,7 @@ foreach (var register in publicRegisters)
         /// </summary>
         public FilterMessage()
         {
-            Register = new Bonsai.Expressions.TypeMapping<<#= publicRegisters.First().Key #>>();
+            Register = new <#= publicRegisters.First().Key #>();
         }
 
         string INamedElement.Name
