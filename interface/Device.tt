@@ -127,7 +127,7 @@ foreach (var register in publicRegisters)
 
         string INamedElement.Name
         {
-            get => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Register?.GetType().GenericTypeArguments[0])}";
+            get => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Register)}";
         }
     }
 
