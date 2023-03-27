@@ -7,7 +7,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ include file="Interface.tt" #><##>
-<#@ output extension=".cs" #>
+<#@ output extension=".Generated.cs" #>
 <#
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(MetadataPath);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
@@ -52,9 +52,9 @@ namespace <#= Namespace #>
         string INamedElement.Name => nameof(<#= deviceName #>);
 
         /// <summary>
-        /// Gets a read-only mapping from address to register name.
+        /// Gets a read-only mapping from address to register type.
         /// </summary>
-        public static new IReadOnlyDictionary<int, string> RegisterMap { get; } = new Dictionary<int, string>
+        public static new IReadOnlyDictionary<int, Type> RegisterMap { get; } = new Dictionary<int, Type>
             (Bonsai.Harp.Device.RegisterMap.ToDictionary(entry => entry.Key, entry => entry.Value))
         {
 <#
@@ -62,7 +62,7 @@ int registerIndex = 0;
 foreach (var register in publicRegisters)
 {
 #>
-            { <#= register.Value.Address #>, "<#= register.Key #>" }<#= ++registerIndex < publicRegisters.Count ? "," : string.Empty #>
+            { <#= register.Value.Address #>, typeof(<#= register.Key #>) }<#= ++registerIndex < publicRegisters.Count ? "," : string.Empty #>
 <#
 }
 #>
@@ -102,7 +102,15 @@ if (publicRegisters.Count > 0)
 foreach (var register in publicRegisters)
 {
 #>
-    [XmlInclude(typeof(Bonsai.Expressions.TypeMapping<<#= register.Key #>>))]
+    /// <seealso cref="<#= register.Key #>"/>
+<#
+}
+#>
+<#
+foreach (var register in publicRegisters)
+{
+#>
+    [XmlInclude(typeof(<#= register.Key #>))]
 <#
 }
 #>
@@ -227,10 +235,10 @@ foreach (var registerMetadata in publicRegisters)
 #>
 
     /// <summary>
-    /// Represents an operator that <#= summaryDescription #>.
+    /// Represents a register that <#= summaryDescription #>.
     /// </summary>
     [Description("<#= register.Description #>")]
-    public partial class <#= registerMetadata.Key #> : HarpCombinator
+    public partial class <#= registerMetadata.Key #>
     {
         /// <summary>
         /// Represents the address of the <see cref="<#= registerMetadata.Key #>"/> register. This field is constant.
@@ -246,21 +254,6 @@ foreach (var registerMetadata in publicRegisters)
         /// Represents the length of the <see cref="<#= registerMetadata.Key #>"/> register. This field is constant.
         /// </summary>
         public const int RegisterLength = <#= Math.Max(1, register.Length) #>;
-<#
-    if (hasEvent || !allowWrite)
-    {
-#>
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="<#= registerMetadata.Key #>"/> class.
-        /// </summary>
-        public <#= registerMetadata.Key #>()
-        {
-            MessageType = MessageType.<#= defaultMessageType #>;
-        }
-<#
-    }
-#>
 <#
     if (hasConverter)
     {
@@ -425,75 +418,29 @@ foreach (var registerMetadata in publicRegisters)
         {
             return HarpMessage.From<#= formatPayloadSuffix #>(Address, timestamp, messageType, <#= formatConversion #>);
         }
-
-        /// <summary>
-        /// Filters and selects an observable sequence of messages from the
-        /// <see cref="<#= registerMetadata.Key #>"/> register.
-        /// </summary>
-        /// <param name="source">The sequence of Harp device messages.</param>
-        /// <returns>
-        /// A sequence of <see cref="<#= interfaceType #>"/> objects representing the
-        /// message payload.
-        /// </returns>
-        public IObservable<<#= interfaceType #>> Process(IObservable<HarpMessage> source)
-        {
-            return source.Where(Address, MessageType).Select(GetPayload);
-        }
-
-        /// <summary>
-        /// Formats an observable sequence of values into Harp messages
-        /// for the <see cref="<#= registerMetadata.Key #>"/> register.
-        /// </summary>
-        /// <param name="source">
-        /// A sequence of <see cref="<#= interfaceType #>"/> objects representing the
-        /// message payload.
-        /// </param>
-        /// <returns>
-        /// A sequence of <see cref="HarpMessage"/> objects formatted for the
-        /// <see cref="<#= registerMetadata.Key #>"/> register.
-        /// </returns>
-        public IObservable<HarpMessage> Process(IObservable<<#= interfaceType #>> source)
-        {
-            return source.Select(value => FromPayload(MessageType, value));
-        }
-
-        /// <summary>
-        /// Formats an observable sequence of values into timestamped Harp messages
-        /// for the <see cref="<#= registerMetadata.Key #>"/> register.
-        /// </summary>
-        /// <param name="source">
-        /// A sequence of timestamped <see cref="<#= interfaceType #>"/> objects representing
-        /// the message payload.
-        /// </param>
-        /// <returns>
-        /// A sequence of timestamped <see cref="HarpMessage"/> objects formatted for
-        /// the <see cref="<#= registerMetadata.Key #>"/> register.
-        /// </returns>
-        public IObservable<HarpMessage> Process(IObservable<Timestamped<<#= interfaceType #>>> source)
-        {
-            return source.Select(payload => FromPayload(payload.Seconds, MessageType, payload.Value));
-        }
     }
 
     /// <summary>
-    /// Represents an operator that filters and selects a sequence of timestamped messages
-    /// from the <#= registerMetadata.Key #> register.
+    /// Provides methods for manipulating timestamped messages from the
+    /// <#= registerMetadata.Key #> register.
     /// </summary>
+    /// <seealso cref="<#= registerMetadata.Key #>"/>
     [Description("Filters and selects timestamped messages from the <#= registerMetadata.Key #> register.")]
-    public partial class Timestamped<#= registerMetadata.Key #> : HarpCombinator
+    public partial class Timestamped<#= registerMetadata.Key #>
     {
         /// <summary>
-        /// Filters and selects an observable sequence of timestamped messages from
-        /// the <see cref="<#= registerMetadata.Key #>"/> register.
+        /// Represents the address of the <see cref="<#= registerMetadata.Key #>"/> register. This field is constant.
         /// </summary>
-        /// <param name="source">The sequence of Harp device messages.</param>
-        /// <returns>
-        /// A sequence of timestamped <see cref="<#= interfaceType #>"/> objects
-        /// representing the register payload.
-        /// </returns>
-        public IObservable<Timestamped<<#= interfaceType #>>> Process(IObservable<HarpMessage> source)
+        public const int Address = <#= registerMetadata.Key #>.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="<#= registerMetadata.Key #>"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<<#= interfaceType #>> GetPayload(HarpMessage message)
         {
-            return source.Where(<#= registerMetadata.Key #>.Address, MessageType).Select(<#= registerMetadata.Key #>.GetTimestampedPayload);
+            return <#= registerMetadata.Key #>.GetTimestampedPayload(message);
         }
     }
 <#
