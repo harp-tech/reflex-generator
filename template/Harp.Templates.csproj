@@ -10,6 +10,7 @@
     <Copyright>Copyright © harp-tech 2023</Copyright>
     <Description>Templates for creating a new Harp device</Description>
     <PackageTags>Harp Device Firmware Hardware Interface Templates</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageOutputPath>.\</PackageOutputPath>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <Content Include="Bonsai.DeviceTemplate\**\*" Exclude="**\**\bin\**;**\**\obj\**;**\*.ico;**\*.user" />
+    <Content Include="..\LICENSE" PackagePath="/" /> 
     <Compile Remove="**\*" />
   </ItemGroup>
 
