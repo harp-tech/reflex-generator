@@ -2,13 +2,15 @@
 
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
+    <VersionSuffix>build041201</VersionSuffix>
     <PackageId>Harp.Generators</PackageId>
     <Title>Harp Generators</Title>
     <Authors>harp-tech</Authors>
     <Copyright>Copyright © harp-tech 2023</Copyright>
     <Description>Provides source generators for Harp device firmware and software interface.</Description>
     <PackageTags>Harp Device Firmware Interface Generators</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageOutputPath>.\</PackageOutputPath>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -18,11 +20,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bonsai.Harp" Version="3.5.0" />
+    <PackageReference Include="Bonsai.Harp" Version="3.5.0-build032701" />
     <PackageReference Include="YamlDotNet" Version="13.0.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\LICENSE" PackagePath="/" /> 
+    <Content Include="..\icon.png" PackagePath="/" />
     <Content Include="*.tt" />
   </ItemGroup>
 
