@@ -7,7 +7,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
-    <Description>Bonsai Library containing interfaces for data acquisition and control of $projectname$ devices.</Description>
+    <Description>Bonsai Library containing interfaces for data acquisition and control of $title$ devices.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>$title$ Bonsai Rx</PackageTags>
     <PackageProjectUrl></PackageProjectUrl>
