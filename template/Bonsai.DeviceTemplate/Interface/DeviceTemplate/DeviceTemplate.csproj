@@ -4,9 +4,11 @@
     <Title>$projectname$</Title>
     <Authors>$registeredorganization$</Authors>
     <Copyright>Copyright © $registeredorganization$ $year$</Copyright>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
     <Description>Bonsai Library containing interfaces for data acquisition and control of $projectname$ devices.</Description>
-    <GenerateDocumentationFile Condition="'$(Configuration)'=='Release'">true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>$title$ Bonsai Rx</PackageTags>
     <PackageProjectUrl></PackageProjectUrl>
     <PackageLicenseExpression></PackageLicenseExpression>
@@ -18,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bonsai.Harp" Version="3.5.0" />
+    <PackageReference Include="Bonsai.Harp" Version="3.5.0-build032701" />
   </ItemGroup>
 
 </Project>

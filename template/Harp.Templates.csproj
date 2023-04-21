@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageType>Template</PackageType>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <VersionSuffix>preview6</VersionSuffix>
+    <VersionSuffix>preview7</VersionSuffix>
     <PackageId>Harp.Templates</PackageId>
     <Title>Harp Templates</Title>
     <Authors>harp-tech</Authors>
