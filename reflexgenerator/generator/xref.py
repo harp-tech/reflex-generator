@@ -64,6 +64,9 @@ class UidReference:
     def __str__(self) -> str:
         return self.__repr__()
 
+    def reset(self) -> None:
+        self.REFERENCES = {}
+
 
 def make_anchor(reference: str, rendered_string: Optional[str] = None) -> str:
     """Outputs a string with the format necessary to create

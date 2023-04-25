@@ -15,7 +15,8 @@ from typing import (
 from reflexgenerator.generator.xref import (
     UidReference,
     make_anchor,
-    create_link)
+    create_link,
+    filter_refs_by_type)
 
 
 # ---------------------------------------------------------------------------- #
@@ -394,7 +395,7 @@ class PayloadMember:
     def format_dict(self) -> str:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
                                 k, v in self.to_dict().items()
-                                if k not in ["uid", "name"]]))
+                                if k not in ["uid", "skip_uid", "name"]]))
         return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
 
     def __str__(self) -> str:
@@ -476,7 +477,7 @@ class Register:
     def format_dict(self) -> str:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
                                 k, v in self.to_dict().items()
-                                if k not in ["uid", "name"]]))
+                                if k not in ["uid", "skip_uid", "name"]]))
         return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
 
     def __str__(self) -> str:
@@ -642,7 +643,7 @@ class InputPin:
     def format_dict(self) -> str:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
                                 k, v in self.to_dict().items()
-                                if k not in ["uid", "name"]]))
+                                if k not in ["uid", "skip_uid", "name"]]))
         return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
 
     def __str__(self) -> str:
@@ -679,7 +680,7 @@ class OutputPin:
     def format_dict(self) -> str:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
                                 k, v in self.to_dict().items()
-                                if k not in ["uid", "name"]]))
+                                if k not in ["uid", "skip_uid", "name"]]))
         return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
 
     def __str__(self) -> str:
@@ -723,3 +724,108 @@ class Collection:
 
     def __getitem__(self, index):
         return self.elements[index]
+
+
+
+# ---------------------------------------------------------------------------- #
+#                                Schema Types                                  #
+# ---------------------------------------------------------------------------- #
+
+
+@define
+class DeviceSchema:
+    name = attr.ib(default=None, type=Optional[str])
+    metadata = attr.ib(default=None, type=Optional[Metadata])
+    groupMasks = attr.ib(default=None, type=Optional[List[Mask] | Collection])
+    bitMasks = attr.ib(default=None, type=Optional[List[Mask] | Collection])
+    registers = attr.ib(default=None, type=Optional[List[Register] | Collection])
+    payloadMembers = attr.ib(default=None, type=Optional[List[PayloadMember] | Collection])
+    uid = attr.ib(default=None, type=Optional[UidReference])
+    skip_uid = attr.ib(default=False, type=bool)
+
+    def __attrs_post_init__(self):
+        if (self.name is None) and (self.metadata is not None):
+            self.name = self.metadata.device
+        else:
+            self.name = "Unnamed Device"
+        if self.skip_uid is not True:
+            if self.uid is None:
+                self.uid = UidReference(self)
+
+    def to_dict(self) -> Dict[str, any]:
+        return attr.asdict(self, recurse=False, )
+
+    @classmethod
+    def from_yml(self,
+                  schema: str,
+                  skip_uid: bool = False) -> DeviceSchema:
+
+        return DeviceSchema(
+            name=None,
+            metadata=self._parse_metadata(schema),
+            bitMasks=self._parse_bitMask(schema),
+            groupMasks=self._parse_groupMask(schema),
+            registers=self._parse_registers(schema),
+            payloadMembers=self._parse_payloadMembers(),
+            skip_uid=skip_uid, uid=None)
+
+    def format_dict(self) -> str:
+        _param_text = ("".join([f"""> {k} = {v} \n\n""" for
+                                k, v in self.to_dict().items()
+                                if k not in ["uid", "skip_uid", "name"]]))
+        return f"""### {self.uid.render_reference(self.name)}\n{_param_text}"""
+
+    # Parser methods
+    @staticmethod
+    def _parse_metadata(schema: str) -> Metadata:
+        return Metadata(
+            **{
+                "device": schema["device"],
+                "whoAmI": schema["whoAmI"],
+                "firmwareVersion": schema["firmwareVersion"],
+                "hardwareTargets": schema["hardwareTargets"]
+                })
+
+    @staticmethod
+    def _parse_bitMask(schema: str) -> Collection:
+        if "bitMasks" in schema:
+            bitMasks = Collection(
+                [Mask.from_json(mask) for mask in\
+                    schema["bitMasks"].items() if mask is not None])
+        else:
+            bitMasks = None
+        return bitMasks
+
+    @staticmethod
+    def _parse_groupMask(schema: str) -> Collection:
+        if "groupMasks" in schema:
+            groupMasks = Collection(
+                [Mask.from_json(mask) for mask in\
+                schema["groupMasks"].items() if mask is not None])
+        else:
+            groupMasks = None
+        return groupMasks
+
+    @staticmethod
+    def _parse_registers(schema: str) -> Collection:
+        if "registers" in schema:
+            regs = Collection(
+                [Register.from_json(reg) for reg in\
+                    schema["registers"].items() if reg is not None])
+        else:
+            regs = None
+        return regs
+
+    @staticmethod
+    def _parse_payloadMembers():
+        return Collection(
+            [entry.parent for entry in\
+                filter_refs_by_type(PayloadMember).values()])
+
+    def __str__(self) -> str:
+        return self.uid.render_pointer(self.name)
+
+    def __repr__(self) -> str:
+        return self.uid.render_pointer(self.name)
+
+
