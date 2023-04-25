@@ -163,7 +163,6 @@ class Metadata:
     whoAmI = attr.ib(type=int)
     firmwareVersion = attr.ib(default=None, type=Optional[str])
     hardwareTargets = attr.ib(default=None, type=Optional[str])
-    architecture = attr.ib(default=None, type=Optional[str])
     uid = attr.ib(default=None, type=Optional[UidReference])
 
     def __attrs_post_init__(self):
