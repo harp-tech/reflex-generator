@@ -1,5 +1,7 @@
 from __future__ import annotations
 import attr
+import pandas as pd
+from dotmap import DotMap
 
 from attr import define
 from numbers import Number
@@ -391,15 +393,15 @@ class PayloadMember:
             if self.uid is None:
                 self.uid = UidReference(self)
 
-    def to_dict(self) -> Dict[str, any]:
-        return attr.asdict(self, recurse=False, )
-
     @classmethod
     def from_json(self,
                   json_object: Tuple[str, Dict[str, any]],
                   skip_uid=False) -> PayloadMember:
         _name = json_object[0]
         return PayloadMember(name=_name, skip_uid=skip_uid, **json_object[1])
+
+    def to_dict(self) -> Dict[str, any]:
+        return attr.asdict(self, recurse=False)
 
     def format_dict(self) -> str:
         _param_text = ("".join([f"""> {k} = {v} \n\n""" for
@@ -737,6 +739,9 @@ class Collection:
     def __iter__(self):
         return iter(self.elements)
 
+    def __getitem__(self, index):
+        return self.elements[index]
+
     def from_array(self, arr: Optional[_COLLECTION_TYPE]) -> None:
         if len(arr) < 1:
             raise ValueError("List can't be empty!")
@@ -758,15 +763,13 @@ class Collection:
         except TypeError:
             raise TypeError("Collection type is not sortable.")
 
-    def __getitem__(self, index):
-        return self.elements[index]
-
-
+    def to_dataframe(self) -> pd.DataFrame:
+        return pd.DataFrame([element.to_dict() for element in self.elements
+                             if element is not None])
 
 # ---------------------------------------------------------------------------- #
 #                                Schema Types                                  #
 # ---------------------------------------------------------------------------- #
-
 
 @define
 class DeviceSchema:
@@ -783,13 +786,61 @@ class DeviceSchema:
         if (self.name is None) and (self.metadata is not None):
             self.name = self.metadata.device
         else:
-            self.name = "Unnamed Device"
+            self.name = "Device.Harp"
         if self.skip_uid is not True:
             if self.uid is None:
                 self.uid = UidReference(self)
 
     def to_dict(self) -> Dict[str, any]:
-        return attr.asdict(self, recurse=False, )
+        return attr.asdict(self, recurse=False)
+
+    def to_dataframe(self) -> Dict[str, pd.DataFrame]:
+        _dict_df = DotMap()
+
+        # bitMasks
+        _dict_df.bitMasks = self.uid_as_point(
+            self.bitMasks.to_dataframe().copy()
+            if self.bitMasks is not None else pd.DataFrame()
+            )
+        _dict_df.bitMasks["bits"] = _dict_df.bitMasks["bits"].apply(
+            lambda x: [bit.value for bit in x
+                       if bit is not None
+                       ] if x is not None else None)
+
+        # groupMasks
+
+        _dict_df.groupMasks = self.uid_as_point(
+            self.groupMasks.to_dataframe().copy()
+            if self.groupMasks is not None else pd.DataFrame()
+            )
+        _dict_df.groupMasks["values"] = _dict_df.groupMasks["values"].apply(
+            lambda x: [bit.value for bit in x
+                       if bit is not None
+                       ] if x is not None else None)
+
+        # registers
+        _dict_df.registers = self.uid_as_point(
+            self.registers.to_dataframe().copy()
+            if self.registers is not None else pd.DataFrame()
+            )
+        if _dict_df.registers is not None:
+            for i in _dict_df.registers.index:
+                if _dict_df.registers.at[i, 'maskType'] is not None:
+                    if isinstance(_dict_df.registers.at[i, 'maskType'][0], Mask):
+                        _dict_df.registers.at[i, 'maskType'] = [
+                            x.uid.render_pointer() for x in _dict_df.registers.at[i, 'maskType']]
+                if _dict_df.registers.at[i, 'payloadSpec'] is not None:
+                    if isinstance(_dict_df.registers.at[i, 'payloadSpec'][0], PayloadMember):
+                        _dict_df.registers.at[i, 'payloadSpec'] = [
+                            x.uid.render_pointer() for x in _dict_df.registers.at[i, 'payloadSpec']]
+
+        # payloadMembers
+        _dict_df.payloadMembers = self.uid_as_point(
+            self.payloadMembers.to_dataframe().copy()
+            if self.payloadMembers is not None else pd.DataFrame()
+            )
+
+        return _dict_df
 
     @classmethod
     def from_yml(self,
@@ -857,6 +908,11 @@ class DeviceSchema:
         return Collection(
             [entry.parent for entry in\
                 UidReference.filter_refs_by_type(PayloadMember).values()])
+
+    @staticmethod
+    def uid_as_point(df: pd.DataFrame) -> pd.DataFrame:
+        df["name"] = df["uid"].apply(lambda x: x.render_pointer())
+        return df
 
     def __str__(self) -> str:
         return self.uid.render_pointer(self.name)
