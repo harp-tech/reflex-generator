@@ -12,12 +12,7 @@ from typing import (
     Dict,
     Tuple,
     List)
-from reflexgenerator.generator.xref import (
-    UidReference,
-    make_anchor,
-    create_link,
-    filter_refs_by_type)
-
+from reflexgenerator.generator.xref import UidReference
 
 # ---------------------------------------------------------------------------- #
 #                            Special types and Enums                           #
@@ -40,7 +35,7 @@ class BaseEnum(Enum):
 
     @classmethod
     def generate_anchor_references(self) -> List[str]:
-        return [make_anchor(
+        return [UidReference.make_anchor(
             self._format_ref(entry.name), entry.name
             ) for entry in self]
 
@@ -50,13 +45,13 @@ class BaseEnum(Enum):
         def _formater(value: str) -> str:
             return f"""- {value}\n\n"""
 
-        return f"""### {make_anchor(
+        return f"""### {UidReference.make_anchor(
             self._format_ref(self.__name__),
             self.__name__)}\n""" + "".join(
                 [_formater(it) for it in self.generate_anchor_references()])
 
     def generate_link_reference(self) -> str:
-        return create_link(self._format_ref(self.name), self.name)
+        return UidReference.create_link(self._format_ref(self.name), self.name)
 
 
 class PayloadType(BaseEnum):
@@ -237,6 +232,12 @@ class BitOrValue:
     def __repr__(self) -> str:
         return self.format_dict()
 
+    def __gt__(self, other: BitOrValue) -> bool:
+        return self.value > other.value
+
+    def __lt__(self, other: BitOrValue) -> bool:
+        return self.value < other.value
+
     def format_dict(self) -> str:
         return (f"""*{self.name}*\n
         \tvalue = {self.value}\n
@@ -336,6 +337,14 @@ class Mask:
     def __repr__(self) -> str:
         return self.uid.render_pointer(self.name)
 
+    def __eq__(self, other: Mask) -> bool:
+        return self.name == other.name
+
+    def __gt__(self, other: Mask) -> bool:
+        return self.name > other.name
+
+    def __lt__(self, other: Mask) -> bool:
+        return self.name < other.name
 
 def get_mask(value: Optional[str | list[str]]) -> Optional[list[Mask]]:
     if value is None:
@@ -403,6 +412,15 @@ class PayloadMember:
 
     def __repr__(self) -> str:
         return self.uid.render_pointer(self.name)
+
+    def __eq__(self, other: PayloadMember) -> bool:
+        return self.name == other.name
+
+    def __gt__(self, other: PayloadMember) -> bool:
+        return self.name > other.name
+
+    def __lt__(self, other: PayloadMember) -> bool:
+        return self.name < other.name
 
 
 def _payloadSpec_parser(
@@ -482,6 +500,15 @@ class Register:
 
     def __str__(self) -> str:
         return self.uid.render_pointer(self.name)
+
+    def __lt__(self, other: Register) -> bool:
+        return self.address < other.address
+
+    def __gt__(self, other: Register) -> bool:
+        return self.address > other.address
+
+    def __eq__(self, other: Register) -> bool:
+        return self.address == other.address
 
 # ---------------------------------------------------------------------------- #
 #                                      PinMapping                              #
@@ -698,11 +725,14 @@ class Collection:
     "Parent class that represents a collection of HarpElements"
     def __init__(
             self,
-            element_array: Optional[_COLLECTION_TYPE]) -> None:
+            element_array: Optional[_COLLECTION_TYPE],
+            sort_on_creation: bool = True) -> None:
 
         self.elements = []
         if element_array:
             self.from_array(element_array)
+        if sort_on_creation:
+            self.elements.sort()
 
     def __iter__(self):
         return iter(self.elements)
@@ -721,6 +751,12 @@ class Collection:
 
     def pop(self, idx: Optional[int]) -> None:
         self.elements.pop(idx)
+
+    def sort(self, sort_kw) -> None:
+        try:
+            self.elements.sort(**sort_kw)
+        except TypeError:
+            raise TypeError("Collection type is not sortable.")
 
     def __getitem__(self, index):
         return self.elements[index]
@@ -757,8 +793,8 @@ class DeviceSchema:
 
     @classmethod
     def from_yml(self,
-                  schema: str,
-                  skip_uid: bool = False) -> DeviceSchema:
+                 schema: str,
+                 skip_uid: bool = False) -> DeviceSchema:
 
         return DeviceSchema(
             name=None,
@@ -820,7 +856,7 @@ class DeviceSchema:
     def _parse_payloadMembers():
         return Collection(
             [entry.parent for entry in\
-                filter_refs_by_type(PayloadMember).values()])
+                UidReference.filter_refs_by_type(PayloadMember).values()])
 
     def __str__(self) -> str:
         return self.uid.render_pointer(self.name)
