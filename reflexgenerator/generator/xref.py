@@ -47,14 +47,14 @@ class UidReference:
                          ) -> str:
         if rendered_string is None:
             rendered_string = self.parent.name
-        return make_anchor(self.uid, rendered_string)
+        return self.make_anchor(self.uid, rendered_string)
 
     def render_pointer(self,
                        rendered_string: Optional[str] = None
                        ) -> str:
         if rendered_string is None:
             rendered_string = self.parent.name
-        _link = create_link(self.uid, rendered_string)
+        _link = self.create_link(self.uid, rendered_string)
         self._pointers.append(_link)
         return _link
 
@@ -67,46 +67,52 @@ class UidReference:
     def reset(self) -> None:
         self.REFERENCES = {}
 
+    @classmethod
+    def filter_refs_by_type(self, instance_type: str) -> dict:
+        """Filters the references dictionary by the type of the parent object.
 
-def make_anchor(reference: str, rendered_string: Optional[str] = None) -> str:
-    """Outputs a string with the format necessary to create
-    a markdown reference anchor.
+        Args:
+            type (str): type of the parent object.
 
-    Args:
-        reference (str): string used to create the reference tag.
-        rendered_string (str): string that will be shown.
-        Defaults to reference if left None.
+        Returns:
+            dict: filtered dictionary.
+        """
+        return {k: v for k, v in UidReference.REFERENCES.items()
+                if isinstance(v.parent, instance_type)}
 
-    Returns:
-        str: Formatted string.
-    """
-    rendered_string = reference if rendered_string is None else rendered_string
-    return f'<a name="{reference}"></a>{rendered_string}'
+    @classmethod
+    def make_anchor(self,
+                    reference: str,
+                    rendered_string: Optional[str] = None) -> str:
+        """Outputs a string with the format necessary to create
+        a markdown reference anchor.
+
+        Args:
+            reference (str): string used to create the reference tag.
+            rendered_string (str): string that will be shown.
+            Defaults to reference if left None.
+
+        Returns:
+            str: Formatted string.
+        """
+        rendered_string = reference if rendered_string is None else rendered_string
+        return f'<a name="{reference}"></a>{rendered_string}'
+
+    @classmethod
+    def create_link(self,
+                    reference: str,
+                    rendered_string: Optional[str] = None) -> str:
+        """Creates a jump point to a markdown anchor.
+
+        Args:
+            reference (str): string used to create the reference tag.
+            rendered_string (str): string that will be shown.
+            Defaults to reference if left None.
+
+        Returns:
+            str: Formatted string.
+        """
+        rendered_string = reference if rendered_string is None else rendered_string
+        return f'[{rendered_string}](#{reference})'
 
 
-def create_link(reference: str, rendered_string: Optional[str] = None) -> str:
-    """Creates a jump point to a markdown anchor.
-
-    Args:
-        reference (str): string used to create the reference tag.
-        rendered_string (str): string that will be shown.
-        Defaults to reference if left None.
-
-    Returns:
-        str: Formatted string.
-    """
-    rendered_string = reference if rendered_string is None else rendered_string
-    return f'[{rendered_string}](#{reference})'
-
-
-def filter_refs_by_type(instance_type: str) -> dict:
-    """Filters the references dictionary by the type of the parent object.
-
-    Args:
-        type (str): type of the parent object.
-
-    Returns:
-        dict: filtered dictionary.
-    """
-    return {k: v for k, v in UidReference.REFERENCES.items()
-            if isinstance(v.parent, instance_type)}
