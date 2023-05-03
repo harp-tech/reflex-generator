@@ -2,6 +2,7 @@ from __future__ import annotations
 import attr
 import pandas as pd
 from dotmap import DotMap
+import mergedeep
 
 from attr import define
 from numbers import Number
@@ -15,6 +16,7 @@ from typing import (
     Tuple,
     List)
 from reflexgenerator.generator.xref import UidReference
+from reflexgenerator.io import load as load_yml_file
 
 # ---------------------------------------------------------------------------- #
 #                            Special types and Enums                           #
@@ -841,6 +843,17 @@ class DeviceSchema:
             )
 
         return _dict_df
+
+    @classmethod
+    def from_remote_yml(self,
+                        device_url: str,
+                        common_url: str = "https://raw.githubusercontent.com/glopesdev/reflex-generator/main/schema/common.yml"
+                        ) -> DeviceSchema:
+
+        device = mergedeep.merge(
+            load_yml_file(device_url, from_url=True),
+            load_yml_file(common_url, from_url=True))
+        return DeviceSchema.from_yml(device)
 
     @classmethod
     def from_yml(self,
