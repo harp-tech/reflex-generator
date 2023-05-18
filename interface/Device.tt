@@ -696,10 +696,15 @@ foreach (var bitMask in deviceMetadata.BitMasks)
 <#
     if (!mask.Bits.Values.Any(fieldInfo => fieldInfo.Value == 0))
     {
+        if (mask.Bits.Values.Any(fieldInfo => !string.IsNullOrEmpty(fieldInfo.Description)))
+        {
 #>
         /// <summary>
         /// Specifies that no flags are defined.
         /// </summary>
+<#
+        }
+#>
         None = 0x0<#= mask.Bits.Count > 0 ? "," : string.Empty #>
 <#
     }
