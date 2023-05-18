@@ -694,8 +694,11 @@ foreach (var bitMask in deviceMetadata.BitMasks)
     public enum <#= bitMask.Key #> : <#= mask.InterfaceType #>
     {
 <#
+    var bitIndex = 0;
+    var bitCount = mask.Bits.Count;
     if (!mask.Bits.Values.Any(fieldInfo => fieldInfo.Value == 0))
     {
+        bitCount++;
         if (mask.Bits.Values.Any(fieldInfo => !string.IsNullOrEmpty(fieldInfo.Description)))
         {
 #>
@@ -705,11 +708,10 @@ foreach (var bitMask in deviceMetadata.BitMasks)
 <#
         }
 #>
-        None = 0x0<#= mask.Bits.Count > 0 ? "," : string.Empty #>
+        None = 0x0<#= ++bitIndex < bitCount ? "," : string.Empty #>
 <#
     }
 
-    var bitIndex = 0;
     foreach (var bitField in mask.Bits)
     {
         var fieldInfo = bitField.Value;
@@ -725,7 +727,7 @@ foreach (var bitMask in deviceMetadata.BitMasks)
 <#
         }
 #>
-        <#= bitField.Key #> = 0x<#= fieldInfo.Value.ToString("X") #><#= ++bitIndex < mask.Bits.Count ? "," : string.Empty #>
+        <#= bitField.Key #> = 0x<#= fieldInfo.Value.ToString("X") #><#= ++bitIndex < bitCount ? "," : string.Empty #>
 <#
     }
 #>
