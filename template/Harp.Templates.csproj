@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix>preview7</VersionSuffix>
+    <PackageId>Harp.Templates</PackageId>
+    <Title>Harp Templates</Title>
+    <Authors>harp-tech</Authors>
+    <Copyright>Copyright © harp-tech 2023</Copyright>
+    <Description>Templates for creating a new Harp device</Description>
+    <PackageTags>Harp Device Firmware Hardware Interface Templates</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageOutputPath>.\</PackageOutputPath>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Bonsai.DeviceTemplate\**\*" Exclude="**\**\bin\**;**\**\obj\**;**\*.ico;**\*.user" />
+    <Content Include="..\LICENSE" PackagePath="/" /> 
+    <Content Include="..\icon.png" PackagePath="/" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+</Project>
