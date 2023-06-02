@@ -202,6 +202,11 @@ public static partial class TemplateHelper
         return defaultValue.HasValue? $" = {defaultValue};" : string.Empty;
     }
 
+    public static string GetDefaultValueSuffix(PayloadType payloadType)
+    {
+        return payloadType == PayloadType.Float ? "F" : string.Empty;
+    }
+
     public static string GetParseConversion(RegisterInfo register, string expression)
     {
         if (register.PayloadSpec != null || register.HasConverter) return $"ParsePayload({expression})";
