@@ -545,7 +545,7 @@ foreach (var registerMetadata in publicRegisters)
         }
 #>
         [Description("The value <#= summaryDescription #>.")]
-        public <#= interfaceType #> Value { get; set; }<#= defaultValue #>
+        public <#= interfaceType #> <#= registerMetadata.Key #> { get; set; }<#= defaultValue #>
 <#
     }
 #>
@@ -594,14 +594,14 @@ foreach (var registerMetadata in publicRegisters)
 <#
         }
 #>
-                return <#= registerMetadata.Key #>.FromPayload(MessageType, value);
+                return <#= Namespace #>.<#= registerMetadata.Key #>.FromPayload(MessageType, value);
             });
 <#
     }
     else
     {
 #>
-            return source.Select(_ => <#= registerMetadata.Key #>.FromPayload(MessageType, Value));
+            return source.Select(_ => <#= Namespace #>.<#= registerMetadata.Key #>.FromPayload(MessageType, <#= registerMetadata.Key #>));
 <#
     }
 #>
