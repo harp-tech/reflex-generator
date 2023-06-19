@@ -467,6 +467,14 @@ foreach (var register in publicRegisters)
 <#
 }
 #>
+<#
+foreach (var register in publicRegisters)
+{
+#>
+    [XmlInclude(typeof(CreateTimestamped<#= register.Key #>Payload))]
+<#
+}
+#>
     [Description("Creates standard message payloads for the <#= deviceName #> device.")]
     public partial class CreateMessage : CreateMessageBuilder, INamedElement
     {
@@ -492,13 +500,12 @@ foreach (var registerMetadata in publicRegisters)
 #>
 
     /// <summary>
-    /// Represents an operator that creates a sequence of message payloads
+    /// Represents an operator that creates a message payload
     /// <#= summaryDescription #>.
     /// </summary>
     [DisplayName("<#= registerMetadata.Key #>Payload")]
-    [WorkflowElementCategory(ElementCategory.Transform)]
-    [Description("Creates a sequence of message payloads <#= summaryDescription #>.")]
-    public partial class Create<#= registerMetadata.Key #>Payload : HarpCombinator
+    [Description("Creates a message payload <#= summaryDescription #>.")]
+    public partial class Create<#= registerMetadata.Key #>Payload
     {<#
     if (register.PayloadSpec != null)
     {
@@ -551,60 +558,64 @@ foreach (var registerMetadata in publicRegisters)
 #>
 
         /// <summary>
-        /// Creates an observable sequence that contains a single message
-        /// <#= summaryDescription #>.
+        /// Creates a message payload for the <#= registerMetadata.Key #> register.
         /// </summary>
-        /// <returns>
-        /// A sequence containing a single <see cref="HarpMessage"/> object
-        /// representing the created message payload.
-        /// </returns>
-        public IObservable<HarpMessage> Process()
-        {
-            return Process(Observable.Return(System.Reactive.Unit.Default));
-        }
-
-        /// <summary>
-        /// Creates an observable sequence of message payloads
-        /// <#= summaryDescription #>.
-        /// </summary>
-        /// <typeparam name="TSource">
-        /// The type of the elements in the <paramref name="source"/> sequence.
-        /// </typeparam>
-        /// <param name="source">
-        /// The sequence containing the notifications used for emitting message payloads.
-        /// </param>
-        /// <returns>
-        /// A sequence of <see cref="HarpMessage"/> objects representing each
-        /// created message payload.
-        /// </returns>
-        public IObservable<HarpMessage> Process<TSource>(IObservable<TSource> source)
+        /// <returns>The created message payload value.</returns>
+        public <#= interfaceType #> GetPayload()
         {
 <#
     if (register.PayloadSpec != null)
     {
 #>
-            return source.Select(_ =>
-            {
-                <#= interfaceType #> value;
+            <#= interfaceType #> value;
 <#
         foreach (var member in register.PayloadSpec)
         {
 #>
-                value.<#= member.Key #> = <#= member.Key #>;
+            value.<#= member.Key #> = <#= member.Key #>;
 <#
         }
 #>
-                return <#= Namespace #>.<#= registerMetadata.Key #>.FromPayload(MessageType, value);
-            });
+            return value;
 <#
     }
     else
     {
 #>
-            return source.Select(_ => <#= Namespace #>.<#= registerMetadata.Key #>.FromPayload(MessageType, <#= registerMetadata.Key #>));
+            return <#= registerMetadata.Key #>;
 <#
     }
 #>
+        }
+
+        /// <summary>
+        /// Creates a message <#= summaryDescription #>.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the <#= registerMetadata.Key #> register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return <#= Namespace #>.<#= registerMetadata.Key #>.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// <#= summaryDescription #>.
+    /// </summary>
+    [DisplayName("Timestamped<#= registerMetadata.Key #>Payload")]
+    [Description("Creates a timestamped message payload <#= summaryDescription #>.")]
+    public partial class CreateTimestamped<#= registerMetadata.Key #>Payload : Create<#= registerMetadata.Key #>Payload
+    {
+        /// <summary>
+        /// Creates a timestamped message <#= summaryDescription #>.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the <#= registerMetadata.Key #> register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return <#= Namespace #>.<#= registerMetadata.Key #>.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 <#
