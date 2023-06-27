@@ -115,12 +115,12 @@ foreach (var register in publicRegisters)
 }
 #>
     [Description("Filters register-specific messages reported by the <#= deviceName #> device.")]
-    public class FilterMessage : FilterMessageBuilder, INamedElement
+    public class FilterRegister : FilterRegisterBuilder, INamedElement
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FilterMessage"/> class.
+        /// Initializes a new instance of the <see cref="FilterRegister"/> class.
         /// </summary>
-        public FilterMessage()
+        public FilterRegister()
         {
             Register = new <#= publicRegisters.First().Key #>();
         }
