@@ -10,6 +10,9 @@
     <Copyright>Copyright © harp-tech and Contributors 2023</Copyright>
     <Description>Templates for creating a new Harp device</Description>
     <PackageTags>Harp Device Firmware Hardware Interface Templates</PackageTags>
+    <PackageProjectUrl>https://harp-tech.org</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/harp-tech/reflex-generator.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageOutputPath>.\</PackageOutputPath>
