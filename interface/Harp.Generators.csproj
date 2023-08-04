@@ -2,13 +2,16 @@
 
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <VersionSuffix>build062701</VersionSuffix>
+    <VersionSuffix></VersionSuffix>
     <PackageId>Harp.Generators</PackageId>
     <Title>Harp Generators</Title>
     <Authors>harp-tech</Authors>
-    <Copyright>Copyright © harp-tech 2023</Copyright>
+    <Copyright>Copyright © harp-tech and Contributors 2023</Copyright>
     <Description>Provides source generators for Harp device firmware and software interface.</Description>
     <PackageTags>Harp Device Firmware Interface Generators</PackageTags>
+    <PackageProjectUrl>https://harp-tech.org</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/harp-tech/reflex-generator.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageOutputPath>.\</PackageOutputPath>
@@ -20,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bonsai.Harp" Version="3.5.0-build062701" />
+    <PackageReference Include="Bonsai.Harp" Version="3.5.0" />
     <PackageReference Include="YamlDotNet" Version="13.0.2" />
   </ItemGroup>
 
