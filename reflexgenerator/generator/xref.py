@@ -64,8 +64,11 @@ class UidReference:
     def __str__(self) -> str:
         return self.__repr__()
 
-    def reset(self) -> None:
+    @classmethod
+    def pop_references(self) -> None:
+        frozen = self.REFERENCES.copy()
         self.REFERENCES = {}
+        return frozen
 
     @classmethod
     def filter_refs_by_type(self, instance_type: str) -> dict:
