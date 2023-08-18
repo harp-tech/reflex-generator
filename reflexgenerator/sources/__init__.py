@@ -847,7 +847,7 @@ class DeviceSchema:
     @classmethod
     def from_remote_yml(self,
                         device_url: str,
-                        common_url: str = "https://raw.githubusercontent.com/glopesdev/reflex-generator/main/schema/common.yml"
+                        common_url: str = "https://raw.githubusercontent.com/harp-tech/reflex-generator/main/schema/common.yml"
                         ) -> DeviceSchema:
 
         device = mergedeep.merge(
@@ -933,4 +933,18 @@ class DeviceSchema:
     def __repr__(self) -> str:
         return self.uid.render_pointer(self.name)
 
+    @classmethod
+    def load_core_schema(self,
+                         core_schema_url: str = "https://raw.githubusercontent.com/harp-tech/reflex-generator/main/schema/core.yml",
+                         device: str = "CoreRegisters",
+                         who_am_i: int = 0000,
+                         firmware_version: str = '1.13',
+                         hardware_targets: str = '0.0'
+                         ) -> DeviceSchema:
 
+        yml = load_yml_file(core_schema_url, from_url=True)
+        yml["device"] = device
+        yml["whoAmI"] = who_am_i
+        yml["firmwareVersion"] = firmware_version
+        yml['hardwareTargets'] = hardware_targets
+        return DeviceSchema.from_remote_yml(yml)
