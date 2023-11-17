@@ -11,6 +11,7 @@
 <#
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(MetadataPath);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
+var deviceRegisters = deviceMetadata.Registers;
 var deviceName = deviceMetadata.Device;
 #>
 using Bonsai;
@@ -59,10 +60,10 @@ namespace <#= Namespace #>
         {
 <#
 int registerIndex = 0;
-foreach (var register in publicRegisters)
+foreach (var register in deviceRegisters)
 {
 #>
-            { <#= register.Value.Address #>, typeof(<#= register.Key #>) }<#= ++registerIndex < publicRegisters.Count ? "," : string.Empty #>
+            { <#= register.Value.Address #>, typeof(<#= register.Key #>) }<#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
 <#
 }
 #>
@@ -90,7 +91,7 @@ foreach (var register in publicRegisters)
         }
     }
 <#
-if (publicRegisters.Count > 0)
+if (deviceRegisters.Count > 0)
 {
 #>
 
@@ -207,10 +208,11 @@ foreach (var register in publicRegisters)
         string INamedElement.Name => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Register)}";
     }
 <#
-foreach (var registerMetadata in publicRegisters)
+foreach (var registerMetadata in deviceRegisters)
 {
     var register = registerMetadata.Value;
     var hasConverter = register.HasConverter;
+    var isPrivate = register.Visibility == RegisterVisibility.Private;
     var rawPayload = register.Converter == MemberConverter.RawPayload;
     var hasEvent = (register.Access & RegisterAccess.Event) != 0;
     var allowWrite = (register.Access & RegisterAccess.Write) != 0;
@@ -238,7 +240,7 @@ foreach (var registerMetadata in publicRegisters)
     /// Represents a register that <#= summaryDescription #>.
     /// </summary>
     [Description("<#= register.Description #>")]
-    public partial class <#= registerMetadata.Key #>
+    <#= isPrivate ? "internal" : "public" #> partial class <#= registerMetadata.Key #>
     {
         /// <summary>
         /// Represents the address of the <see cref="<#= registerMetadata.Key #>"/> register. This field is constant.
@@ -255,6 +257,13 @@ foreach (var registerMetadata in publicRegisters)
         /// </summary>
         public const int RegisterLength = <#= Math.Max(1, register.Length) #>;
 <#
+if (isPrivate)
+{
+#>
+    }
+<#
+    continue;
+}
     if (hasConverter)
     {
 #>
@@ -622,11 +631,11 @@ foreach (var registerMetadata in publicRegisters)
 }
 #>
 <#
-} // publicRegisters.Count > 0
+} // deviceRegisters.Count > 0
 #>
 <#
 var payloadTypes = new HashSet<string>();
-foreach (var registerMetadata in deviceMetadata.Registers)
+foreach (var registerMetadata in deviceRegisters)
 {
     var register = registerMetadata.Value;
     if (register.PayloadSpec == null) continue;
