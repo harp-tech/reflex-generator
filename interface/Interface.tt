@@ -350,6 +350,10 @@ class MaskValueTypeConverter : IYamlTypeConverter
                 {
                     maskValue.Value = ValueDeserializer.Deserialize<int>(key.Value);
                 }
+                else if (key.Value.Equals(nameof(maskValue.Value), StringComparison.OrdinalIgnoreCase))
+                {
+                    maskValue.Value = ValueDeserializer.Deserialize<int>(value.Value);
+                }
                 else if (key.Value.Equals(nameof(maskValue.Description), StringComparison.OrdinalIgnoreCase))
                 {
                     maskValue.Description = value.Value;

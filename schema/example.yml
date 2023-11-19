@@ -72,5 +72,5 @@ bitMasks:
   DO:
     description: Bitmask representing the state of the digital outputs.
     bits:
-      DO0: {0x01, description: The state of digital output pin 0.}
-      DO1: {0x02, description: The state of digital output pin 1.}
+      DO0: {value: 0x01, description: The state of digital output pin 0.}
+      DO1: {value: 0x02, description: The state of digital output pin 1.}

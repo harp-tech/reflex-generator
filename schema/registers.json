@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft-07/schema",
-    "$id": "https://harp-tech.org/2023-03/registers",
+    "$id": "https://harp-tech.org/draft-02/schema/registers.json",
     "type": "object",
     "properties": {
         "registers": {
@@ -36,11 +36,16 @@
                 {
                     "type": "object",
                     "properties": {
+                        "value": {
+                            "description": "Specifies the numerical mask value.",
+                            "type": "integer"
+                        },
                         "description": {
                             "description": "Specifies a summary description of the mask value function.",
                             "type": "string"
                         }
                     },
+                    "required": ["value"],
                     "additionalProperties": false
                 }
             ]
