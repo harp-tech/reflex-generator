@@ -25,10 +25,10 @@ Library to automatically generate firmware, interface and documentation for harp
 
 1. In VSCode, open the repository as your project (*e.g.* `Open Folder...`)
 2. Create a new .yml file (e.g. `device.yml`).
-3. Target this repository as the schema source (for now you can use `https://raw.githubusercontent.com/harp-tech/reflex-generator/main/schema/device.json`) by adding the following line to the top of the file:
+3. Add the following line to the top of the file:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/harp-tech/reflex-generator/main/schema/device.json
+# yaml-language-server: $schema=https://harp-tech.org/draft-02/schema/device.json
 ```
 
 You should now be able to access the fields of the schema by pressing `Ctrl+Space` in the file.
