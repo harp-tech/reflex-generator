@@ -71,6 +71,30 @@ foreach (var register in deviceRegisters)
     }
 
     /// <summary>
+    /// Represents an operator that returns the contents of the metadata file
+    /// describing the <see cref="<#= deviceName #>"/> device registers.
+    /// </summary>
+    [Description("Returns the contents of the metadata file describing the <#= deviceName #> device registers.")]
+    public partial class DeviceMetadata : Source<string>
+    {
+        static readonly string Metadata = GetDeviceMetadata();
+
+        static string GetDeviceMetadata()
+        {
+            var metadataType = typeof(DeviceMetadata);
+            using var metadataStream = metadataType.Assembly.GetManifestResourceStream($"{metadataType.Namespace}.device.yml");
+            using var streamReader = new System.IO.StreamReader(metadataStream);
+            return streamReader.ReadToEnd();
+        }
+
+        /// <inheritdoc/>
+        public override IObservable<string> Generate()
+        {
+            return Observable.Return(Metadata);
+        }
+    }
+
+    /// <summary>
     /// Represents an operator that groups the sequence of <see cref="<#= deviceName #>"/>" messages by register type.
     /// </summary>
     [Description("Groups the sequence of <#= deviceName #> messages by register type.")]
