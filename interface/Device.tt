@@ -697,6 +697,29 @@ foreach (var registerMetadata in deviceRegisters)
 <#
     }
 #>
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents the payload of
+        /// the <#= registerName #> register.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents the payload of the
+        /// <#= registerName #> register.
+        /// </returns>
+        public override string ToString()
+        {
+            return "<#= interfaceType #> { " +
+<#
+    var memberIndex = 0;
+    foreach (var member in register.PayloadSpec)
+    {
+#>
+                "<#= member.Key #> = " + <#= member.Key #> + "<#= ++memberIndex < register.PayloadSpec.Count ? ", " : " " #>" +
+<#
+    }
+#>
+            "}";
+        }
     }
 <#
 }
