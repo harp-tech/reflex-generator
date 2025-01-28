@@ -14,19 +14,12 @@
     <RepositoryType>git</RepositoryType>
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageOutputPath>.\</PackageOutputPath>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>contentFiles</ContentTargetFolders>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Bonsai.Harp" Version="3.5.0" />
-    <PackageReference Include="YamlDotNet" Version="13.0.2" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\LICENSE" PackagePath="/" /> 

@@ -1,11 +1,2 @@
-bin
-obj
-*.nupkg
-.DS_Store
-*.pyc
-.vs
-.vscode*
-.venv
-_private
-Local
-Notes.md
+.vs/
+artifacts/
