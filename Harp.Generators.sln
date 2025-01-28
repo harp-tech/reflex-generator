@@ -5,9 +5,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Harp.Generators", "interface\Harp.Generators.csproj", "{967ABE9B-502A-4EC4-8179-82A9B817E295}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{DFD2ABB5-A6B9-4D19-9002-95D82E305497}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Harp.Templates", "template\Harp.Templates.csproj", "{32755A1B-2060-4F9E-82E9-C717D4EE3152}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interface.Tests", "tests\Interface.Tests\Interface.Tests.csproj", "{B2116B91-8305-494B-9599-35C600A50766}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interface.Tests", "tests\Interface.Tests.csproj", "{B2116B91-8305-494B-9599-35C600A50766}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,8 +26,9 @@ Global
 		{B2116B91-8305-494B-9599-35C600A50766}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2116B91-8305-494B-9599-35C600A50766}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2116B91-8305-494B-9599-35C600A50766}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{B2116B91-8305-494B-9599-35C600A50766} = {DFD2ABB5-A6B9-4D19-9002-95D82E305497}
+		{32755A1B-2060-4F9E-82E9-C717D4EE3152}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32755A1B-2060-4F9E-82E9-C717D4EE3152}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32755A1B-2060-4F9E-82E9-C717D4EE3152}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32755A1B-2060-4F9E-82E9-C717D4EE3152}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
