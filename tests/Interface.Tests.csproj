@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\interface\*.tt" />
+    <EmbeddedResource Include="..\interface\*.tt" />
   </ItemGroup>
 
   <ItemGroup>
