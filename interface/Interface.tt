@@ -337,7 +337,7 @@ class MaskValueTypeConverter : IYamlTypeConverter
         return type == typeof(MaskValue);
     }
 
-    public object ReadYaml(IParser parser, Type type)
+    public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
     {
         if (parser.TryConsume(out MappingStart _))
         {
@@ -368,7 +368,7 @@ class MaskValueTypeConverter : IYamlTypeConverter
         }
     }
 
-    public void WriteYaml(IEmitter emitter, object value, Type type)
+    public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
     {
         throw new NotImplementedException();
     }
@@ -383,7 +383,7 @@ class RegisterAccessTypeConverter : IYamlTypeConverter
         return type == typeof(RegisterAccess);
     }
 
-    public object ReadYaml(IParser parser, Type type)
+    public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
     {
         if (parser.TryConsume(out SequenceStart _))
         {
@@ -402,7 +402,7 @@ class RegisterAccessTypeConverter : IYamlTypeConverter
         }
     }
 
-    public void WriteYaml(IEmitter emitter, object value, Type type)
+    public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
     {
         throw new NotImplementedException();
     }
