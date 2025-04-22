@@ -838,6 +838,7 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
         /// <summary>
         /// <#= memberInfo.Description #>
         /// </summary>
+        [Description("<#= memberInfo.Description #>")]
 <#
         }
 #>
