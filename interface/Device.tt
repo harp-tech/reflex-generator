@@ -802,6 +802,7 @@ foreach (var bitMask in deviceMetadata.BitMasks)
         /// <summary>
         /// <#= fieldInfo.Description #>
         /// </summary>
+        [Description("<#= fieldInfo.Description #>")]
 <#
         }
 #>
