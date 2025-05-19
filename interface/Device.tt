@@ -802,6 +802,7 @@ foreach (var bitMask in deviceMetadata.BitMasks)
         /// <summary>
         /// <#= fieldInfo.Description #>
         /// </summary>
+        [Description("<#= fieldInfo.Description #>")]
 <#
         }
 #>
@@ -838,6 +839,7 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
         /// <summary>
         /// <#= memberInfo.Description #>
         /// </summary>
+        [Description("<#= memberInfo.Description #>")]
 <#
         }
 #>
