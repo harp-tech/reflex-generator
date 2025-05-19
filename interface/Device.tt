@@ -89,7 +89,7 @@ foreach (var register in deviceRegisters)
     /// describing the <see cref="<#= deviceName #>"/> device registers.
     /// </summary>
     [Description("Returns the contents of the metadata file describing the <#= deviceName #> device registers.")]
-    public partial class GetMetadata : Source<string>
+    public partial class GetDeviceMetadata : Source<string>
     {
         /// <summary>
         /// Returns an observable sequence with the contents of the metadata file
