@@ -131,11 +131,13 @@ foreach (var register in deviceRegisters)
     /// to the standard Harp storage format.
     /// </summary>
     [Description("Writes the sequence of <#= deviceName #> messages to the standard Harp storage format.")]
-    public partial class DeviceDataWriter : Sink<HarpMessage>
+    public partial class DeviceDataWriter : Sink<HarpMessage>, INamedElement
     {
         const string BinaryExtension = ".bin";
         const string MetadataFileName = "device.yml";
         readonly Bonsai.Harp.MessageWriter writer = new();
+
+        string INamedElement.Name => nameof(<#= deviceName #>) + "DataWriter";
 
         /// <summary>
         /// Gets or sets the relative or absolute path on which to save the message data.
