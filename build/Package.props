@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <Authors>harp-tech</Authors>
+    <Copyright>Copyright © harp-tech and Contributors</Copyright>
+    <PackageProjectUrl>https://harp-tech.org</PackageProjectUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(ProjectDir)$(PackageReadmeFile)" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\$(PackageLicenseFile)" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)$(PackageIcon)" Pack="true" PackagePath="/" Visible="false" />
+  </ItemGroup>
+</Project>
