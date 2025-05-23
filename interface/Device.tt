@@ -127,33 +127,26 @@ foreach (var register in deviceRegisters)
     }
 
     /// <summary>
-    /// Represents an operator that writes all messages in the sequence to the standard Harp binary format.
+    /// Represents an operator that writes the sequence of <see cref="<#= deviceName #>"/>" messages
+    /// to the standard Harp storage format.
     /// </summary>
-    [Description("Writes each Harp message in the sequence to raw binary files and the contents of the device metadata file to a separate text file.")]
-    public partial class MessageWriter : Sink<HarpMessage>
+    [Description("Writes the sequence of <#= deviceName #> messages to the standard Harp storage format.")]
+    public partial class DeviceDataWriter : Sink<HarpMessage>
     {
+        const string BinaryExtension = ".bin";
+        const string MetadataFileName = "device.yml";
         readonly Bonsai.Harp.MessageWriter writer = new();
 
         /// <summary>
-        /// Gets or sets the relative or absolute path of the directory on which to save
-        /// the binary data.
+        /// Gets or sets the relative or absolute path on which to save the message data.
         /// </summary>
-        [Category(nameof(CategoryAttribute.Data))]
-        [Description("The relative or absolute path of the directory on which to save the binary data.")]
+        [Description("The relative or absolute path of the directory on which to save the message data.")]
         [Editor("Bonsai.Design.SaveFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
         public string Path
         {
             get => System.IO.Path.GetDirectoryName(writer.FileName);
-            set => writer.FileName = System.IO.Path.Combine(value, nameof(<#= deviceName #>) + ".bin");
+            set => writer.FileName = System.IO.Path.Combine(value, nameof(<#= deviceName #>) + BinaryExtension);
         }
-
-        /// <summary>
-        /// Gets or sets the name of the file on which to write the device metadata.
-        /// </summary>
-        [Category(nameof(CategoryAttribute.Data))]
-        [FileNameFilter("YAML Files (*.yml;*.yaml)|*.yml;*.yaml|All Files|*.*")]
-        [Editor("Bonsai.Design.SaveFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
-        public string MetadataFileName { get; set; } = "device.yml";
 
         /// <summary>
         /// Gets or sets a value indicating whether element writing should be buffered. If <see langword="true"/>,
@@ -202,13 +195,10 @@ foreach (var register in deviceRegisters)
         private IObservable<TSource> WriteDeviceMetadata<TSource>(IObservable<TSource> source)
         {
             var basePath = Path;
-            var metadataPath = MetadataFileName;
-            if (string.IsNullOrEmpty(basePath) || string.IsNullOrEmpty(metadataPath))
+            if (string.IsNullOrEmpty(basePath))
                 return source;
 
-            if (!System.IO.Path.IsPathRooted(metadataPath))
-                metadataPath = System.IO.Path.Combine(basePath, metadataPath);
-
+            var metadataPath = System.IO.Path.Combine(basePath, MetadataFileName);
             return Observable.Create<TSource>(observer =>
             {
                 Bonsai.IO.PathHelper.EnsureDirectory(metadataPath);
