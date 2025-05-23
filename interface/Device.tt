@@ -127,24 +127,82 @@ foreach (var register in deviceRegisters)
     }
 
     /// <summary>
-    /// Represents an operator that writes each Harp message in the sequence to a raw binary file
-    /// and the contents of the device metadata file to a separate text file.
+    /// Represents an operator that writes all messages in the sequence to the standard Harp binary format.
     /// </summary>
-    [Description("Writes each Harp message in the sequence to a raw binary file and the contents of the device metadata file to a separate text file.")]
-    public partial class MessageWriter : Bonsai.Harp.MessageWriter
+    [Description("Writes each Harp message in the sequence to raw binary files and the contents of the device metadata file to a separate text file.")]
+    public partial class MessageWriter : Sink<HarpMessage>
     {
+        readonly Bonsai.Harp.MessageWriter writer = new();
+
+        /// <summary>
+        /// Gets or sets the relative or absolute path of the directory on which to save
+        /// the binary data.
+        /// </summary>
+        [Category(nameof(CategoryAttribute.Data))]
+        [Description("The relative or absolute path of the directory on which to save the binary data.")]
+        [Editor("Bonsai.Design.SaveFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
+        public string Path
+        {
+            get => System.IO.Path.GetDirectoryName(writer.FileName);
+            set => writer.FileName = System.IO.Path.Combine(value, nameof(<#= deviceName #>) + ".bin");
+        }
+
         /// <summary>
         /// Gets or sets the name of the file on which to write the device metadata.
         /// </summary>
-        [Category(nameof(Device.Metadata))]
+        [Category(nameof(CategoryAttribute.Data))]
         [FileNameFilter("YAML Files (*.yml;*.yaml)|*.yml;*.yaml|All Files|*.*")]
         [Editor("Bonsai.Design.SaveFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
         public string MetadataFileName { get; set; } = "device.yml";
 
+        /// <summary>
+        /// Gets or sets a value indicating whether element writing should be buffered. If <see langword="true"/>,
+        /// the write commands will be queued in memory as fast as possible and will be processed
+        /// by the writer in a different thread. Otherwise, writing will be done in the same
+        /// thread in which notifications arrive.
+        /// </summary>
+        [Description("Indicates whether writing should be buffered.")]
+        public bool Buffered
+        {
+            get => writer.Buffered;
+            set => writer.Buffered = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to overwrite the output file if it already exists.
+        /// </summary>
+        [Description("Indicates whether to overwrite the output file if it already exists.")]
+        public bool Overwrite
+        {
+            get => writer.Overwrite;
+            set => writer.Overwrite = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value specifying how the message filter will use the matching criteria.
+        /// </summary>
+        [Description("Specifies how the message filter will use the matching criteria.")]
+        public FilterType FilterType
+        {
+            get => writer.FilterType;
+            set => writer.FilterType = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value specifying the expected message type. If no value is
+        /// specified, all messages will be accepted.
+        /// </summary>
+        [Description("Specifies the expected message type. If no value is specified, all messages will be accepted.")]
+        public MessageType? MessageType
+        {
+            get => writer.MessageType;
+            set => writer.MessageType = value;
+        }
+
         private IObservable<TSource> WriteDeviceMetadata<TSource>(IObservable<TSource> source)
         {
+            var basePath = Path;
             var metadataPath = MetadataFileName;
-            var basePath = System.IO.Path.GetDirectoryName(base.FileName);
             if (string.IsNullOrEmpty(basePath) || string.IsNullOrEmpty(metadataPath))
                 return source;
 
@@ -153,6 +211,12 @@ foreach (var register in deviceRegisters)
 
             return Observable.Create<TSource>(observer =>
             {
+                Bonsai.IO.PathHelper.EnsureDirectory(metadataPath);
+                if (System.IO.File.Exists(metadataPath) && !Overwrite)
+                {
+                    throw new System.IO.IOException(string.Format("The file '{0}' already exists.", metadataPath));
+                }
+
                 System.IO.File.WriteAllText(metadataPath, Device.Metadata);
                 return source.SubscribeSafe(observer);
             });
@@ -169,9 +233,12 @@ foreach (var register in deviceRegisters)
         /// messages to a raw binary file, and the contents of the device metadata file
         /// to a separate text file.
         /// </returns>
-        public new IObservable<HarpMessage> Process(IObservable<HarpMessage> source)
+        public override IObservable<HarpMessage> Process(IObservable<HarpMessage> source)
         {
-            return WriteDeviceMetadata(base.Process(source));
+            return source.Publish(ps => ps.Merge(
+                WriteDeviceMetadata(writer.Process(ps.GroupBy(message => message.Address)))
+                .IgnoreElements()
+                .Cast<HarpMessage>()));
         }
 
         /// <summary>
@@ -190,9 +257,9 @@ foreach (var register in deviceRegisters)
         /// messages in each group to the corresponding file, and the contents of the device
         /// metadata file to a separate text file.
         /// </returns>
-        public new IObservable<IGroupedObservable<int, HarpMessage>> Process(IObservable<IGroupedObservable<int, HarpMessage>> source)
+        public IObservable<IGroupedObservable<int, HarpMessage>> Process(IObservable<IGroupedObservable<int, HarpMessage>> source)
         {
-            return WriteDeviceMetadata(base.Process(source));
+            return WriteDeviceMetadata(writer.Process(source));
         }
 
         /// <summary>
@@ -211,9 +278,9 @@ foreach (var register in deviceRegisters)
         /// messages in each group to the corresponding file, and the contents of the device
         /// metadata file to a separate text file.
         /// </returns>
-        public new IObservable<IGroupedObservable<Type, HarpMessage>> Process(IObservable<IGroupedObservable<Type, HarpMessage>> source)
+        public IObservable<IGroupedObservable<Type, HarpMessage>> Process(IObservable<IGroupedObservable<Type, HarpMessage>> source)
         {
-            return WriteDeviceMetadata(base.Process(source));
+            return WriteDeviceMetadata(writer.Process(source));
         }
     }
 <#
