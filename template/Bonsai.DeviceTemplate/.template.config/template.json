@@ -12,11 +12,6 @@
         {
             "modifiers": [
                 {
-                    "exclude": [
-                        "**/[Bb]in/**",
-                        "**/[Oo]bj/**",
-                        "**/*.ico"
-                    ],
                     "rename": {
                         "template.editorconfig": ".editorconfig",
                         "template.gitignore": ".gitignore"
@@ -29,8 +24,7 @@
         "projectName": {
             "type": "derived",
             "valueSource": "name",
-            "valueTransform": "replace",
-            "replaces": "$projectname$",
+            "valueTransform": "identity",
             "fileRename": "DeviceTemplate"
         },
         "projectTitle": {
@@ -100,11 +94,6 @@
         }
     },
     "forms": {
-        "replace": {
-            "identifier": "replace",
-            "pattern": "",
-            "replacement": ""
-        },
         "valueAfterLastDot": {
             "identifier": "replace",
             "pattern": "^.*\\.(?=[^\\.]+$)",
