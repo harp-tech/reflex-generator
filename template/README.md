@@ -13,7 +13,7 @@ dotnet new install Harp.Templates::0.4.0
 ### Creating a Device Project
 
 ```
-dotnet new harpdevice
+dotnet new harpdevice -n <project-name>
 ```
 
 ### Run code generation
