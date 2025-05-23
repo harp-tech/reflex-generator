@@ -3,8 +3,7 @@
     <Authors>harp-tech</Authors>
     <Copyright>Copyright © harp-tech and Contributors</Copyright>
     <PackageProjectUrl>https://harp-tech.org</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/harp-tech/reflex-generator.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
