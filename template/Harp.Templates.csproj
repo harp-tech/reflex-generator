@@ -2,19 +2,8 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <VersionPrefix>0.2.1</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
-    <PackageId>Harp.Templates</PackageId>
-    <Title>Harp Templates</Title>
-    <Authors>harp-tech</Authors>
-    <Copyright>Copyright © harp-tech and Contributors 2023</Copyright>
     <Description>Templates for creating a new Harp device</Description>
     <PackageTags>Harp Device Firmware Hardware Interface Templates</PackageTags>
-    <PackageProjectUrl>https://harp-tech.org</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/harp-tech/reflex-generator.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -23,9 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Bonsai.DeviceTemplate\**\*" Exclude="**\**\bin\**;**\**\obj\**;**\*.ico;**\*.user" />
-    <Content Include="..\LICENSE" PackagePath="/" /> 
-    <Content Include="..\icon.png" PackagePath="/" />
+    <Content Include="Bonsai.DeviceTemplate\**\*" />
     <Compile Remove="**\*" />
   </ItemGroup>
 

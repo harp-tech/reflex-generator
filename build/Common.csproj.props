@@ -8,4 +8,11 @@
     <PackageReference Include="Bonsai.Harp" Version="3.5.0" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
+
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <Import Project="Package.props" />
+  <Import Project="Version.props" />
 </Project>

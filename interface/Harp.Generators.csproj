@@ -1,19 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.3.1</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
-    <PackageId>Harp.Generators</PackageId>
-    <Title>Harp Generators</Title>
-    <Authors>harp-tech</Authors>
-    <Copyright>Copyright © harp-tech and Contributors 2023</Copyright>
     <Description>Provides source generators for Harp device firmware and software interface.</Description>
     <PackageTags>Harp Device Firmware Interface Generators</PackageTags>
-    <PackageProjectUrl>https://harp-tech.org</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/harp-tech/reflex-generator.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -22,8 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="..\LICENSE" PackagePath="/" /> 
-    <Content Include="..\icon.png" PackagePath="/" />
     <Content Include="*.tt" />
   </ItemGroup>
 

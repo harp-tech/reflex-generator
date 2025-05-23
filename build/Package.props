@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <Authors>harp-tech</Authors>
+    <Copyright>Copyright © harp-tech and Contributors</Copyright>
+    <PackageProjectUrl>https://harp-tech.org</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/harp-tech/reflex-generator.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\icon.png" Pack="true" PackagePath="/" Visible="false" />
+  </ItemGroup>
+</Project>
