@@ -130,6 +130,7 @@ foreach (var register in deviceRegisters)
     /// Represents an operator that writes the sequence of <see cref="<#= deviceName #>"/>" messages
     /// to the standard Harp storage format.
     /// </summary>
+    [DefaultProperty(nameof(Path))]
     [Description("Writes the sequence of <#= deviceName #> messages to the standard Harp storage format.")]
     public partial class DeviceDataWriter : Sink<HarpMessage>, INamedElement
     {
