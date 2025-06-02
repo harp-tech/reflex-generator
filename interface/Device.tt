@@ -144,12 +144,8 @@ foreach (var register in deviceRegisters)
         /// Gets or sets the relative or absolute path on which to save the message data.
         /// </summary>
         [Description("The relative or absolute path of the directory on which to save the message data.")]
-        [Editor("Bonsai.Design.SaveFileNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
-        public string Path
-        {
-            get => System.IO.Path.GetDirectoryName(writer.FileName);
-            set => writer.FileName = System.IO.Path.Combine(value, nameof(<#= deviceName #>) + BinaryExtension);
-        }
+        [Editor("Bonsai.Design.FolderNameEditor, Bonsai.Design", DesignTypes.UITypeEditor)]
+        public string Path { get; set; } = ".";
 
         /// <summary>
         /// Gets or sets a value indicating whether element writing should be buffered. If <see langword="true"/>,
