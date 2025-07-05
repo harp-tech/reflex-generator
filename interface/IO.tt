@@ -129,7 +129,7 @@ class PortPinInfoTypeConverter : IYamlTypeConverter
         return type == typeof(PortPinInfo);
     }
 
-    public object ReadYaml(IParser parser, Type type)
+    public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
     {
         var portPin = Deserializer.Deserialize<Dictionary<object, object>>(parser);
         if (portPin.TryGetValue(DirectionProperty, out object value))
@@ -155,7 +155,7 @@ class PortPinInfoTypeConverter : IYamlTypeConverter
         throw new YamlException($"Required property '{DirectionProperty}' not found when deserializing type '{typeof(PortPinInfo)}'.");
     }
 
-    public void WriteYaml(IEmitter emitter, object value, Type type)
+    public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
     {
         throw new NotImplementedException();
     }
@@ -187,6 +187,11 @@ class FirmwareNamingConvention : INamingConvention
             return separate ? Separator + character : character;
         });
         return value.ToUpperInvariant();
+    }
+
+    public string Reverse(string value)
+    {
+        throw new NotImplementedException();
     }
 }
 #>
