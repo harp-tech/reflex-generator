@@ -15,7 +15,7 @@
     <FirmwarePath>..\Firmware\$projectname$</FirmwarePath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Harp.Generators" Version="0.4.0" GeneratePathProperty="true" />
+    <PackageReference Include="Harp.Generators" Version="0.5.0" GeneratePathProperty="true" />
   </ItemGroup>
   <Target Name="TextTransform" BeforeTargets="AfterBuild">
     <PropertyGroup>
@@ -26,7 +26,10 @@
           Condition="Exists($(DeviceMetadata)) And $([System.String]::new('%(Content.Link)').EndsWith('Device.tt'))"
           Command="t4 %(Content.Identity) $(InterfaceFlags) -o=$(InterfacePath)\%(Content.Link)" />
     <Exec WorkingDirectory="$(ProjectDir)"
-          Condition="Exists($(IOMetadata)) And '%(Content.Link)' == 'Firmware.tt'"
+          Condition="Exists($(IOMetadata)) And '%(Content.Link)' == 'AppRegs.tt'"
           Command="t4 %(Content.Identity) $(FirmwareFlags) -o=$(FirmwarePath)\app_ios_and_regs.h" />
+    <Exec WorkingDirectory="$(ProjectDir)"
+          Condition="Exists($(IOMetadata)) And '%(Content.Link)' == 'AppFuncs.tt'"
+          Command="t4 %(Content.Identity) $(FirmwareFlags) -o=$(FirmwarePath)\app_funcs.h" />
   </Target>
 </Project>
