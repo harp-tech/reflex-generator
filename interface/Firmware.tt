@@ -18,11 +18,15 @@ var inputPins = TemplateHelper.GetPortPinsOfType<InputPinInfo>(portPinMetadata).
 var outputPins = TemplateHelper.GetPortPinsOfType<OutputPinInfo>(portPinMetadata).ToList();
 var deviceName = deviceMetadata.Device;
 
+int maxRegisterNameLength = 0;
 int minRegisterAddress = byte.MaxValue;
-int maxRegisterAddress = 0;
+int maxRegisterAddress = 32;
 int totalRegisterSize = 0;
-foreach (var register in deviceMetadata.Registers.Values)
+foreach (var registerMetadata in deviceMetadata.Registers)
 {
+    var register = registerMetadata.Value;
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    maxRegisterNameLength = Math.Max(maxRegisterNameLength, registerName.Length);
     minRegisterAddress = Math.Min(minRegisterAddress, register.Address);
     maxRegisterAddress = Math.Max(maxRegisterAddress, register.Address);
     totalRegisterSize += Math.Max(1, register.Length) * TemplateHelper.GetPayloadTypeSize(register.Type);
@@ -31,6 +35,9 @@ foreach (var register in deviceMetadata.Registers.Values)
 
 void init_ios(void);
 <#
+var maxPinNameLength = Math.Max(
+    inputPins.Count > 0 ? inputPins.Max(pin => FirmwareNamingConvention.Instance.Apply(pin.Key).Length) : 0,
+    outputPins.Count > 0 ? outputPins.Max(pin => FirmwareNamingConvention.Instance.Apply(pin.Key).Length) : 0);
 if (inputPins.Count > 0)
 {
 #>
@@ -40,8 +47,10 @@ if (inputPins.Count > 0)
 <#
     foreach (var pin in inputPins)
     {
+        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var descriptionOffset = maxPinNameLength - pinName.Length + 10;
 #>
-// <#= FirmwareNamingConvention.Instance.Apply(pin.Key) #>                  Description: <#= pin.Value.Description #>
+// <#= pinName #><#= new string(' ', descriptionOffset) #>Description: <#= pin.Value.Description #>
 <#
     }
 #>
@@ -51,8 +60,9 @@ if (inputPins.Count > 0)
     {
         var pinInfo = pin.Value;
         var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var nameOffset = maxPinNameLength - pinName.Length + 4;
 #>
-#define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)            // <#= pinName #>
+#define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)<#= new string(' ', nameOffset) #>// <#= pinName #>
 <#
     }
 #>
@@ -70,8 +80,10 @@ if (outputPins.Count > 0)
 <#
     foreach (var pin in outputPins)
     {
+        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var descriptionOffset = maxPinNameLength - pinName.Length + 10;
 #>
-// <#= FirmwareNamingConvention.Instance.Apply(pin.Key) #>                  Description: <#= pin.Value.Description #>
+// <#= pinName #><#= new string(' ', descriptionOffset) #>Description: <#= pin.Value.Description #>
 <#
     }
 #>
@@ -120,16 +132,18 @@ foreach (var registerMetadata in deviceMetadata.Registers)
 <#
 foreach (var registerMetadata in deviceMetadata.Registers)
 {
-    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
     var register = registerMetadata.Value;
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var addressOffset = new string(' ', maxRegisterNameLength - registerName.Length + 4);
+    var descriptionOffset = new string(' ', 7 - register.Type.ToString().Length);
 #>
-#define ADD_REG_<#= registerName #>      <#= register.Address #> // <#= register.Type #>    <#= register.Description #>
+#define ADD_REG_<#= registerName #><#= addressOffset #><#= register.Address #> // <#= register.Type #><#= descriptionOffset #><#= register.Description #>
 <#
 }
 #>
 
 /************************************************************************/
-/* <#= deviceName #> registers' memory limits                           */
+/* <#= deviceName #> registers' memory limits<#= new string(' ', 44 - deviceName.Length) #>*/
 /*                                                                      */
 /* DON'T change the APP_REGS_ADD_MIN value !!!                          */
 /* DON'T change these names !!!                                         */
@@ -143,6 +157,17 @@ foreach (var registerMetadata in deviceMetadata.Registers)
 /* Registers' bits                                                      */
 /************************************************************************/
 <#
+var maxBitNameLength = deviceMetadata.BitMasks.Values
+    .SelectMany(mask => mask.Bits)
+    .Select(bitField => FirmwareNamingConvention.Instance.Apply(bitField.Key).Length)
+    .Prepend(0).Max();
+var maxMemberNameLength = (from groupMask in deviceMetadata.GroupMasks
+                           let maskName = FirmwareGroupMaskNamingConvention.Instance.Apply(groupMask.Key)
+                           from member in groupMask.Value.Values
+                           let memberName = FirmwareNamingConvention.Instance.Apply(member.Key)
+                           select maskName.Length + memberName.Length)
+                           .Prepend(0).Max();
+var maxBitMemberNameLength = Math.Max(maxBitNameLength, maxMemberNameLength);
 foreach (var bitMask in deviceMetadata.BitMasks)
 {
     var mask = bitMask.Value;
@@ -150,9 +175,31 @@ foreach (var bitMask in deviceMetadata.BitMasks)
     {
         var fieldInfo = bitField.Value;
         var fieldName = FirmwareNamingConvention.Instance.Apply(bitField.Key);
+        var fieldNamePadding = new string(' ', maxBitMemberNameLength - fieldName.Length + 6);
         var bitShift = (int)Math.Log(fieldInfo.Value, 2);
 #>
-#define B_<#= fieldName #>    (1<<<#= bitShift #>)       // <#= fieldInfo.Description ?? string.Empty #>
+#define B_<#= fieldName #><#= fieldNamePadding #>(1<<<#= bitShift #>)       // <#= fieldInfo.Description ?? string.Empty #>
+<#
+    }
+}
+#>
+<#
+foreach (var groupMask in deviceMetadata.GroupMasks)
+{
+    var mask = groupMask.Value;
+    var maskName = FirmwareGroupMaskNamingConvention.Instance.Apply(groupMask.Key);
+    var maskNamePadding = new string(' ', maxBitMemberNameLength - maskName.Length);
+#>
+#define MSK_<#= maskName #>_SEL<#= maskNamePadding #>(1<<0)       // 
+<#
+
+    foreach (var member in mask.Values)
+    {
+        var memberInfo = member.Value;
+        var memberName = FirmwareNamingConvention.Instance.Apply(member.Key);
+        var memberNamePadding = new string(' ', maxBitMemberNameLength - memberName.Length - maskName.Length + 4);
+#>
+#define GM_<#= maskName #>_<#= memberName #><#= memberNamePadding #>(<#= memberInfo.Value #><<0)       // <#= memberInfo.Description ?? string.Empty #>
 <#
     }
 }
