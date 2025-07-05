@@ -17,6 +17,16 @@ var portPinMetadata = TemplateHelper.ReadPortPinMetadata(IOMetadataPath);
 var inputPins = TemplateHelper.GetPortPinsOfType<InputPinInfo>(portPinMetadata).ToList();
 var outputPins = TemplateHelper.GetPortPinsOfType<OutputPinInfo>(portPinMetadata).ToList();
 var deviceName = deviceMetadata.Device;
+
+int minRegisterAddress = byte.MaxValue;
+int maxRegisterAddress = 0;
+int totalRegisterSize = 0;
+foreach (var register in deviceMetadata.Registers.Values)
+{
+    minRegisterAddress = Math.Min(minRegisterAddress, register.Address);
+    maxRegisterAddress = Math.Max(maxRegisterAddress, register.Address);
+    totalRegisterSize += Math.Max(1, register.Length) * TemplateHelper.GetPayloadTypeSize(register.Type);
+}
 #>
 
 void init_ios(void);
@@ -117,6 +127,17 @@ foreach (var registerMetadata in deviceMetadata.Registers)
 <#
 }
 #>
+
+/************************************************************************/
+/* <#= deviceName #> registers' memory limits                           */
+/*                                                                      */
+/* DON'T change the APP_REGS_ADD_MIN value !!!                          */
+/* DON'T change these names !!!                                         */
+/************************************************************************/
+/* Memory limits */
+#define APP_REGS_ADD_MIN                    0x<#= minRegisterAddress.ToString("X") #>
+#define APP_REGS_ADD_MAX                    0x<#= maxRegisterAddress.ToString("X") #>
+#define APP_NBYTES_OF_REG_BANK              <#= totalRegisterSize #>
 
 /************************************************************************/
 /* Registers' bits                                                      */
