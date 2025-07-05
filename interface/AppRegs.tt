@@ -187,10 +187,11 @@ foreach (var bitMask in deviceMetadata.BitMasks)
 foreach (var groupMask in deviceMetadata.GroupMasks)
 {
     var mask = groupMask.Value;
+    var maskSelect = TemplateHelper.GetMaskSelect(mask);
     var maskName = FirmwareGroupMaskNamingConvention.Instance.Apply(groupMask.Key);
     var maskNamePadding = new string(' ', maxBitMemberNameLength - maskName.Length);
 #>
-#define MSK_<#= maskName #>_SEL<#= maskNamePadding #>(1<<0)       // 
+#define MSK_<#= maskName #>_SEL<#= maskNamePadding #>(<#= maskSelect #><<0)       // 
 <#
 
     foreach (var member in mask.Values)
