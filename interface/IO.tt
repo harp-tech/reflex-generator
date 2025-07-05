@@ -188,5 +188,10 @@ class FirmwareNamingConvention : INamingConvention
         });
         return value.ToUpperInvariant();
     }
+
+    public string Reverse(string value)
+    {
+        throw new NotImplementedException();
+    }
 }
 #>
