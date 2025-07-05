@@ -287,6 +287,16 @@ public static partial class TemplateHelper
         return (int)Math.Log(lsb, 2);
     }
 
+    public static int GetMaskSelect(GroupMaskInfo groupMask)
+    {
+        var maxValue = groupMask.Values.Max(member => member.Value.Value);
+        if (maxValue == 0)
+            return 1;
+
+        var msb = 1 << (int)Math.Log(maxValue, 2);
+        return (msb << 1) - 1;
+    }
+
     static int GetMemberSize(
         PayloadMemberInfo member,
         RegisterInfo register,
