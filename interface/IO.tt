@@ -215,4 +215,40 @@ class FirmwareNamingConvention : INamingConvention
         throw new NotImplementedException();
     }
 }
+
+class FirmwareGroupMaskNamingConvention : INamingConvention
+{
+    public static FirmwareGroupMaskNamingConvention Instance = new FirmwareGroupMaskNamingConvention();
+    static readonly string[] TrimSuffixes = new[] { "StateConfiguration", "Configuration" };
+    static readonly Dictionary<string, string> TokenSubstitutions = new Dictionary<string, string>
+    {
+        { "DIGITAL_INPUT", "DI" },
+        { "DIGITAL_OUTPUT", "DO" }
+    };
+
+    public string Apply(string value)
+    {
+        for (int i = 0; i < TrimSuffixes.Length; i++)
+        {
+            var trimIndex = value.LastIndexOf(TrimSuffixes[i]);
+            if (trimIndex >= 0)
+            {
+                value = value.Substring(0, trimIndex);
+                break;
+            }
+        }
+
+        var result = FirmwareNamingConvention.Instance.Apply(value);
+        foreach (var substitution in TokenSubstitutions)
+        {
+            result = result.Replace(substitution.Key, substitution.Value);
+        }
+        return result;
+    }
+
+    public string Reverse(string value)
+    {
+        throw new NotImplementedException();
+    }
+}
 #>
