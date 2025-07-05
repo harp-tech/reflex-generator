@@ -6,7 +6,7 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ include file="App.tt" #><##>
+<#@ include file="Firmware.tt" #><##>
 <#@ output extension=".h" #>
 #ifndef _APP_IOS_AND_REGS_H_
 #define _APP_IOS_AND_REGS_H_
