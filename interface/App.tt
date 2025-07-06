@@ -1,0 +1,36 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ parameter name="RegisterMetadataPath" type="string" #>
+<#@ import namespace="System.IO" #>
+<#@ include file="Firmware.tt" #><##>
+<#@ output extension=".h" #>
+#ifndef _APP_H_
+#define _APP_H_
+#include <avr/io.h>
+
+
+/************************************************************************/
+/* Define versions                                                      */
+/************************************************************************/
+<#
+var deviceMetadata = TemplateHelper.ReadDeviceMetadata(RegisterMetadataPath);
+#>
+#define MAJOR_HW_VERSION <#= deviceMetadata.HardwareTargets.Major #>
+#define MINOR_HW_VERSION <#= deviceMetadata.HardwareTargets.Minor #>
+#define MAJOR_FW_VERSION <#= deviceMetadata.FirmwareVersion.Major #>
+#define MINOR_FW_VERSION <#= deviceMetadata.FirmwareVersion.Minor #>
+#define ASSEMBLY_VERSION 0
+
+
+/************************************************************************/
+/* Enable the interrupts                                                */
+/************************************************************************/
+#define hwbp_app_enable_interrupts 	PMIC_CTRL = PMIC_CTRL | PMIC_RREN_bm | PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm; __asm volatile("sei");
+
+
+/************************************************************************/
+/* Initialize the application                                           */
+/************************************************************************/
+void hwbp_app_initialize(void);
+
+
+#endif /* _APP_H_ */
