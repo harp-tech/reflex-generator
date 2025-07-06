@@ -31,5 +31,8 @@
     <Exec WorkingDirectory="$(ProjectDir)"
           Condition="Exists($(IOMetadata)) And '%(Content.Link)' == 'AppFuncs.tt'"
           Command="t4 %(Content.Identity) $(FirmwareFlags) -o=$(FirmwarePath)\app_funcs.h" />
+    <Exec WorkingDirectory="$(ProjectDir)"
+          Condition="Exists($(IOMetadata)) And '%(Content.Link)' == 'App.tt'"
+          Command="t4 %(Content.Identity) $(FirmwareFlags) -o=$(FirmwarePath)\app.h" />
   </Target>
 </Project>
