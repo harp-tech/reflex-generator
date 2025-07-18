@@ -12,6 +12,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <InterfacePath>..\Interface\$projectname$</InterfacePath>
+    <PythonInterfacePath>..\PythonInterface\$pythonprojectname$</PythonInterfacePath>
     <FirmwarePath>..\Firmware\$projectname$</FirmwarePath>
   </PropertyGroup>
   <ItemGroup>
@@ -20,13 +21,25 @@
   <Target Name="TextTransform" BeforeTargets="AfterBuild">
     <PropertyGroup>
       <InterfaceFlags>-p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -P=$(TargetDir)</InterfaceFlags>
+      <PythonInterfaceFlags>-p:MetadataPath=$(DeviceMetadata) -p:Namespace=$(RootNamespace) -P=$(TargetDir)</PythonInterfaceFlags>
       <FirmwareFlags>-p:RegisterMetadataPath=$(DeviceMetadata) -p:IOMetadataPath=$(IOMetadata) -P=$(TargetDir)</FirmwareFlags>
     </PropertyGroup>
+    <ItemGroup>
+      <TextTemplates Include="$(OutputPath)/*.tt" />
+    </ItemGroup>
     <Exec WorkingDirectory="$(ProjectDir)"
-          Condition="Exists($(DeviceMetadata)) And $([System.String]::new('%(Content.Link)').EndsWith('Device.tt'))"
-          Command="t4 %(Content.Identity) $(InterfaceFlags) -o=$(InterfacePath)\%(Content.Link)" />
+          ConsoleToMSBuild="true"
+          Condition="Exists($(DeviceMetadata)) And $([System.String]::new('%(TextTemplates.Identity)').EndsWith('Device.tt'))"
+          Command="t4 %(TextTemplates.Identity) $(InterfaceFlags) -o=$(InterfacePath)/%(TextTemplates.Filename).cs" />
+
     <Exec WorkingDirectory="$(ProjectDir)"
-          Condition="Exists($(IOMetadata)) And '%(Content.Link)' == 'Firmware.tt'"
-          Command="t4 %(Content.Identity) $(FirmwareFlags) -o=$(FirmwarePath)\app_ios_and_regs.h" />
+          ConsoleToMSBuild="true"
+          Condition="Exists($(DeviceMetadata)) And $([System.String]::new('%(TextTemplates.Identity)').EndsWith('harpdevice.tt'))"
+          Command="t4 %(TextTemplates.Identity) $(PythonInterfaceFlags) -o=$(PythonInterfacePath)/harp/devices/$pythonmodulenameshort$/%(TextTemplates.Filename) -v" />
+
+    <Exec WorkingDirectory="$(ProjectDir)"
+          ConsoleToMSBuild="true"
+          Condition="Exists($(IOMetadata)) And '%(TextTemplates.Identity)' == 'Firmware.tt'"
+          Command="t4 %(TextTemplates.Identity) $(FirmwareFlags) -o=$(FirmwarePath)\app_ios_and_regs.h" />
   </Target>
 </Project>
