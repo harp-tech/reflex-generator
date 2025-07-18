@@ -1,0 +1,315 @@
+<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ parameter name="Namespace" type="string" #>
+<#@ parameter name="MetadataPath" type="string" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Globalization" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ include file="Interface.tt" #><##>
+<#@ output extension=".py" #>
+<#
+var deviceMetadata = TemplateHelper.ReadDeviceMetadata(MetadataPath);
+var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
+var deviceRegisters = deviceMetadata.Registers;
+var deviceName = deviceMetadata.Device;
+#>
+from dataclasses import dataclass
+from enum import Enum, IntFlag
+
+from harp.communication import Device
+from harp.protocol import MessageType, PayloadType
+from harp.protocol.exceptions import HarpReadException, HarpWriteException
+from harp.protocol.messages import HarpMessage
+
+<#
+// Order is important for acronyms, so longer acronyms should be listed first
+string[] AcronymExceptions = new[] { "DIO", "DI", "DO", "IR", "USB" };
+// Regex for units: ms, hz, v (case-insensitive)
+Regex UnitRegex = new Regex(@"^\d+(ms|hz|v)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+string ToSnakeCase(string name, bool allCaps = false)
+{
+    if (string.IsNullOrEmpty(name)) return name;
+    var sb = new System.Text.StringBuilder();
+    int i = 0;
+    while (i < name.Length)
+    {
+        bool matched = false;
+        // Acronym exceptions
+        foreach (var acronym in AcronymExceptions)
+        {
+            if (i + acronym.Length <= name.Length &&
+                string.Compare(name, i, acronym, 0, acronym.Length, ignoreCase: false, culture: null) == 0)
+            {
+                if (i > 0 && sb[sb.Length - 1] != '_')
+                    sb.Append('_');
+                sb.Append(acronym.ToLowerInvariant());
+                i += acronym.Length;
+                matched = true;
+                break;
+            }
+        }
+        if (matched) continue;
+
+        // Digits+unit pattern (e.g., 5V, 10300Hz, 1Ms)
+        var unitMatch = UnitRegex.Match(name.Substring(i));
+        if (unitMatch.Success)
+        {
+            int matchLen = unitMatch.Length;
+            int nextIdx = i + matchLen;
+            // Only treat as a unit if next char does not exist or is uppercase
+            if (nextIdx >= name.Length || char.IsUpper(name[nextIdx]))
+            {
+                if (i > 0 && sb[sb.Length - 1] != '_')
+                    sb.Append('_');
+                sb.Append(name.Substring(i, matchLen).ToLowerInvariant());
+                i += matchLen;
+                // If next char is uppercase, treat as word boundary
+                if (nextIdx < name.Length && char.IsUpper(name[nextIdx]))
+                    sb.Append('_');
+                continue;
+            }
+        }
+
+        // Digits: keep with previous word, and if next char is uppercase, treat as word boundary
+        if (char.IsDigit(name[i]))
+        {
+            sb.Append(name[i]);
+            int nextIdx = i + 1;
+            if (nextIdx < name.Length && char.IsUpper(name[nextIdx]))
+                sb.Append('_');
+            i++;
+            continue;
+        }
+
+        // Default PascalCase to snake_case
+        var c = name[i];
+        if (char.IsUpper(c) && i > 0 && sb[sb.Length - 1] != '_')
+            sb.Append('_');
+        sb.Append(char.ToLowerInvariant(c));
+        i++;
+    }
+    var result = sb.ToString();
+    return allCaps ? result.ToUpperInvariant() : result;
+}
+
+// Helper for type conversion
+Func<string, string> pyType = t =>
+{
+    switch (t)
+    {
+        case "byte":
+        case "sbyte":
+        case "ushort":
+        case "short":
+        case "uint":
+        case "int":
+        case "ulong":
+        case "long":
+            return "int";
+        case "float":
+            return "float";
+        case "ArraySegment<byte>":
+        case "byte[]":
+            return "bytes";
+        case "short[]":
+        case "ushort[]":
+        case "uint[]":
+        case "int[]":
+        case "long[]":
+            return "list[int]";
+        case "EnableFlag":
+            return "bool";
+        default:
+            return t; // fallback
+    }
+};
+#>
+<# // Payload dataclasses
+var payloadTypes = new HashSet<string>();
+foreach (var registerMetadata in deviceRegisters)
+{
+    var register = registerMetadata.Value;
+    if (register.PayloadSpec == null) continue;
+    var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
+    if (!payloadTypes.Add(interfaceType)) continue;
+#>
+
+@dataclass
+class <#= interfaceType #>:
+<# 
+    foreach (var member in register.PayloadSpec)
+    {
+        var memberType = TemplateHelper.GetInterfaceType(member.Value, register.Type);
+        if (!string.IsNullOrEmpty(member.Value.Description))
+        {
+#>
+        # <#= member.Value.Description #>
+<#      }
+#>
+    <#= member.Key #>: <#= pyType(memberType) #>
+<# 
+    }
+}
+#>
+<# // BitMask enums
+foreach (var bitMask in deviceMetadata.BitMasks)
+{
+    var mask = bitMask.Value;
+#>
+
+
+class <#= bitMask.Key #>(IntFlag):
+    """
+    <#= mask.Description #>
+
+    Attributes
+    ----------
+<# 
+    foreach (var bitField in mask.Bits)
+    {
+        var fieldInfo = bitField.Value;
+#>
+    <#= ToSnakeCase(bitField.Key, allCaps:true) #> : int
+        <#= string.IsNullOrEmpty(fieldInfo.Description) ? "_No description currently available_" : fieldInfo.Description #>
+<#  } #>
+    """
+
+<#   
+    // Add a NONE value if there are no bits set
+    var bitCount = mask.Bits.Count;
+    if (!mask.Bits.Values.Any(fieldInfo => fieldInfo.Value == 0))
+    {
+#>
+    NONE = 0x0
+<#
+    }
+    foreach (var bitField in mask.Bits)
+    {
+        var fieldInfo = bitField.Value;
+#>
+    <#= ToSnakeCase(bitField.Key, allCaps:true) #> = 0x<#= fieldInfo.Value.ToString("X") #>
+<#
+    }
+}
+#>
+<# 
+// GroupMask enums
+foreach (var groupMask in deviceMetadata.GroupMasks)
+{
+    var mask = groupMask.Value;
+#>
+
+
+class <#= groupMask.Key #>(Enum):
+    """
+    <#= mask.Description #>
+
+    Attributes
+    ----------
+<# 
+    foreach (var member in mask.Values)
+    {
+        var memberInfo = member.Value;
+#>
+    <#= ToSnakeCase(member.Key, allCaps:true) #> : int
+        <#= string.IsNullOrEmpty(memberInfo.Description) ? "_No description currently available_" : memberInfo.Description #>
+<#  } #>
+    """
+
+<# 
+    foreach (var member in mask.Values)
+    {
+        var memberInfo = member.Value;
+#>
+    <#= ToSnakeCase(member.Key, allCaps:true) #> = <#= memberInfo.Value #>
+<#
+    }
+}
+#>
+
+
+class <#= deviceName #>Registers(Enum):
+    """Enum for all available registers in the <#= deviceName #> device.
+
+    Attributes
+    ----------
+<# 
+    foreach (var registerMetadata in publicRegisters)
+    {
+        var regName = registerMetadata.Key;
+        var reg = registerMetadata.Value;
+        var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, registerMetadata.Value);
+#>
+    <#= ToSnakeCase(regName, allCaps:true) #> : int
+        <#= reg.Description ?? "Register address for the " + regName + " register." #>
+<# } #>
+    """
+<#
+    foreach (var registerMetadata in publicRegisters)
+    {
+        var regName = registerMetadata.Key;
+        var reg = registerMetadata.Value;
+        var address = reg.Address;
+#>
+    <#= ToSnakeCase(regName, allCaps:true) #> = <#= address #>
+<#
+    }
+#>
+
+
+class <#= deviceName #>(Device):
+    """
+    <#= deviceName #> class for controlling the device.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # connect and load already happened in the base class
+        # verify that WHO_AM_I matches the expected value
+        if self.WHO_AM_I != <#= deviceMetadata.WhoAmI #>:
+            self.disconnect()
+            raise Exception(f"WHO_AM_I mismatch: expected {<#= deviceMetadata.WhoAmI #>}, got {self.WHO_AM_I}")
+
+<# foreach (var registerMetadata in publicRegisters) {
+    var regName = registerMetadata.Key;
+    var reg = registerMetadata.Value;
+    //var interfaceType = TemplateHelper.GetInterfaceType(reg.Type, reg.Length);
+    var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, registerMetadata.Value);
+#>
+    def read_<#= ToSnakeCase(regName) #>(self) -> <#= pyType(interfaceType) #>:
+        """
+        Reads the contents of the <#= regName #> register.
+
+        Returns
+        -------
+        <#= pyType(interfaceType) #>
+            Value read from the <#= regName #> register.
+        """
+        address = <#= reg.Address #>
+        reply = self.send(HarpMessage.create(MessageType.READ, address, PayloadType.<#= reg.Type #>))
+        if reply.is_error:
+            raise HarpReadException("<#= regName #>", reply.error_message)
+
+        return reply.payload
+
+<# if ((reg.Access & RegisterAccess.Write) != 0) { #>
+    def write_<#= ToSnakeCase(regName) #>(self, value: <#= pyType(interfaceType) #>):
+        """
+        Writes a value to the <#= regName #> register.
+
+        Parameters
+        ----------
+        value : <#= pyType(interfaceType) #>
+            Value to write to the <#= regName #> register.
+        """
+        address = <#= reg.Address #>
+        reply = self.send(HarpMessage.create(MessageType.WRITE, address, PayloadType.<#= reg.Type #>, value))
+        if reply.is_error:
+            raise HarpWriteException("<#= regName #>", reply.error_message)
+<# } #>
+<# } #>
