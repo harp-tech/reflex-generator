@@ -1,0 +1,1 @@
+::: harp.devices.$pythonmodulenameshort$.harpdevice

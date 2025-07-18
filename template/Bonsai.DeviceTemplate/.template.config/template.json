@@ -27,6 +27,41 @@
             "valueTransform": "identity",
             "fileRename": "DeviceTemplate"
         },
+        "projectNameShort": {
+            "type": "derived",
+            "valueSource": "projectName",
+            "valueTransform": "valueAfterLastDot",
+            "replaces": "$projectnameshort$"
+        },
+        "projectNameLower": {
+            "type": "generated",
+            "generator": "casing",
+            "parameters": {
+                "source": "name",
+                "toLower": true
+            },
+            "replaces": "$projectnamelower$"
+        },
+        "pythonProjectName": {
+            "type": "derived",
+            "valueSource": "projectNameLower",
+            "valueTransform": "replace",
+            "replaces": "$pythonprojectname$",
+            "fileRename": "devicetemplate"
+        },
+        "pythonModuleName": {
+            "type": "derived",
+            "valueSource": "pythonProjectName",
+            "valueTransform": "replaceDotsWithUnderscores",
+            "replaces": "$pythonmodulename$"
+        },
+        "pythonModuleNameShort": {
+            "type": "derived",
+            "valueSource": "projectNameLower",
+            "valueTransform": "valueAfterLastDot",
+            "replaces": "$pythonmodulenameshort$",
+            "fileRename": "moduletemplate"
+        },
         "projectTitle": {
             "type": "derived",
             "valueSource": "name",
@@ -103,6 +138,11 @@
             "identifier": "replace",
             "pattern": "\\.",
             "replacement": " "
+        },
+        "replaceDotsWithUnderscores": {
+            "identifier": "replace",
+            "pattern": "\\.",
+            "replacement": "_"
         }
     },
     "sourceName": "$projectname$",
