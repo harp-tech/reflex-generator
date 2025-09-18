@@ -294,10 +294,10 @@ class <#= deviceName #>(Device):
         <#= pyType(interfaceType) #>
             Value read from the <#= regName #> register.
         """
-        address = <#= reg.Address #>
+        address = <#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>
         reply = self.send(HarpMessage.create(MessageType.READ, address, PayloadType.<#= reg.Type #>))
-        if reply.is_error:
-            raise HarpReadException("<#= regName #>", reply.error_message)
+        if reply is not None and reply.is_error:
+            raise HarpReadException("<#= regName #>")
 
 <#  if (hasPayloadSpec)
     {
@@ -331,7 +331,7 @@ class <#= deviceName #>(Device):
 #>
 
 <# if ((reg.Access & RegisterAccess.Write) != 0) { #>
-    def write_<#= ToSnakeCase(regName) #>(self, value: <#= pyType(interfaceType) #>):
+    def write_<#= ToSnakeCase(regName) #>(self, value: <#= pyType(interfaceType) #>) -> ReplyHarpMessage | None:
         """
         Writes a value to the <#= regName #> register.
 
@@ -340,9 +340,12 @@ class <#= deviceName #>(Device):
         value : <#= pyType(interfaceType) #>
             Value to write to the <#= regName #> register.
         """
-        address = <#= reg.Address #>
+        address = <#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>
         reply = self.send(HarpMessage.create(MessageType.WRITE, address, PayloadType.<#= reg.Type #>, value))
-        if reply.is_error:
-            raise HarpWriteException("<#= regName #>", reply.error_message)
+        if reply is not None and reply.is_error:
+            raise HarpWriteException("<#= regName #>")
+
+        return reply
+
 <# } #>
 <# } #>
