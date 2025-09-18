@@ -1,1 +1,1 @@
-::: harp.devices.$pythonmodulenameshort$.harpdevice
+::: harp.devices.$pythonmodulenameshort$
