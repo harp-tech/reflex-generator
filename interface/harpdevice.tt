@@ -17,7 +17,7 @@ var deviceRegisters = deviceMetadata.Registers;
 var deviceName = deviceMetadata.Device;
 #>
 from dataclasses import dataclass
-from enum import Enum, IntFlag
+from enum import IntEnum, IntFlag
 
 from harp.communication import Device
 from harp.protocol import MessageType, PayloadType
@@ -204,7 +204,7 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
 #>
 
 
-class <#= groupMask.Key #>(Enum):
+class <#= groupMask.Key #>(IntEnum):
     """
     <#= mask.Description #>
 
@@ -232,7 +232,7 @@ class <#= groupMask.Key #>(Enum):
 #>
 
 
-class <#= deviceName #>Registers(Enum):
+class <#= deviceName #>Registers(IntEnum):
     """Enum for all available registers in the <#= deviceName #> device.
 
     Attributes
