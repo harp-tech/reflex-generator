@@ -15,15 +15,16 @@ var deviceMetadata = TemplateHelper.ReadDeviceMetadata(MetadataPath);
 var publicRegisters = deviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
 var deviceRegisters = deviceMetadata.Registers;
 var deviceName = deviceMetadata.Device;
+var bitmaskTypes = new HashSet<string>(deviceMetadata.BitMasks.Keys);
+var groupmaskTypes = new HashSet<string>(deviceMetadata.GroupMasks.Keys);
 #>
 from dataclasses import dataclass
 from enum import IntEnum, IntFlag
 
-from harp.communication import Device
 from harp.protocol import MessageType, PayloadType
 from harp.protocol.exceptions import HarpReadException, HarpWriteException
-from harp.protocol.messages import HarpMessage
-
+from harp.protocol.messages import HarpMessage, ReplyHarpMessage
+from harp.serial import Device
 <#
 // Order is important for acronyms, so longer acronyms should be listed first
 string[] AcronymExceptions = new[] { "DIO", "DI", "DO", "IR", "USB" };
@@ -248,6 +249,7 @@ class <#= deviceName #>Registers(IntEnum):
         <#= reg.Description ?? "Register address for the " + regName + " register." #>
 <# } #>
     """
+
 <#
     foreach (var registerMetadata in publicRegisters)
     {
@@ -278,8 +280,10 @@ class <#= deviceName #>(Device):
 <# foreach (var registerMetadata in publicRegisters) {
     var regName = registerMetadata.Key;
     var reg = registerMetadata.Value;
-    //var interfaceType = TemplateHelper.GetInterfaceType(reg.Type, reg.Length);
     var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, registerMetadata.Value);
+    var hasPayloadSpec = reg.PayloadSpec != null;
+    var isBitmask = bitmaskTypes.Contains(interfaceType);
+    var isGroupmask = groupmaskTypes.Contains(interfaceType);
 #>
     def read_<#= ToSnakeCase(regName) #>(self) -> <#= pyType(interfaceType) #>:
         """
@@ -295,7 +299,36 @@ class <#= deviceName #>(Device):
         if reply.is_error:
             raise HarpReadException("<#= regName #>", reply.error_message)
 
+<#  if (hasPayloadSpec)
+    {
+#>
+        # Map payload (list/array) to dataclass fields by offset
+        payload = reply.payload
+        return <#= interfaceType #>(
+<#  
+        var memberCount = reg.PayloadSpec.Count;
+        var memberIndex = 0;
+        foreach (var member in reg.PayloadSpec) {
+            var offset = member.Value.Offset ?? memberIndex;
+#>            <#= member.Key #>=payload[<#= offset #>]<#= ++memberIndex < memberCount ? "," : "" #>
+<#
+        }
+#>
+        )
+<#  }
+    else if (isBitmask || isGroupmask)
+    {
+#>
+        return <#= interfaceType #>(reply.payload)
+<#  }
+    else
+    {
+#>
+        # Directly return the payload as it is a primitive type
         return reply.payload
+<# 
+    }
+#>
 
 <# if ((reg.Access & RegisterAccess.Write) != 0) { #>
     def write_<#= ToSnakeCase(regName) #>(self, value: <#= pyType(interfaceType) #>):
