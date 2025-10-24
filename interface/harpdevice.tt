@@ -22,8 +22,8 @@ from dataclasses import dataclass
 from enum import IntEnum, IntFlag
 
 from harp.protocol import MessageType, PayloadType
-from harp.protocol.exceptions import HarpReadException, HarpWriteException
-from harp.protocol.messages import HarpMessage, ReplyHarpMessage
+from harp.protocol.exceptions import HarpException, HarpReadException, HarpWriteException
+from harp.protocol.messages import HarpMessage
 from harp.serial import Device
 <#
 // Order is important for acronyms, so longer acronyms should be listed first
@@ -275,7 +275,7 @@ class <#= deviceName #>(Device):
         # verify that WHO_AM_I matches the expected value
         if self.WHO_AM_I != <#= deviceMetadata.WhoAmI #>:
             self.disconnect()
-            raise Exception(f"WHO_AM_I mismatch: expected {<#= deviceMetadata.WhoAmI #>}, got {self.WHO_AM_I}")
+            raise HarpException(f"WHO_AM_I mismatch: expected {<#= deviceMetadata.WhoAmI #>}, got {self.WHO_AM_I}")
 
 <# foreach (var registerMetadata in publicRegisters) {
     var regName = registerMetadata.Key;
@@ -285,53 +285,56 @@ class <#= deviceName #>(Device):
     var isBitmask = bitmaskTypes.Contains(interfaceType);
     var isGroupmask = groupmaskTypes.Contains(interfaceType);
 #>
-    def read_<#= ToSnakeCase(regName) #>(self) -> <#= pyType(interfaceType) #>:
+    def read_<#= ToSnakeCase(regName) #>(self) -> <#= pyType(interfaceType) #> | None:
         """
         Reads the contents of the <#= regName #> register.
 
         Returns
         -------
-        <#= pyType(interfaceType) #>
+        <#= pyType(interfaceType) #> | None
             Value read from the <#= regName #> register.
         """
         address = <#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>
-        reply = self.send(HarpMessage.create(MessageType.READ, address, PayloadType.<#= reg.Type #>))
+        reply = self.send(HarpMessage(MessageType.READ, PayloadType.<#= reg.Type #>, address))
         if reply is not None and reply.is_error:
-            raise HarpReadException("<#= regName #>")
+            raise HarpReadException("<#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>", reply)
 
+        if reply is not None:
 <#  if (hasPayloadSpec)
     {
 #>
-        # Map payload (list/array) to dataclass fields by offset
-        payload = reply.payload
-        return <#= interfaceType #>(
+            # Map payload (list/array) to dataclass fields by offset
+            payload = reply.payload
+            return <#= interfaceType #>(
 <#  
         var memberCount = reg.PayloadSpec.Count;
         var memberIndex = 0;
         foreach (var member in reg.PayloadSpec) {
             var offset = member.Value.Offset ?? memberIndex;
-#>            <#= member.Key #>=payload[<#= offset #>]<#= ++memberIndex < memberCount ? "," : "" #>
+#>
+                <#= member.Key #>=payload[<#= offset #>]<#= ++memberIndex < memberCount ? "," : "" #>
 <#
         }
 #>
-        )
+            )
 <#  }
     else if (isBitmask || isGroupmask)
     {
 #>
-        return <#= interfaceType #>(reply.payload)
+            return <#= interfaceType #>(reply.payload)
 <#  }
     else
     {
 #>
-        # Directly return the payload as it is a primitive type
-        return reply.payload
+            # Directly return the payload as it is a primitive type
+            return reply.payload
 <# 
     }
-#>
+#>      
+        return None
 
 <# if ((reg.Access & RegisterAccess.Write) != 0) { #>
-    def write_<#= ToSnakeCase(regName) #>(self, value: <#= pyType(interfaceType) #>) -> ReplyHarpMessage | None:
+    def write_<#= ToSnakeCase(regName) #>(self, value: <#= pyType(interfaceType) #>) -> HarpMessage | None:
         """
         Writes a value to the <#= regName #> register.
 
@@ -341,9 +344,9 @@ class <#= deviceName #>(Device):
             Value to write to the <#= regName #> register.
         """
         address = <#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>
-        reply = self.send(HarpMessage.create(MessageType.WRITE, address, PayloadType.<#= reg.Type #>, value))
+        reply = self.send(HarpMessage(MessageType.WRITE, PayloadType.<#= reg.Type #>, address, value))
         if reply is not None and reply.is_error:
-            raise HarpWriteException("<#= regName #>")
+            raise HarpWriteException("<#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>", reply)
 
         return reply
 
