@@ -9,8 +9,6 @@ copyright: Maintained by the Hardware and Software Platform, Champalimaud Founda
 
 nav:
   - Home: index.md
-  # - Examples: 
-  #   - Example 1: examples/example01.md
   - Modules: modules.md
 plugins:
   - search
