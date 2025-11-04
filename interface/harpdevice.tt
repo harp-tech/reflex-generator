@@ -295,7 +295,7 @@ class <#= deviceName #>(Device):
             Value read from the <#= regName #> register.
         """
         address = <#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>
-        reply = self.send(HarpMessage(MessageType.READ, PayloadType.<#= reg.Type #>, address))
+        reply = self.send(HarpMessage(MessageType.READ, PayloadType.<#= reg.Type.ToString().ToUpperInvariant() #>, address))
         if reply is not None and reply.is_error:
             raise HarpReadException("<#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>", reply)
 
@@ -344,7 +344,7 @@ class <#= deviceName #>(Device):
             Value to write to the <#= regName #> register.
         """
         address = <#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>
-        reply = self.send(HarpMessage(MessageType.WRITE, PayloadType.<#= reg.Type #>, address, value))
+        reply = self.send(HarpMessage(MessageType.WRITE, PayloadType.<#= reg.Type.ToString().ToUpperInvariant() #>, address, value))
         if reply is not None and reply.is_error:
             raise HarpWriteException("<#= deviceName #>Registers.<#= ToSnakeCase(regName, allCaps:true) #>", reply)
 
