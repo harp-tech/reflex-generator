@@ -139,6 +139,7 @@ foreach (var registerMetadata in deviceRegisters)
     if (!payloadTypes.Add(interfaceType)) continue;
 #>
 
+
 @dataclass
 class <#= interfaceType #>:
 <# 
@@ -330,7 +331,7 @@ class <#= deviceName #>(Device):
             return reply.payload
 <# 
     }
-#>      
+#>
         return None
 
 <# if ((reg.Access & RegisterAccess.Write) != 0) { #>
