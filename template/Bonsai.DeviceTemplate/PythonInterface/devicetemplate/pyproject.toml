@@ -1,11 +1,11 @@
 [project]
 name = "$projectnamelower$"
-version = "0.1.0a3"
+version = "0.1.0a4"
 description = "This is a generated Harp device Python interface that interacts with the Harp protocol."
 authors = [{ name = "Hardware and Software Platform, Champalimaud Foundation", email = "software@research.fchampalimaud.org" }]
 readme = "README.md"
 keywords = ['python', 'harp']
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.10,<4.0"
 dependencies = [
     "harp-serial==0.4.0",
 ]
