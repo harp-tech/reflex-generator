@@ -464,9 +464,10 @@ if (isPrivate)
             if (member.Value.HasConverter)
             {
                 var memberType = TemplateHelper.GetInterfaceType(member.Value, register.Type);
+                var converterInterfaceType = member.Value.GetConverterInterfaceType(register.Type);
 #>
 
-        private static partial <#= memberType #> ParsePayload<#= member.Key #>(<#= register.PayloadInterfaceType #> payload<#= member.Key #>);
+        private static partial <#= memberType #> ParsePayload<#= member.Key #>(<#= converterInterfaceType #> payload<#= member.Key #>);
 <#
             }
         }
@@ -482,7 +483,8 @@ if (isPrivate)
                 member.Key,
                 member.Value,
                 "payload",
-                register.Type);
+                register,
+                deviceMetadata);
 #>
             result.<#= member.Key #> = <#= memberConversion #>;
 <#
@@ -532,16 +534,16 @@ if (isPrivate)
         foreach (var member in register.PayloadSpec)
         {
             var payloadIndex = member.Value.Offset.GetValueOrDefault(0);
-            var memberIndexer = member.Value.Offset.HasValue ? $"[{member.Value.Offset}]" : string.Empty;
-            var memberConversion = TemplateHelper.GetPayloadMemberFormatter(
+            var memberAssignment = TemplateHelper.GetPayloadMemberAssignmentFormatter(
                 member.Key,
                 member.Value,
-                $"value.{member.Key}",
-                register.Type,
+                "result",
+                register,
+                deviceMetadata,
                 assigned[payloadIndex]);
             assigned[payloadIndex] = true;
 #>
-            result<#= memberIndexer #><#= memberConversion #>;
+            <#= memberAssignment #>;
 <#
         }
 #>
@@ -1002,4 +1004,92 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
 <#
 }
 #>
+
+    internal static class RuntimeArrayHelpers
+    {
+        internal static T[] GetSubArray<T>(this T[] array, int offset, int count)
+        {
+            var result = new T[count];
+            Array.Copy(array, offset, result, 0, count);
+            return result;
+        }
+
+        internal static byte ToByte(this ArraySegment<byte> segment) => segment.Array[segment.Offset];
+
+        internal static sbyte ToSByte(this ArraySegment<byte> segment) => (sbyte)segment.Array[segment.Offset];
+
+        internal static ushort ToUInt16(this ArraySegment<byte> segment) => BitConverter.ToUInt16(segment.Array, segment.Offset);
+
+        internal static short ToInt16(this ArraySegment<byte> segment) => BitConverter.ToInt16(segment.Array, segment.Offset);
+
+        internal static uint ToUInt32(this ArraySegment<byte> segment) => BitConverter.ToUInt32(segment.Array, segment.Offset);
+
+        internal static int ToInt32(this ArraySegment<byte> segment) => BitConverter.ToInt32(segment.Array, segment.Offset);
+
+        internal static ulong ToUInt64(this ArraySegment<byte> segment) => BitConverter.ToUInt64(segment.Array, segment.Offset);
+
+        internal static long ToInt64(this ArraySegment<byte> segment) => BitConverter.ToInt64(segment.Array, segment.Offset);
+
+        internal static float ToSingle(this ArraySegment<byte> segment) => BitConverter.ToSingle(segment.Array, segment.Offset);
+
+        internal static string ToUTF8String(this ArraySegment<byte> segment) => System.Text.Encoding.UTF8.GetString(segment.Array, segment.Offset, segment.Count);
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, byte value) => segment.Array[segment.Offset] = value;
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, sbyte value) => segment.Array[segment.Offset] = (byte)value;
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, ushort value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, short value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, uint value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, int value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, ulong value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+            segment.Array[segment.Offset + 4] = (byte)(value >> 32);
+            segment.Array[segment.Offset + 5] = (byte)(value >> 40);
+            segment.Array[segment.Offset + 6] = (byte)(value >> 48);
+            segment.Array[segment.Offset + 7] = (byte)(value >> 56);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, long value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+            segment.Array[segment.Offset + 4] = (byte)(value >> 32);
+            segment.Array[segment.Offset + 5] = (byte)(value >> 40);
+            segment.Array[segment.Offset + 6] = (byte)(value >> 48);
+            segment.Array[segment.Offset + 7] = (byte)(value >> 56);
+        }
+
+        internal static unsafe void WriteBytes(this ArraySegment<byte> segment, float value) => WriteBytes(segment, *(int*)&value);
+    }
 }

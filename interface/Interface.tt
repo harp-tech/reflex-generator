@@ -70,6 +70,7 @@ public class PayloadMemberInfo
 {
     public int? Mask;
     public int? Offset;
+    public int? Length;
     public string MaskType;
     public string InterfaceType;
     public MemberConverter Converter;
@@ -79,6 +80,17 @@ public class PayloadMemberInfo
     public float? DefaultValue;
 
     public bool HasConverter => Converter > MemberConverter.None;
+    public string GetConverterInterfaceType(PayloadType payloadType)
+    {
+        return Converter switch
+        {
+            MemberConverter.RawPayload => "ArraySegment<byte>",
+            MemberConverter.Payload => Length.GetValueOrDefault() > 0
+                ? $"ArraySegment<{TemplateHelper.GetInterfaceType(payloadType, 0)}>"
+                : TemplateHelper.GetInterfaceType(payloadType, 0),
+            MemberConverter.None => TemplateHelper.GetInterfaceType(payloadType, Length.GetValueOrDefault())
+        };
+    }
 }
 
 public class BitMaskInfo
@@ -166,6 +178,26 @@ public static partial class TemplateHelper
         else return "uint";
     }
 
+    public static bool GetInterfaceTypeSize(string interfaceType, out PayloadType payloadType, out int size)
+    {
+        payloadType = interfaceType switch
+        {
+            "byte" => PayloadType.U8,
+            "sbyte" => PayloadType.S8,
+            "ushort" => PayloadType.U16,
+            "short" => PayloadType.S16,
+            "uint" => PayloadType.U32,
+            "int" => PayloadType.S32,
+            "ulong" => PayloadType.U64,
+            "long" => PayloadType.S64,
+            "float" => PayloadType.Float,
+            _ => 0
+        };
+
+        size = GetPayloadTypeSize(payloadType);
+        return payloadType > 0;
+    }
+
     public static string GetPayloadTypeSuffix(PayloadType payloadType, int payloadLength = 0)
     {
         if (payloadLength > 0)
@@ -187,6 +219,11 @@ public static partial class TemplateHelper
             case PayloadType.Float: return "Single";
             default: throw new ArgumentOutOfRangeException(nameof(payloadType));
         }
+    }
+
+    static int GetPayloadTypeSize(PayloadType payloadType)
+    {
+        return (int)payloadType & 0xF;
     }
 
     public static string GetRangeAttributeDeclaration(float? minValue, float? maxValue)
@@ -244,15 +281,59 @@ public static partial class TemplateHelper
         return (int)Math.Log(lsb, 2);
     }
 
+    static int GetMemberLength(
+        PayloadMemberInfo member,
+        RegisterInfo register,
+        DeviceInfo deviceMetadata,
+        out PayloadType payloadType)
+    {
+        payloadType = 0;
+        if (member.Length.HasValue)
+            return member.Length.GetValueOrDefault();
+
+        var interfaceType = GetInterfaceType(member, register.Type);
+        if (deviceMetadata.GroupMasks.TryGetValue(interfaceType, out GroupMaskInfo groupMask))
+            interfaceType = groupMask.InterfaceType;
+        else if (deviceMetadata.BitMasks.TryGetValue(interfaceType, out BitMaskInfo bitMask))
+            interfaceType = bitMask.InterfaceType;
+
+        if (GetInterfaceTypeSize(interfaceType, out payloadType, out int size))
+            return size;
+        else
+            return GetPayloadTypeSize(register.Type);
+    }
+
     public static string GetPayloadMemberParser(
         string name,
         PayloadMemberInfo member,
         string expression,
-        PayloadType payloadType)
+        RegisterInfo register,
+        DeviceInfo deviceMetadata)
     {
-        if (member.Offset.HasValue)
+        var payloadType = register.Type;
+        var memberLength = GetMemberLength(member, register, deviceMetadata, out PayloadType memberPayloadType);
+        var memberOffset = member.Offset.GetValueOrDefault();
+        var payloadInterfaceType = GetInterfaceType(payloadType);
+        if (memberLength > 0 && member.InterfaceType != payloadInterfaceType && member.InterfaceType != "bool")
         {
-            expression = $"{expression}[{member.Offset.Value}]";
+            if (member.Converter == MemberConverter.RawPayload)
+                throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
+
+            if (member.Converter == MemberConverter.Payload || memberPayloadType > 0)
+            {
+                expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
+                if (memberPayloadType > 0)
+                {
+                    expression = $"{expression}.To{GetPayloadTypeSuffix(memberPayloadType)}()";
+                    return GetConversionToInterfaceType(member.MaskType, expression);
+                }
+            }
+            else
+                expression = $"{expression}.GetSubArray({memberOffset}, {memberLength})";
+        }
+        else if (member.Offset.HasValue)
+        {
+            expression = $"{expression}[{member.Offset.GetValueOrDefault()}]";
         }
         if (member.Mask.HasValue)
         {
@@ -266,7 +347,6 @@ public static partial class TemplateHelper
                     expression = $"({expression} >> {shift})";
                 }
 
-                var payloadInterfaceType = GetInterfaceType(payloadType);
                 expression = $"({payloadInterfaceType}){expression}";
             }
         }
@@ -278,7 +358,51 @@ public static partial class TemplateHelper
         return GetConversionToInterfaceType(member.InterfaceType ?? member.MaskType, expression);
     }
 
-    public static string GetPayloadMemberFormatter(
+    public static string GetPayloadMemberAssignmentFormatter(
+        string name,
+        PayloadMemberInfo member,
+        string expression,
+        RegisterInfo register,
+        DeviceInfo deviceMetadata,
+        bool assigned)
+    {
+        var payloadType = register.Type;
+        var memberLength = GetMemberLength(member, register, deviceMetadata, out PayloadType memberPayloadType);
+        var memberOffset = member.Offset.GetValueOrDefault();
+        var payloadInterfaceType = GetInterfaceType(payloadType);
+        if (memberLength > 0 && member.InterfaceType != payloadInterfaceType && member.InterfaceType != "bool")
+        {
+            if (member.Converter == MemberConverter.RawPayload)
+                throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
+
+            if (member.Converter == MemberConverter.Payload || memberPayloadType > 0)
+            {
+                expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
+                if (memberPayloadType > 0)
+                {
+                    var valueExpression = $"value.{name}";
+                    if (!string.IsNullOrEmpty(member.MaskType))
+                        valueExpression = GetConversionToInterfaceType(GetInterfaceType(memberPayloadType), valueExpression);
+                    expression = $"{expression}.WriteBytes({valueExpression})";
+                    return expression;
+                }
+            }
+            else
+                expression = $"{expression}.GetSubArray({memberOffset}, {memberLength})";
+        }
+
+        var memberIndexer = member.Offset.HasValue ? $"[{memberOffset}]" : string.Empty;
+        var memberConversion = TemplateHelper.GetPayloadMemberValueFormatter(
+            name,
+            member,
+            $"value.{name}",
+            payloadType,
+            assigned);
+        return $"{expression}{memberIndexer}{memberConversion}";
+    }
+
+
+    public static string GetPayloadMemberValueFormatter(
         string name,
         PayloadMemberInfo member,
         string expression,
