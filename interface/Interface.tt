@@ -143,7 +143,7 @@ public static partial class TemplateHelper
     {
         if (!string.IsNullOrEmpty(member.InterfaceType)) return member.InterfaceType;
         else if (!string.IsNullOrEmpty(member.MaskType)) return member.MaskType;
-        else return GetInterfaceType(payloadType);
+        else return GetInterfaceType(payloadType, member.Length.GetValueOrDefault());
     }
 
     public static string GetInterfaceType(PayloadType payloadType)
@@ -319,7 +319,9 @@ public static partial class TemplateHelper
             if (member.Converter == MemberConverter.RawPayload)
                 throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
 
-            if (member.Converter == MemberConverter.Payload || memberPayloadType > 0)
+            if (member.InterfaceType == "string")
+                return $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}).ToUTF8String()";
+            else if (member.Converter == MemberConverter.Payload || memberPayloadType > 0)
             {
                 expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
                 if (memberPayloadType > 0)
@@ -375,20 +377,12 @@ public static partial class TemplateHelper
             if (member.Converter == MemberConverter.RawPayload)
                 throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
 
-            if (member.Converter == MemberConverter.Payload || memberPayloadType > 0)
-            {
                 expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
-                if (memberPayloadType > 0)
-                {
-                    var valueExpression = $"value.{name}";
-                    if (!string.IsNullOrEmpty(member.MaskType))
-                        valueExpression = GetConversionToInterfaceType(GetInterfaceType(memberPayloadType), valueExpression);
-                    expression = $"{expression}.WriteBytes({valueExpression})";
-                    return expression;
-                }
-            }
-            else
-                expression = $"{expression}.GetSubArray({memberOffset}, {memberLength})";
+                var valueExpression = $"value.{name}";
+                if (!string.IsNullOrEmpty(member.MaskType) && memberPayloadType > 0)
+                    valueExpression = GetConversionToInterfaceType(GetInterfaceType(memberPayloadType), valueExpression);
+                expression = $"{expression}.WriteBytes({valueExpression})";
+                return expression;
         }
 
         var memberIndexer = member.Offset.HasValue ? $"[{memberOffset}]" : string.Empty;

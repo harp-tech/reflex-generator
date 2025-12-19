@@ -1091,5 +1091,13 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
         }
 
         internal static unsafe void WriteBytes(this ArraySegment<byte> segment, float value) => WriteBytes(segment, *(int*)&value);
+
+        internal static unsafe void WriteBytes(this ArraySegment<byte> segment, string value) =>
+            System.Text.Encoding.UTF8.GetBytes(value, 0, segment.Count, segment.Array, segment.Offset);
+
+        internal static void WriteBytes<T>(this ArraySegment<byte> segment, T[] values) where T : unmanaged
+        {
+            Buffer.BlockCopy(values, 0, segment.Array, segment.Offset, segment.Count);
+        }
     }
 }
