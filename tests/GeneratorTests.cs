@@ -31,6 +31,7 @@ public sealed class GeneratorTests
     }
 
     [DataTestMethod]
+    [DataRow("core.yml")]
     [DataRow("device.yml")]
     public void DeviceTemplate_GenerateAndBuildWithoutErrors(string metadataFileName)
     {
