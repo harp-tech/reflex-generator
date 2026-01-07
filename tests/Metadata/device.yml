@@ -1,7 +1,7 @@
 %YAML 1.1
 ---
 # yaml-language-server: $schema=https://harp-tech.org/draft-02/schema/device.json
-device: Test
+device: Tests
 whoAmI: 0000
 firmwareVersion: "0.1"
 hardwareTargets: "0.0"
