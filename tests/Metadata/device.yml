@@ -22,6 +22,32 @@ registers:
         offset: 1
       Analog2:
         offset: 2
+  ComplexConfiguration:
+    address: 33
+    type: U8
+    access: Write
+    length: 17
+    payloadSpec:
+      PwmPort:
+        offset: 0
+        length: 1
+        maskType: PwmPort
+      DutyCycle:
+        offset: 4
+        length: 4
+        interfaceType: float
+      Frequency:
+        offset: 8
+        length: 4
+        interfaceType: float
+      EventsEnabled:
+        offset: 12
+        length: 1
+        interfaceType: bool
+      Delta:
+        offset: 13
+        length: 4
+        interfaceType: uint
   Version:
     address: 34
     type: U8
@@ -47,3 +73,9 @@ registers:
       InterfaceHash:
         offset: 12
         length: 20
+groupMasks:
+  PwmPort:
+    values:
+      Pwm0: 0x1
+      Pwm1: 0x2
+      Pwm2: 0x4

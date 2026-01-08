@@ -315,10 +315,11 @@ public static partial class TemplateHelper
             if (member.Converter == MemberConverter.RawPayload)
                 throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
 
+            var memberInterfaceType = GetInterfaceType(member, register.Type);
             var memberSize = GetMemberSize(member, register, deviceMetadata, out PayloadType memberPayloadType);
             if (member.InterfaceType == "string")
                 return $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}).ToUTF8String()";
-            else if (member.Converter == MemberConverter.Payload || member.InterfaceType is not null && member.InterfaceType != payloadInterfaceType)
+            else if (member.Converter == MemberConverter.Payload || memberInterfaceType != GetInterfaceType(payloadType, register.Length))
             {
                 expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
                 if (memberPayloadType > 0)
