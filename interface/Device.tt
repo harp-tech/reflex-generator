@@ -1005,7 +1005,7 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
 }
 #>
 
-    internal static class RuntimeArrayHelpers
+    internal static partial class PayloadExtensions
     {
         internal static T[] GetSubArray<T>(this T[] array, int offset, int count)
         {

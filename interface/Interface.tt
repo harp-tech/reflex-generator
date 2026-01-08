@@ -281,16 +281,12 @@ public static partial class TemplateHelper
         return (int)Math.Log(lsb, 2);
     }
 
-    static int GetMemberLength(
+    static int GetMemberSize(
         PayloadMemberInfo member,
         RegisterInfo register,
         DeviceInfo deviceMetadata,
         out PayloadType payloadType)
     {
-        payloadType = 0;
-        if (member.Length.HasValue)
-            return member.Length.GetValueOrDefault();
-
         var interfaceType = GetInterfaceType(member, register.Type);
         if (deviceMetadata.GroupMasks.TryGetValue(interfaceType, out GroupMaskInfo groupMask))
             interfaceType = groupMask.InterfaceType;
@@ -311,23 +307,28 @@ public static partial class TemplateHelper
         DeviceInfo deviceMetadata)
     {
         var payloadType = register.Type;
-        var memberLength = GetMemberLength(member, register, deviceMetadata, out PayloadType memberPayloadType);
+        var memberLength = member.Length.GetValueOrDefault();
         var memberOffset = member.Offset.GetValueOrDefault();
         var payloadInterfaceType = GetInterfaceType(payloadType);
-        if (memberLength > 0 && member.InterfaceType != payloadInterfaceType && member.InterfaceType != "bool")
+        if (memberLength > 0 && member.InterfaceType != "bool")
         {
             if (member.Converter == MemberConverter.RawPayload)
                 throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
 
+            var memberSize = GetMemberSize(member, register, deviceMetadata, out PayloadType memberPayloadType);
             if (member.InterfaceType == "string")
                 return $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}).ToUTF8String()";
-            else if (member.Converter == MemberConverter.Payload || memberPayloadType > 0)
+            else if (member.Converter == MemberConverter.Payload || member.InterfaceType is not null && member.InterfaceType != payloadInterfaceType)
             {
                 expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
                 if (memberPayloadType > 0)
                 {
                     expression = $"{expression}.To{GetPayloadTypeSuffix(memberPayloadType)}()";
                     return GetConversionToInterfaceType(member.MaskType, expression);
+                }
+                else
+                {
+                    return $"{expression}.To{member.InterfaceType}()";
                 }
             }
             else
@@ -369,20 +370,21 @@ public static partial class TemplateHelper
         bool assigned)
     {
         var payloadType = register.Type;
-        var memberLength = GetMemberLength(member, register, deviceMetadata, out PayloadType memberPayloadType);
+        var memberLength = member.Length.GetValueOrDefault();
         var memberOffset = member.Offset.GetValueOrDefault();
         var payloadInterfaceType = GetInterfaceType(payloadType);
-        if (memberLength > 0 && member.InterfaceType != payloadInterfaceType && member.InterfaceType != "bool")
+        if (memberLength > 0 && member.InterfaceType != "bool")
         {
             if (member.Converter == MemberConverter.RawPayload)
                 throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
 
-                expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
-                var valueExpression = $"value.{name}";
-                if (!string.IsNullOrEmpty(member.MaskType) && memberPayloadType > 0)
-                    valueExpression = GetConversionToInterfaceType(GetInterfaceType(memberPayloadType), valueExpression);
-                expression = $"{expression}.WriteBytes({valueExpression})";
-                return expression;
+            var memberSize = GetMemberSize(member, register, deviceMetadata, out PayloadType memberPayloadType);
+            expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
+            var valueExpression = $"value.{name}";
+            if (!string.IsNullOrEmpty(member.MaskType) && memberPayloadType > 0)
+                valueExpression = GetConversionToInterfaceType(GetInterfaceType(memberPayloadType), valueExpression);
+            expression = $"{expression}.WriteBytes({valueExpression})";
+            return expression;
         }
 
         var memberIndexer = member.Offset.HasValue ? $"[{memberOffset}]" : string.Empty;
