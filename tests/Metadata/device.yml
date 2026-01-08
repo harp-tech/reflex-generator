@@ -22,3 +22,28 @@ registers:
         offset: 1
       Analog2:
         offset: 2
+  Version:
+    address: 34
+    type: U8
+    length: 32
+    access: Event
+    payloadSpec:
+      ProtocolVersion:
+        offset: 0
+        length: 3
+        interfaceType: HarpVersion
+      FirmwareVersion:
+        offset: 3
+        length: 3
+        interfaceType: HarpVersion
+      HardwareVersion:
+        offset: 6
+        length: 3
+        interfaceType: HarpVersion
+      CoreId:
+        offset: 9
+        length: 3
+        interfaceType: string
+      InterfaceHash:
+        offset: 12
+        length: 20

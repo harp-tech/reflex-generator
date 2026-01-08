@@ -9,6 +9,7 @@ public sealed class GeneratorTests
     CompiledTemplate deviceTemplate;
     CompiledTemplate asyncDeviceTemplate;
     DirectoryInfo outputDirectory;
+    string payloadExtensions;
 
     [TestInitialize]
     public async Task Initialize()
@@ -16,6 +17,7 @@ public sealed class GeneratorTests
         generator = new TestTemplateGenerator();
         var deviceTemplateContents = TestHelper.GetManifestResourceText("Device.tt");
         var asyncDeviceTemplateContents = TestHelper.GetManifestResourceText("AsyncDevice.tt");
+        payloadExtensions = TestHelper.GetManifestResourceText("PayloadExtensions.cs");
         deviceTemplate = await generator.CompileTemplateAsync(deviceTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
@@ -62,7 +64,7 @@ public sealed class GeneratorTests
         var outputFileName = $"{Path.GetFileNameWithoutExtension(metadataFileName)}.cs";
         try
         {
-            CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode);
+            CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode, payloadExtensions);
             AssertExpectedOutput(deviceCode, outputFileName);
         }
         catch (AssertFailedException)
