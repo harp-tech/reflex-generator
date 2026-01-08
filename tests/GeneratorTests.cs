@@ -31,18 +31,16 @@ public sealed class GeneratorTests
     }
 
     [DataTestMethod]
+    [DataRow("core.yml")]
     [DataRow("device.yml")]
-    public void DeviceTemplate_GenerateNoErrors(string metadataFileName)
+    public void DeviceTemplate_GenerateAndBuildWithoutErrors(string metadataFileName)
     {
-        ProcessTemplate(deviceTemplate, metadataFileName);
+        var deviceCode = ProcessTemplate(deviceTemplate, metadataFileName);
         TestHelper.AssertNoGeneratorErrors(generator);
-    }
 
-    [DataTestMethod]
-    [DataRow("device.yml")]
-    public void AsyncDeviceTemplate_GenerateNoErrors(string metadataFileName)
-    {
-        ProcessTemplate(asyncDeviceTemplate, metadataFileName);
+        var asyncDeviceCode = ProcessTemplate(asyncDeviceTemplate, metadataFileName);
         TestHelper.AssertNoGeneratorErrors(generator);
+
+        CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode);
     }
 }
