@@ -23,7 +23,8 @@ public sealed class GeneratorTests
         TestHelper.AssertNoGeneratorErrors(generator);
 
         outputDirectory = Directory.CreateDirectory("ActualOutput");
-        Directory.Delete(outputDirectory.FullName, recursive: true);
+        try { Directory.Delete(outputDirectory.FullName, recursive: true); }
+        catch { } // best effort
     }
 
     private string ProcessTemplate(CompiledTemplate template, string metadataFileName)
