@@ -1099,5 +1099,10 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
         {
             Buffer.BlockCopy(values, 0, segment.Array, segment.Offset, segment.Count);
         }
+
+        internal static void WriteBytes<T>(this ArraySegment<T> segment, T[] values)
+        {
+            Array.Copy(values, 0, segment.Array, segment.Offset, segment.Count);
+        }
     }
 }

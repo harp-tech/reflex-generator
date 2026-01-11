@@ -13,7 +13,7 @@ registers:
   AnalogData:
     address: 33
     type: Float
-    length: 3
+    length: 6
     access: Event
     payloadSpec:
       Analog0:
@@ -22,15 +22,17 @@ registers:
         offset: 1
       Analog2:
         offset: 2
+      Accelerometer:
+        offset: 3
+        length: 3
   ComplexConfiguration:
-    address: 33
+    address: 34
     type: U8
     access: Write
     length: 17
     payloadSpec:
       PwmPort:
         offset: 0
-        length: 1
         maskType: PwmPort
       DutyCycle:
         offset: 4
@@ -42,14 +44,13 @@ registers:
         interfaceType: float
       EventsEnabled:
         offset: 12
-        length: 1
         interfaceType: bool
       Delta:
         offset: 13
         length: 4
         interfaceType: uint
   Version:
-    address: 34
+    address: 35
     type: U8
     length: 32
     access: Event
