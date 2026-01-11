@@ -1032,7 +1032,11 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
 
         internal static float ToSingle(this ArraySegment<byte> segment) => BitConverter.ToSingle(segment.Array, segment.Offset);
 
-        internal static string ToUTF8String(this ArraySegment<byte> segment) => System.Text.Encoding.UTF8.GetString(segment.Array, segment.Offset, segment.Count);
+        internal static string ToUTF8String(this ArraySegment<byte> segment)
+        {
+            var count = Array.IndexOf(segment.Array, (byte)0, segment.Offset, segment.Count) - segment.Offset;
+            return System.Text.Encoding.UTF8.GetString(segment.Array, segment.Offset, count < 0 ? segment.Count : count);
+        }
 
         internal static void WriteBytes(this ArraySegment<byte> segment, byte value) => segment.Array[segment.Offset] = value;
 
@@ -1093,7 +1097,7 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
         internal static unsafe void WriteBytes(this ArraySegment<byte> segment, float value) => WriteBytes(segment, *(int*)&value);
 
         internal static unsafe void WriteBytes(this ArraySegment<byte> segment, string value) =>
-            System.Text.Encoding.UTF8.GetBytes(value, 0, segment.Count, segment.Array, segment.Offset);
+            System.Text.Encoding.UTF8.GetBytes(value, 0, Math.Min(value.Length, segment.Count), segment.Array, segment.Offset);
 
         internal static void WriteBytes<T>(this ArraySegment<byte> segment, T[] values) where T : unmanaged
         {
