@@ -457,6 +457,16 @@ if (isPrivate)
         private static partial <#= interfaceType #> ParsePayload(<#= register.PayloadInterfaceType #> payload);
 <#
     }
+    else if (interfaceType == "string")
+    {
+#>
+
+        static string ParsePayload(byte[] payload)
+        {
+            return new ArraySegment<byte>(payload).ToUTF8String();
+        }
+<#
+    }
     else if (register.PayloadSpec != null)
     {
         foreach (var member in register.PayloadSpec)
@@ -500,6 +510,18 @@ if (isPrivate)
 #>
 
         private static partial <#= register.PayloadInterfaceType #> FormatPayload(<#= interfaceType #> value);
+<#
+    }
+    else if (interfaceType == "string")
+    {
+#>
+
+        static byte[] FormatPayload(string value)
+        {
+            var result = new byte[RegisterLength];
+            new ArraySegment<byte>(result).WriteBytes(value);
+            return result;
+        }
 <#
     }
     else if (register.PayloadSpec != null)

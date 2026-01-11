@@ -242,14 +242,18 @@ public static partial class TemplateHelper
 
     public static string GetParseConversion(RegisterInfo register, string expression)
     {
-        if (register.PayloadSpec != null || register.HasConverter) return $"ParsePayload({expression})";
-        return GetConversionToInterfaceType(register.InterfaceType ?? register.MaskType, expression);
+        if (register.PayloadSpec != null || register.InterfaceType == "string" || register.HasConverter)
+            return $"ParsePayload({expression})";
+        else
+            return GetConversionToInterfaceType(register.InterfaceType ?? register.MaskType, expression);
     }
 
     public static string GetFormatConversion(RegisterInfo register, string expression)
     {
-        if (register.PayloadSpec != null || register.HasConverter) return $"FormatPayload({expression})";
-        return GetConversionFromInterfaceType(register.InterfaceType ?? register.MaskType, register.PayloadInterfaceType, expression);
+        if (register.PayloadSpec != null || register.InterfaceType == "string" || register.HasConverter)
+            return $"FormatPayload({expression})";
+        else
+            return GetConversionFromInterfaceType(register.InterfaceType ?? register.MaskType, register.PayloadInterfaceType, expression);
     }
 
     public static string GetConversionToInterfaceType(string interfaceType, string expression)
