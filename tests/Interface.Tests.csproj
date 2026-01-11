@@ -26,6 +26,10 @@
     <Content Include="Metadata\*.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Compile Remove="ExpectedOutput\*.cs" />
+    <Content Include="ExpectedOutput\*.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>    
   </ItemGroup>
 
 </Project>
