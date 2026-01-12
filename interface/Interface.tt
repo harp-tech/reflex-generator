@@ -289,9 +289,10 @@ public static partial class TemplateHelper
         PayloadMemberInfo member,
         RegisterInfo register,
         DeviceInfo deviceMetadata,
+        out string interfaceType,
         out PayloadType payloadType)
     {
-        var interfaceType = GetInterfaceType(member, register.Type);
+        interfaceType = GetInterfaceType(member, register.Type);
         if (deviceMetadata.GroupMasks.TryGetValue(interfaceType, out GroupMaskInfo groupMask))
             interfaceType = groupMask.InterfaceType;
         else if (deviceMetadata.BitMasks.TryGetValue(interfaceType, out BitMaskInfo bitMask))
@@ -319,9 +320,8 @@ public static partial class TemplateHelper
             if (member.Converter == MemberConverter.RawPayload)
                 throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
 
-            var memberInterfaceType = GetInterfaceType(member, register.Type);
-            var memberSize = GetMemberSize(member, register, deviceMetadata, out PayloadType memberPayloadType);
-            if (member.InterfaceType == "string")
+            GetMemberSize(member, register, deviceMetadata, out var memberInterfaceType, out var memberPayloadType);
+            if (memberInterfaceType == "string")
                 return $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}).ToUTF8String()";
             else if (member.Converter == MemberConverter.Payload || memberInterfaceType != GetInterfaceType(payloadType, register.Length))
             {
@@ -333,7 +333,7 @@ public static partial class TemplateHelper
                 }
                 else
                 {
-                    return $"{expression}.To{member.InterfaceType}()";
+                    return $"{expression}.To{memberInterfaceType}()";
                 }
             }
             else
@@ -383,7 +383,7 @@ public static partial class TemplateHelper
             if (member.Converter == MemberConverter.RawPayload)
                 throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
 
-            var memberSize = GetMemberSize(member, register, deviceMetadata, out PayloadType memberPayloadType);
+            GetMemberSize(member, register, deviceMetadata, out var _, out var memberPayloadType);
             expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
             var valueExpression = $"value.{name}";
             if (!string.IsNullOrEmpty(member.MaskType) && memberPayloadType > 0)
