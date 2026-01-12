@@ -1623,14 +1623,26 @@ namespace Interface.Tests
         /// </summary>
         public const int RegisterLength = 25;
 
+        static string ParsePayload(byte[] payload)
+        {
+            return new ArraySegment<byte>(payload).ToUTF8String();
+        }
+
+        static byte[] FormatPayload(string value)
+        {
+            var result = new byte[RegisterLength];
+            new ArraySegment<byte>(result).WriteBytes(value);
+            return result;
+        }
+
         /// <summary>
         /// Returns the payload data for <see cref="DeviceName"/> register messages.
         /// </summary>
         /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
         /// <returns>A value representing the message payload.</returns>
-        public static byte[] GetPayload(HarpMessage message)
+        public static string GetPayload(HarpMessage message)
         {
-            return message.GetPayloadArray<byte>();
+            return ParsePayload(message.GetPayloadArray<byte>());
         }
 
         /// <summary>
@@ -1638,9 +1650,10 @@ namespace Interface.Tests
         /// </summary>
         /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
         /// <returns>A value representing the timestamped message payload.</returns>
-        public static Timestamped<byte[]> GetTimestampedPayload(HarpMessage message)
+        public static Timestamped<string> GetTimestampedPayload(HarpMessage message)
         {
-            return message.GetTimestampedPayloadArray<byte>();
+            var payload = message.GetTimestampedPayloadArray<byte>();
+            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
         }
 
         /// <summary>
@@ -1652,9 +1665,9 @@ namespace Interface.Tests
         /// A <see cref="HarpMessage"/> object for the <see cref="DeviceName"/> register
         /// with the specified message type and payload.
         /// </returns>
-        public static HarpMessage FromPayload(MessageType messageType, byte[] value)
+        public static HarpMessage FromPayload(MessageType messageType, string value)
         {
-            return HarpMessage.FromByte(Address, messageType, value);
+            return HarpMessage.FromByte(Address, messageType, FormatPayload(value));
         }
 
         /// <summary>
@@ -1668,9 +1681,9 @@ namespace Interface.Tests
         /// A <see cref="HarpMessage"/> object for the <see cref="DeviceName"/> register
         /// with the specified message type, timestamp, and payload.
         /// </returns>
-        public static HarpMessage FromPayload(double timestamp, MessageType messageType, byte[] value)
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, string value)
         {
-            return HarpMessage.FromByte(Address, timestamp, messageType, value);
+            return HarpMessage.FromByte(Address, timestamp, messageType, FormatPayload(value));
         }
     }
 
@@ -1692,7 +1705,7 @@ namespace Interface.Tests
         /// </summary>
         /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
         /// <returns>A value representing the timestamped message payload.</returns>
-        public static Timestamped<byte[]> GetPayload(HarpMessage message)
+        public static Timestamped<string> GetPayload(HarpMessage message)
         {
             return DeviceName.GetTimestampedPayload(message);
         }
@@ -2651,13 +2664,13 @@ namespace Interface.Tests
         /// Gets or sets the value that stores the user-specified device name.
         /// </summary>
         [Description("The value that stores the user-specified device name.")]
-        public byte[] DeviceName { get; set; }
+        public string DeviceName { get; set; }
 
         /// <summary>
         /// Creates a message payload for the DeviceName register.
         /// </summary>
         /// <returns>The created message payload value.</returns>
-        public byte[] GetPayload()
+        public string GetPayload()
         {
             return DeviceName;
         }
@@ -3026,5 +3039,110 @@ namespace Interface.Tests
         /// </summary>
         [Description("Specifies that the flag is enabled.")]
         Enabled = 1
+    }
+
+    internal static partial class PayloadExtensions
+    {
+        internal static T[] GetSubArray<T>(this T[] array, int offset, int count)
+        {
+            var result = new T[count];
+            Array.Copy(array, offset, result, 0, count);
+            return result;
+        }
+
+        internal static byte ToByte(this ArraySegment<byte> segment) => segment.Array[segment.Offset];
+
+        internal static sbyte ToSByte(this ArraySegment<byte> segment) => (sbyte)segment.Array[segment.Offset];
+
+        internal static ushort ToUInt16(this ArraySegment<byte> segment) => BitConverter.ToUInt16(segment.Array, segment.Offset);
+
+        internal static short ToInt16(this ArraySegment<byte> segment) => BitConverter.ToInt16(segment.Array, segment.Offset);
+
+        internal static uint ToUInt32(this ArraySegment<byte> segment) => BitConverter.ToUInt32(segment.Array, segment.Offset);
+
+        internal static int ToInt32(this ArraySegment<byte> segment) => BitConverter.ToInt32(segment.Array, segment.Offset);
+
+        internal static ulong ToUInt64(this ArraySegment<byte> segment) => BitConverter.ToUInt64(segment.Array, segment.Offset);
+
+        internal static long ToInt64(this ArraySegment<byte> segment) => BitConverter.ToInt64(segment.Array, segment.Offset);
+
+        internal static float ToSingle(this ArraySegment<byte> segment) => BitConverter.ToSingle(segment.Array, segment.Offset);
+
+        internal static string ToUTF8String(this ArraySegment<byte> segment)
+        {
+            var count = Array.IndexOf(segment.Array, (byte)0, segment.Offset, segment.Count) - segment.Offset;
+            return System.Text.Encoding.UTF8.GetString(segment.Array, segment.Offset, count < 0 ? segment.Count : count);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, byte value) => segment.Array[segment.Offset] = value;
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, sbyte value) => segment.Array[segment.Offset] = (byte)value;
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, ushort value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, short value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, uint value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, int value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, ulong value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+            segment.Array[segment.Offset + 4] = (byte)(value >> 32);
+            segment.Array[segment.Offset + 5] = (byte)(value >> 40);
+            segment.Array[segment.Offset + 6] = (byte)(value >> 48);
+            segment.Array[segment.Offset + 7] = (byte)(value >> 56);
+        }
+
+        internal static void WriteBytes(this ArraySegment<byte> segment, long value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+            segment.Array[segment.Offset + 4] = (byte)(value >> 32);
+            segment.Array[segment.Offset + 5] = (byte)(value >> 40);
+            segment.Array[segment.Offset + 6] = (byte)(value >> 48);
+            segment.Array[segment.Offset + 7] = (byte)(value >> 56);
+        }
+
+        internal static unsafe void WriteBytes(this ArraySegment<byte> segment, float value) => WriteBytes(segment, *(int*)&value);
+
+        internal static unsafe void WriteBytes(this ArraySegment<byte> segment, string value) =>
+            System.Text.Encoding.UTF8.GetBytes(value, 0, Math.Min(value.Length, segment.Count), segment.Array, segment.Offset);
+
+        internal static void WriteBytes<T>(this ArraySegment<byte> segment, T[] values) where T : unmanaged
+        {
+            Buffer.BlockCopy(values, 0, segment.Array, segment.Offset, segment.Count);
+        }
+
+        internal static void WriteBytes<T>(this ArraySegment<T> segment, T[] values)
+        {
+            Array.Copy(values, 0, segment.Array, segment.Offset, segment.Count);
+        }
     }
 }
