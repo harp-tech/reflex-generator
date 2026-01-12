@@ -8,6 +8,7 @@ public sealed class GeneratorTests
     TemplateGenerator generator;
     CompiledTemplate deviceTemplate;
     CompiledTemplate asyncDeviceTemplate;
+    DirectoryInfo outputDirectory;
 
     [TestInitialize]
     public async Task Initialize()
@@ -20,6 +21,10 @@ public sealed class GeneratorTests
 
         asyncDeviceTemplate = await generator.CompileTemplateAsync(asyncDeviceTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
+
+        outputDirectory = Directory.CreateDirectory("ActualOutput");
+        try { Directory.Delete(outputDirectory.FullName, recursive: true); }
+        catch { } // best effort
     }
 
     private string ProcessTemplate(CompiledTemplate template, string metadataFileName)
@@ -28,6 +33,19 @@ public sealed class GeneratorTests
         session["Namespace"] = typeof(GeneratorTests).Namespace;
         session["MetadataPath"] = Path.GetFullPath(Path.Combine("Metadata", metadataFileName));
         return template.Process();
+    }
+
+    private void AssertExpectedOutput(string actual, string outputFileName)
+    {
+        var expectedFileName = Path.Combine("ExpectedOutput", outputFileName);
+        if (File.Exists(expectedFileName))
+        {
+            var expected = File.ReadAllText(expectedFileName);
+            if (!string.Equals(actual, expected, StringComparison.InvariantCulture))
+            {
+                Assert.Fail($"The generated output has diverged from the reference: {outputFileName}");
+            }
+        }
     }
 
     [DataTestMethod]
@@ -41,6 +59,17 @@ public sealed class GeneratorTests
         var asyncDeviceCode = ProcessTemplate(asyncDeviceTemplate, metadataFileName);
         TestHelper.AssertNoGeneratorErrors(generator);
 
-        CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode);
+        var outputFileName = $"{Path.GetFileNameWithoutExtension(metadataFileName)}.cs";
+        try
+        {
+            CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode);
+            AssertExpectedOutput(deviceCode, outputFileName);
+        }
+        catch (AssertFailedException)
+        {
+            outputDirectory.Create();
+            File.WriteAllText(Path.Combine(outputDirectory.FullName, outputFileName), deviceCode);
+            throw;
+        }
     }
 }
