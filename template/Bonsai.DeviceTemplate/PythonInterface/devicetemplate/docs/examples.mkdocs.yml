@@ -1,0 +1,6 @@
+site_name: $projectnameshort$
+docs_dir: .
+
+nav:
+  - Index: examples/index.md
+  # _Add additional example markdown files here_

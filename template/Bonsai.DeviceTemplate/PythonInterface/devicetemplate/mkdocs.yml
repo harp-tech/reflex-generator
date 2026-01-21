@@ -1,0 +1,52 @@
+site_name: $pythonprojectname$
+repo_url: https://github.com/fchampalimaud/$pythonprojectname$
+site_url: https://fchampalimaud.github.io/$pythonprojectname$
+site_description: This is a generated Harp device Python interface that interacts with the Harp protocol.
+site_author: Hardware and Software Platform, Champalimaud Foundation
+edit_uri: edit/main/docs/
+repo_name: fchampalimaud/harp.devices
+copyright: Maintained by the Hardware and Software Platform, Champalimaud Foundation.
+
+nav:
+  - Home: index.md
+  - Modules: modules.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["$pythonmodulename$"]
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/fchampalimaud/harp.devices
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/$pythonprojectname$
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
