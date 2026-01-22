@@ -1,6 +1,7 @@
 ﻿using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Interface.Tests;
 

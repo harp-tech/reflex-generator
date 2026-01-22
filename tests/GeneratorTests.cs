@@ -1,4 +1,5 @@
-﻿using Mono.TextTemplating;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mono.TextTemplating;
 
 namespace Interface.Tests;
 
