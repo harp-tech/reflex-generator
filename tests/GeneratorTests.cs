@@ -63,9 +63,10 @@ public sealed class GeneratorTests
         TestHelper.AssertNoGeneratorErrors(generator);
 
         var outputFileName = $"{Path.GetFileNameWithoutExtension(metadataFileName)}.cs";
+        var customImplementation = TestHelper.GetManifestResourceText($"EmbeddedSources.{outputFileName}");
         try
         {
-            CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode, payloadExtensions);
+            CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode, payloadExtensions, customImplementation);
             AssertExpectedOutput(deviceCode, outputFileName);
         }
         catch (AssertFailedException)
