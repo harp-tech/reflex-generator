@@ -17,6 +17,6 @@ internal static partial class PayloadExtensions
     internal static void WriteBytes(this ArraySegment<byte> segment, HarpVersion value)
     {
         segment.Array[segment.Offset] = (byte)value.Major.GetValueOrDefault();
-        segment.Array[segment.Offset + 1] = (byte)value.Major.GetValueOrDefault();
+        segment.Array[segment.Offset + 1] = (byte)value.Minor.GetValueOrDefault();
     }
 }
