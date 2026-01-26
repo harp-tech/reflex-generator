@@ -74,6 +74,45 @@ registers:
       InterfaceHash:
         offset: 12
         length: 20
+  CustomPayload:
+    address: 36
+    type: U32
+    length: 3
+    access: Read
+    interfaceType: HarpVersion
+    converter: Payload
+  CustomRawPayload:
+    address: 37
+    type: U32
+    length: 3
+    access: Read
+    interfaceType: HarpVersion
+    converter: RawPayload
+  CustomMemberConverter:
+    address: 38
+    type: U8
+    length: 3
+    access: Read
+    payloadSpec:
+      Header:
+        offset: 0
+      Data:
+        offset: 1
+        length: 2
+        interfaceType: int
+        converter: Payload
+  BitmaskSplitter:
+    address: 39
+    type: U8
+    access: Write
+    payloadSpec:
+      Low:
+        mask: 0x0F
+        interfaceType: int
+        converter: Payload
+      High:
+        interfaceType: int
+        mask: 0xF0
 groupMasks:
   PwmPort:
     values:
