@@ -326,7 +326,9 @@ public static partial class TemplateHelper
             else if (member.Converter == MemberConverter.Payload || memberInterfaceType != GetInterfaceType(payloadType, register.Length))
             {
                 expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
-                if (memberPayloadType > 0)
+                if (member.Converter == MemberConverter.Payload)
+                    return $"ParsePayload{name}({expression})";
+                else if (memberPayloadType > 0)
                 {
                     expression = $"{expression}.To{GetPayloadTypeSuffix(memberPayloadType)}()";
                     return GetConversionToInterfaceType(member.MaskType, expression);
@@ -378,28 +380,29 @@ public static partial class TemplateHelper
         var memberLength = member.Length.GetValueOrDefault();
         var memberOffset = member.Offset.GetValueOrDefault();
         var payloadInterfaceType = GetInterfaceType(payloadType);
-        if (memberLength > 0 && member.InterfaceType != "bool")
-        {
-            if (member.Converter == MemberConverter.RawPayload)
-                throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
 
-            GetMemberSize(member, register, deviceMetadata, out var _, out var memberPayloadType);
-            expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
-            var valueExpression = $"value.{name}";
-            if (!string.IsNullOrEmpty(member.MaskType) && memberPayloadType > 0)
-                valueExpression = GetConversionToInterfaceType(GetInterfaceType(memberPayloadType), valueExpression);
-            expression = $"{expression}.WriteBytes({valueExpression})";
-            return expression;
-        }
-
-        var memberIndexer = member.Offset.HasValue ? $"[{memberOffset}]" : string.Empty;
         var memberConversion = TemplateHelper.GetPayloadMemberValueFormatter(
             name,
             member,
             $"value.{name}",
-            payloadType,
-            assigned);
-        return $"{expression}{memberIndexer}{memberConversion}";
+            payloadType);
+        if (memberLength > 0 && member.InterfaceType != "bool")
+        {
+            if (member.Converter == MemberConverter.RawPayload)
+                throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
+            return $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}).WriteBytes({memberConversion})";
+        }
+        else
+        {
+            if (member.Mask.HasValue && assigned)
+            {
+                memberConversion = $" |= {memberConversion}";
+            }
+            else
+                memberConversion = $" = {memberConversion}";
+            var memberIndexer = member.Offset.HasValue ? $"[{memberOffset}]" : string.Empty;
+            return $"{expression}{memberIndexer}{memberConversion}";
+        }
     }
 
 
@@ -407,13 +410,14 @@ public static partial class TemplateHelper
         string name,
         PayloadMemberInfo member,
         string expression,
-        PayloadType payloadType,
-        bool assigned)
+        PayloadType payloadType)
     {
         if (member.HasConverter)
-        {
             expression = $"FormatPayload{name}({expression})";
-        }
+        
+        if (member.Length > 0)
+            return expression;
+
         var isBoolean = member.InterfaceType == "bool" && !member.HasConverter;
         var payloadInterfaceType = GetInterfaceType(payloadType);
         if (!string.IsNullOrEmpty(member.InterfaceType ?? member.MaskType))
@@ -436,12 +440,8 @@ public static partial class TemplateHelper
 
             expression = $"({payloadInterfaceType})({expression} & 0x{mask.ToString("X")})";
         }
-        
-        if (member.Mask.HasValue && assigned)
-        {
-            return $" |= {expression}";
-        }
-        else return $" = {expression}";
+
+        return expression;
     }
 
     public static string RemoveSuffix(string value, string suffix)
