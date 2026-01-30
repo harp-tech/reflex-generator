@@ -242,8 +242,10 @@ public static partial class TemplateHelper
 
     public static string GetParseConversion(RegisterInfo register, string expression)
     {
-        if (register.PayloadSpec != null || register.InterfaceType == "string" || register.HasConverter)
+        if (register.PayloadSpec != null || register.HasConverter)
             return $"ParsePayload({expression})";
+        else if (register.InterfaceType == "string")
+            return $"{expression}.ToUTF8String()";
         else
             return GetConversionToInterfaceType(register.InterfaceType ?? register.MaskType, expression);
     }

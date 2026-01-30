@@ -1623,11 +1623,6 @@ namespace Interface.Tests
         /// </summary>
         public const int RegisterLength = 25;
 
-        static string ParsePayload(byte[] payload)
-        {
-            return new ArraySegment<byte>(payload).ToUTF8String();
-        }
-
         static byte[] FormatPayload(string value)
         {
             var result = new byte[RegisterLength];
@@ -1642,7 +1637,7 @@ namespace Interface.Tests
         /// <returns>A value representing the message payload.</returns>
         public static string GetPayload(HarpMessage message)
         {
-            return ParsePayload(message.GetPayloadArray<byte>());
+            return message.GetPayload().ToUTF8String();
         }
 
         /// <summary>
@@ -1652,8 +1647,8 @@ namespace Interface.Tests
         /// <returns>A value representing the timestamped message payload.</returns>
         public static Timestamped<string> GetTimestampedPayload(HarpMessage message)
         {
-            var payload = message.GetTimestampedPayloadArray<byte>();
-            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
+            var payload = message.GetTimestampedPayload();
+            return Timestamped.Create(payload.Value.ToUTF8String(), payload.Seconds);
         }
 
         /// <summary>
@@ -1667,7 +1662,7 @@ namespace Interface.Tests
         /// </returns>
         public static HarpMessage FromPayload(MessageType messageType, string value)
         {
-            return HarpMessage.FromByte(Address, messageType, FormatPayload(value));
+            return HarpMessage.FromPayload(Address, messageType, PayloadType.U8, FormatPayload(value));
         }
 
         /// <summary>
@@ -1683,7 +1678,7 @@ namespace Interface.Tests
         /// </returns>
         public static HarpMessage FromPayload(double timestamp, MessageType messageType, string value)
         {
-            return HarpMessage.FromByte(Address, timestamp, messageType, FormatPayload(value));
+            return HarpMessage.FromPayload(Address, timestamp, messageType, PayloadType.U8, FormatPayload(value));
         }
     }
 

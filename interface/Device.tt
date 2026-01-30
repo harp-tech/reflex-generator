@@ -399,11 +399,11 @@ foreach (var registerMetadata in deviceRegisters)
     var register = registerMetadata.Value;
     var hasConverter = register.HasConverter;
     var isPrivate = register.Visibility == RegisterVisibility.Private;
-    var rawPayload = register.Converter == MemberConverter.RawPayload;
+    var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
+    var rawPayload = register.Converter == MemberConverter.RawPayload || interfaceType == "string";
     var hasEvent = (register.Access & RegisterAccess.Event) != 0;
     var allowWrite = (register.Access & RegisterAccess.Write) != 0;
     var defaultMessageType = hasEvent ? "Event" : (allowWrite ? "Write" : "Read");
-    var interfaceType = TemplateHelper.GetInterfaceType(registerMetadata.Key, register);
     var parsePayloadSuffix = rawPayload
         ? string.Empty
         : TemplateHelper.GetPayloadTypeSuffix(register.Type, register.Length);
@@ -455,16 +455,6 @@ if (isPrivate)
 #>
 
         private static partial <#= interfaceType #> ParsePayload(<#= register.PayloadInterfaceType #> payload);
-<#
-    }
-    else if (interfaceType == "string")
-    {
-#>
-
-        static string ParsePayload(byte[] payload)
-        {
-            return new ArraySegment<byte>(payload).ToUTF8String();
-        }
 <#
     }
     else if (register.PayloadSpec != null)
