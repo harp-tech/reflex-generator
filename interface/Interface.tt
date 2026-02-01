@@ -221,7 +221,7 @@ public static partial class TemplateHelper
         }
     }
 
-    static int GetPayloadTypeSize(PayloadType payloadType)
+    public static int GetPayloadTypeSize(PayloadType payloadType)
     {
         return (int)payloadType & 0xF;
     }

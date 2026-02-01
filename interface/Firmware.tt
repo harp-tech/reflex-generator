@@ -110,27 +110,6 @@ public static partial class TemplateHelper
             default: throw new ArgumentOutOfRangeException(nameof(payloadType));
         }
     }
-
-    public static int GetPayloadTypeSize(PayloadType payloadType)
-    {
-        switch (payloadType)
-        {
-            case PayloadType.U8:
-            case PayloadType.S8:
-                return 1;
-            case PayloadType.U16:
-            case PayloadType.S16:
-                return 2;
-            case PayloadType.U32:
-            case PayloadType.S32:
-            case PayloadType.Float:
-                return 4;
-            case PayloadType.U64:
-            case PayloadType.S64:
-                return 8;
-            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
-        }
-    }
 }
 
 class PortPinInfoTypeConverter : IYamlTypeConverter
