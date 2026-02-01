@@ -95,6 +95,7 @@ registers:
     length: 25
     access: Write
     description: Stores the user-specified device name.
+    interfaceType: string
   SerialNumber:
     address: 13
     type: U16

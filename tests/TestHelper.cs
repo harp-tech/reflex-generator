@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.TextTemplating;
 
 namespace Interface.Tests;
@@ -15,6 +16,9 @@ static class TestHelper
     public static string GetManifestResourceText(string name)
     {
         using var resourceStream = GetManifestResourceStream(name);
+        if (resourceStream is null)
+            return string.Empty;
+
         using var resourceReader = new StreamReader(resourceStream);
         return resourceReader.ReadToEnd();
     }

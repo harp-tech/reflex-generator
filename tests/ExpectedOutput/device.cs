@@ -38,7 +38,13 @@ namespace Interface.Tests
             (Bonsai.Harp.Device.RegisterMap.ToDictionary(entry => entry.Key, entry => entry.Value))
         {
             { 32, typeof(DigitalInputs) },
-            { 33, typeof(AnalogData) }
+            { 33, typeof(AnalogData) },
+            { 34, typeof(ComplexConfiguration) },
+            { 35, typeof(Version) },
+            { 36, typeof(CustomPayload) },
+            { 37, typeof(CustomRawPayload) },
+            { 38, typeof(CustomMemberConverter) },
+            { 39, typeof(BitmaskSplitter) }
         };
 
         /// <summary>
@@ -255,8 +261,20 @@ namespace Interface.Tests
     /// </summary>
     /// <seealso cref="DigitalInputs"/>
     /// <seealso cref="AnalogData"/>
+    /// <seealso cref="ComplexConfiguration"/>
+    /// <seealso cref="Version"/>
+    /// <seealso cref="CustomPayload"/>
+    /// <seealso cref="CustomRawPayload"/>
+    /// <seealso cref="CustomMemberConverter"/>
+    /// <seealso cref="BitmaskSplitter"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
+    [XmlInclude(typeof(ComplexConfiguration))]
+    [XmlInclude(typeof(Version))]
+    [XmlInclude(typeof(CustomPayload))]
+    [XmlInclude(typeof(CustomRawPayload))]
+    [XmlInclude(typeof(CustomMemberConverter))]
+    [XmlInclude(typeof(BitmaskSplitter))]
     [Description("Filters register-specific messages reported by the Tests device.")]
     public class FilterRegister : FilterRegisterBuilder, INamedElement
     {
@@ -280,10 +298,28 @@ namespace Interface.Tests
     /// </summary>
     /// <seealso cref="DigitalInputs"/>
     /// <seealso cref="AnalogData"/>
+    /// <seealso cref="ComplexConfiguration"/>
+    /// <seealso cref="Version"/>
+    /// <seealso cref="CustomPayload"/>
+    /// <seealso cref="CustomRawPayload"/>
+    /// <seealso cref="CustomMemberConverter"/>
+    /// <seealso cref="BitmaskSplitter"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
+    [XmlInclude(typeof(ComplexConfiguration))]
+    [XmlInclude(typeof(Version))]
+    [XmlInclude(typeof(CustomPayload))]
+    [XmlInclude(typeof(CustomRawPayload))]
+    [XmlInclude(typeof(CustomMemberConverter))]
+    [XmlInclude(typeof(BitmaskSplitter))]
     [XmlInclude(typeof(TimestampedDigitalInputs))]
     [XmlInclude(typeof(TimestampedAnalogData))]
+    [XmlInclude(typeof(TimestampedComplexConfiguration))]
+    [XmlInclude(typeof(TimestampedVersion))]
+    [XmlInclude(typeof(TimestampedCustomPayload))]
+    [XmlInclude(typeof(TimestampedCustomRawPayload))]
+    [XmlInclude(typeof(TimestampedCustomMemberConverter))]
+    [XmlInclude(typeof(TimestampedBitmaskSplitter))]
     [Description("Filters and selects specific messages reported by the Tests device.")]
     public partial class Parse : ParseBuilder, INamedElement
     {
@@ -304,8 +340,20 @@ namespace Interface.Tests
     /// </summary>
     /// <seealso cref="DigitalInputs"/>
     /// <seealso cref="AnalogData"/>
+    /// <seealso cref="ComplexConfiguration"/>
+    /// <seealso cref="Version"/>
+    /// <seealso cref="CustomPayload"/>
+    /// <seealso cref="CustomRawPayload"/>
+    /// <seealso cref="CustomMemberConverter"/>
+    /// <seealso cref="BitmaskSplitter"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
+    [XmlInclude(typeof(ComplexConfiguration))]
+    [XmlInclude(typeof(Version))]
+    [XmlInclude(typeof(CustomPayload))]
+    [XmlInclude(typeof(CustomRawPayload))]
+    [XmlInclude(typeof(CustomMemberConverter))]
+    [XmlInclude(typeof(BitmaskSplitter))]
     [Description("Formats a sequence of values as specific Tests register messages.")]
     public partial class Format : FormatBuilder, INamedElement
     {
@@ -435,7 +483,7 @@ namespace Interface.Tests
         /// <summary>
         /// Represents the length of the <see cref="AnalogData"/> register. This field is constant.
         /// </summary>
-        public const int RegisterLength = 3;
+        public const int RegisterLength = 6;
 
         static AnalogDataPayload ParsePayload(float[] payload)
         {
@@ -443,16 +491,18 @@ namespace Interface.Tests
             result.Analog0 = payload[0];
             result.Analog1 = payload[1];
             result.Analog2 = payload[2];
+            result.Accelerometer = PayloadMarshal.GetSubArray(payload, 3, 3);
             return result;
         }
 
         static float[] FormatPayload(AnalogDataPayload value)
         {
             float[] result;
-            result = new float[3];
+            result = new float[6];
             result[0] = value.Analog0;
             result[1] = value.Analog1;
             result[2] = value.Analog2;
+            PayloadMarshal.Write(new ArraySegment<float>(result, 3, 3), value.Accelerometer);
             return result;
         }
 
@@ -533,15 +583,710 @@ namespace Interface.Tests
     }
 
     /// <summary>
+    /// Represents a register that manipulates messages from register ComplexConfiguration.
+    /// </summary>
+    [Description("")]
+    public partial class ComplexConfiguration
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="ComplexConfiguration"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 34;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="ComplexConfiguration"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U8;
+
+        /// <summary>
+        /// Represents the length of the <see cref="ComplexConfiguration"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 17;
+
+        static ComplexConfigurationPayload ParsePayload(byte[] payload)
+        {
+            ComplexConfigurationPayload result;
+            result.PwmPort = (PwmPort)payload[0];
+            result.DutyCycle = PayloadMarshal.ReadSingle(new ArraySegment<byte>(payload, 4, 4));
+            result.Frequency = PayloadMarshal.ReadSingle(new ArraySegment<byte>(payload, 8, 4));
+            result.EventsEnabled = payload[12] != 0;
+            result.Delta = PayloadMarshal.ReadUInt32(new ArraySegment<byte>(payload, 13, 4));
+            return result;
+        }
+
+        static byte[] FormatPayload(ComplexConfigurationPayload value)
+        {
+            byte[] result;
+            result = new byte[17];
+            result[0] = (byte)value.PwmPort;
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 4, 4), value.DutyCycle);
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 8, 4), value.Frequency);
+            result[12] = (byte)(value.EventsEnabled ? 1 : 0);
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 13, 4), value.Delta);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the payload data for <see cref="ComplexConfiguration"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static ComplexConfigurationPayload GetPayload(HarpMessage message)
+        {
+            return ParsePayload(message.GetPayloadArray<byte>());
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="ComplexConfiguration"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ComplexConfigurationPayload> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayloadArray<byte>();
+            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="ComplexConfiguration"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="ComplexConfiguration"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, ComplexConfigurationPayload value)
+        {
+            return HarpMessage.FromByte(Address, messageType, FormatPayload(value));
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="ComplexConfiguration"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="ComplexConfiguration"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, ComplexConfigurationPayload value)
+        {
+            return HarpMessage.FromByte(Address, timestamp, messageType, FormatPayload(value));
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// ComplexConfiguration register.
+    /// </summary>
+    /// <seealso cref="ComplexConfiguration"/>
+    [Description("Filters and selects timestamped messages from the ComplexConfiguration register.")]
+    public partial class TimestampedComplexConfiguration
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="ComplexConfiguration"/> register. This field is constant.
+        /// </summary>
+        public const int Address = ComplexConfiguration.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="ComplexConfiguration"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ComplexConfigurationPayload> GetPayload(HarpMessage message)
+        {
+            return ComplexConfiguration.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register Version.
+    /// </summary>
+    [Description("")]
+    public partial class Version
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="Version"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 35;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="Version"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U8;
+
+        /// <summary>
+        /// Represents the length of the <see cref="Version"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 32;
+
+        static VersionPayload ParsePayload(byte[] payload)
+        {
+            VersionPayload result;
+            result.ProtocolVersion = PayloadMarshal.ReadHarpVersion(new ArraySegment<byte>(payload, 0, 3));
+            result.FirmwareVersion = PayloadMarshal.ReadHarpVersion(new ArraySegment<byte>(payload, 3, 3));
+            result.HardwareVersion = PayloadMarshal.ReadHarpVersion(new ArraySegment<byte>(payload, 6, 3));
+            result.CoreId = PayloadMarshal.ReadUtf8String(new ArraySegment<byte>(payload, 9, 3));
+            result.InterfaceHash = PayloadMarshal.GetSubArray(payload, 12, 20);
+            return result;
+        }
+
+        static byte[] FormatPayload(VersionPayload value)
+        {
+            byte[] result;
+            result = new byte[32];
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 0, 3), value.ProtocolVersion);
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 3, 3), value.FirmwareVersion);
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 6, 3), value.HardwareVersion);
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 9, 3), value.CoreId);
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 12, 20), value.InterfaceHash);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the payload data for <see cref="Version"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static VersionPayload GetPayload(HarpMessage message)
+        {
+            return ParsePayload(message.GetPayloadArray<byte>());
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="Version"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<VersionPayload> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayloadArray<byte>();
+            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="Version"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="Version"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, VersionPayload value)
+        {
+            return HarpMessage.FromByte(Address, messageType, FormatPayload(value));
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="Version"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="Version"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, VersionPayload value)
+        {
+            return HarpMessage.FromByte(Address, timestamp, messageType, FormatPayload(value));
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// Version register.
+    /// </summary>
+    /// <seealso cref="Version"/>
+    [Description("Filters and selects timestamped messages from the Version register.")]
+    public partial class TimestampedVersion
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="Version"/> register. This field is constant.
+        /// </summary>
+        public const int Address = Version.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="Version"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<VersionPayload> GetPayload(HarpMessage message)
+        {
+            return Version.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register CustomPayload.
+    /// </summary>
+    [Description("")]
+    public partial class CustomPayload
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="CustomPayload"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 36;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="CustomPayload"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U32;
+
+        /// <summary>
+        /// Represents the length of the <see cref="CustomPayload"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 3;
+
+        private static partial HarpVersion ParsePayload(uint[] payload);
+
+        private static partial uint[] FormatPayload(HarpVersion value);
+
+        /// <summary>
+        /// Returns the payload data for <see cref="CustomPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static HarpVersion GetPayload(HarpMessage message)
+        {
+            return ParsePayload(message.GetPayloadArray<uint>());
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="CustomPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<HarpVersion> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayloadArray<uint>();
+            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="CustomPayload"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="CustomPayload"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, HarpVersion value)
+        {
+            return HarpMessage.FromUInt32(Address, messageType, FormatPayload(value));
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="CustomPayload"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="CustomPayload"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, HarpVersion value)
+        {
+            return HarpMessage.FromUInt32(Address, timestamp, messageType, FormatPayload(value));
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// CustomPayload register.
+    /// </summary>
+    /// <seealso cref="CustomPayload"/>
+    [Description("Filters and selects timestamped messages from the CustomPayload register.")]
+    public partial class TimestampedCustomPayload
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="CustomPayload"/> register. This field is constant.
+        /// </summary>
+        public const int Address = CustomPayload.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="CustomPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<HarpVersion> GetPayload(HarpMessage message)
+        {
+            return CustomPayload.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register CustomRawPayload.
+    /// </summary>
+    [Description("")]
+    public partial class CustomRawPayload
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="CustomRawPayload"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 37;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="CustomRawPayload"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U32;
+
+        /// <summary>
+        /// Represents the length of the <see cref="CustomRawPayload"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 3;
+
+        private static partial HarpVersion ParsePayload(ArraySegment<byte> payload);
+
+        private static partial ArraySegment<byte> FormatPayload(HarpVersion value);
+
+        /// <summary>
+        /// Returns the payload data for <see cref="CustomRawPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static HarpVersion GetPayload(HarpMessage message)
+        {
+            return ParsePayload(message.GetPayload());
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="CustomRawPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<HarpVersion> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayload();
+            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="CustomRawPayload"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="CustomRawPayload"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, HarpVersion value)
+        {
+            return HarpMessage.FromPayload(Address, messageType, PayloadType.U32, FormatPayload(value));
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="CustomRawPayload"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="CustomRawPayload"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, HarpVersion value)
+        {
+            return HarpMessage.FromPayload(Address, timestamp, messageType, PayloadType.U32, FormatPayload(value));
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// CustomRawPayload register.
+    /// </summary>
+    /// <seealso cref="CustomRawPayload"/>
+    [Description("Filters and selects timestamped messages from the CustomRawPayload register.")]
+    public partial class TimestampedCustomRawPayload
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="CustomRawPayload"/> register. This field is constant.
+        /// </summary>
+        public const int Address = CustomRawPayload.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="CustomRawPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<HarpVersion> GetPayload(HarpMessage message)
+        {
+            return CustomRawPayload.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register CustomMemberConverter.
+    /// </summary>
+    [Description("")]
+    public partial class CustomMemberConverter
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="CustomMemberConverter"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 38;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="CustomMemberConverter"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U8;
+
+        /// <summary>
+        /// Represents the length of the <see cref="CustomMemberConverter"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 3;
+
+        private static partial int ParsePayloadData(ArraySegment<byte> payloadData);
+
+        static CustomMemberConverterPayload ParsePayload(byte[] payload)
+        {
+            CustomMemberConverterPayload result;
+            result.Header = payload[0];
+            result.Data = ParsePayloadData(new ArraySegment<byte>(payload, 1, 2));
+            return result;
+        }
+
+        private static partial byte[] FormatPayloadData(int data);
+
+        static byte[] FormatPayload(CustomMemberConverterPayload value)
+        {
+            byte[] result;
+            result = new byte[3];
+            result[0] = value.Header;
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 1, 2), FormatPayloadData(value.Data));
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the payload data for <see cref="CustomMemberConverter"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static CustomMemberConverterPayload GetPayload(HarpMessage message)
+        {
+            return ParsePayload(message.GetPayloadArray<byte>());
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="CustomMemberConverter"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<CustomMemberConverterPayload> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayloadArray<byte>();
+            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="CustomMemberConverter"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="CustomMemberConverter"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, CustomMemberConverterPayload value)
+        {
+            return HarpMessage.FromByte(Address, messageType, FormatPayload(value));
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="CustomMemberConverter"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="CustomMemberConverter"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, CustomMemberConverterPayload value)
+        {
+            return HarpMessage.FromByte(Address, timestamp, messageType, FormatPayload(value));
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// CustomMemberConverter register.
+    /// </summary>
+    /// <seealso cref="CustomMemberConverter"/>
+    [Description("Filters and selects timestamped messages from the CustomMemberConverter register.")]
+    public partial class TimestampedCustomMemberConverter
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="CustomMemberConverter"/> register. This field is constant.
+        /// </summary>
+        public const int Address = CustomMemberConverter.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="CustomMemberConverter"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<CustomMemberConverterPayload> GetPayload(HarpMessage message)
+        {
+            return CustomMemberConverter.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register BitmaskSplitter.
+    /// </summary>
+    [Description("")]
+    public partial class BitmaskSplitter
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="BitmaskSplitter"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 39;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="BitmaskSplitter"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U8;
+
+        /// <summary>
+        /// Represents the length of the <see cref="BitmaskSplitter"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 1;
+
+        private static partial int ParsePayloadLow(byte payloadLow);
+
+        static BitmaskSplitterPayload ParsePayload(byte payload)
+        {
+            BitmaskSplitterPayload result;
+            result.Low = ParsePayloadLow((byte)(payload & 0xF));
+            result.High = (int)(byte)((payload & 0xF0) >> 4);
+            return result;
+        }
+
+        private static partial byte FormatPayloadLow(int low);
+
+        static byte FormatPayload(BitmaskSplitterPayload value)
+        {
+            byte result;
+            result = (byte)((byte)FormatPayloadLow(value.Low) & 0xF);
+            result |= (byte)(((byte)value.High << 4) & 0xF0);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the payload data for <see cref="BitmaskSplitter"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static BitmaskSplitterPayload GetPayload(HarpMessage message)
+        {
+            return ParsePayload(message.GetPayloadByte());
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="BitmaskSplitter"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<BitmaskSplitterPayload> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayloadByte();
+            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="BitmaskSplitter"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="BitmaskSplitter"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, BitmaskSplitterPayload value)
+        {
+            return HarpMessage.FromByte(Address, messageType, FormatPayload(value));
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="BitmaskSplitter"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="BitmaskSplitter"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, BitmaskSplitterPayload value)
+        {
+            return HarpMessage.FromByte(Address, timestamp, messageType, FormatPayload(value));
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// BitmaskSplitter register.
+    /// </summary>
+    /// <seealso cref="BitmaskSplitter"/>
+    [Description("Filters and selects timestamped messages from the BitmaskSplitter register.")]
+    public partial class TimestampedBitmaskSplitter
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="BitmaskSplitter"/> register. This field is constant.
+        /// </summary>
+        public const int Address = BitmaskSplitter.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="BitmaskSplitter"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<BitmaskSplitterPayload> GetPayload(HarpMessage message)
+        {
+            return BitmaskSplitter.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
     /// Represents an operator which creates standard message payloads for the
     /// Tests device.
     /// </summary>
     /// <seealso cref="CreateDigitalInputsPayload"/>
     /// <seealso cref="CreateAnalogDataPayload"/>
+    /// <seealso cref="CreateComplexConfigurationPayload"/>
+    /// <seealso cref="CreateVersionPayload"/>
+    /// <seealso cref="CreateCustomPayloadPayload"/>
+    /// <seealso cref="CreateCustomRawPayloadPayload"/>
+    /// <seealso cref="CreateCustomMemberConverterPayload"/>
+    /// <seealso cref="CreateBitmaskSplitterPayload"/>
     [XmlInclude(typeof(CreateDigitalInputsPayload))]
     [XmlInclude(typeof(CreateAnalogDataPayload))]
+    [XmlInclude(typeof(CreateComplexConfigurationPayload))]
+    [XmlInclude(typeof(CreateVersionPayload))]
+    [XmlInclude(typeof(CreateCustomPayloadPayload))]
+    [XmlInclude(typeof(CreateCustomRawPayloadPayload))]
+    [XmlInclude(typeof(CreateCustomMemberConverterPayload))]
+    [XmlInclude(typeof(CreateBitmaskSplitterPayload))]
     [XmlInclude(typeof(CreateTimestampedDigitalInputsPayload))]
     [XmlInclude(typeof(CreateTimestampedAnalogDataPayload))]
+    [XmlInclude(typeof(CreateTimestampedComplexConfigurationPayload))]
+    [XmlInclude(typeof(CreateTimestampedVersionPayload))]
+    [XmlInclude(typeof(CreateTimestampedCustomPayloadPayload))]
+    [XmlInclude(typeof(CreateTimestampedCustomRawPayloadPayload))]
+    [XmlInclude(typeof(CreateTimestampedCustomMemberConverterPayload))]
+    [XmlInclude(typeof(CreateTimestampedBitmaskSplitterPayload))]
     [Description("Creates standard message payloads for the Tests device.")]
     public partial class CreateMessage : CreateMessageBuilder, INamedElement
     {
@@ -637,6 +1382,12 @@ namespace Interface.Tests
         public float Analog2 { get; set; }
 
         /// <summary>
+        /// Gets or sets a value to write on payload member Accelerometer.
+        /// </summary>
+        [Description("")]
+        public float[] Accelerometer { get; set; }
+
+        /// <summary>
         /// Creates a message payload for the AnalogData register.
         /// </summary>
         /// <returns>The created message payload value.</returns>
@@ -646,6 +1397,7 @@ namespace Interface.Tests
             value.Analog0 = Analog0;
             value.Analog1 = Analog1;
             value.Analog2 = Analog2;
+            value.Accelerometer = Accelerometer;
             return value;
         }
 
@@ -681,6 +1433,408 @@ namespace Interface.Tests
     }
 
     /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register ComplexConfiguration.
+    /// </summary>
+    [DisplayName("ComplexConfigurationPayload")]
+    [Description("Creates a message payload for register ComplexConfiguration.")]
+    public partial class CreateComplexConfigurationPayload
+    {
+        /// <summary>
+        /// Gets or sets a value to write on payload member PwmPort.
+        /// </summary>
+        [Description("")]
+        public PwmPort PwmPort { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member DutyCycle.
+        /// </summary>
+        [Description("")]
+        public float DutyCycle { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member Frequency.
+        /// </summary>
+        [Description("")]
+        public float Frequency { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member EventsEnabled.
+        /// </summary>
+        [Description("")]
+        public bool EventsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member Delta.
+        /// </summary>
+        [Description("")]
+        public uint Delta { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the ComplexConfiguration register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public ComplexConfigurationPayload GetPayload()
+        {
+            ComplexConfigurationPayload value;
+            value.PwmPort = PwmPort;
+            value.DutyCycle = DutyCycle;
+            value.Frequency = Frequency;
+            value.EventsEnabled = EventsEnabled;
+            value.Delta = Delta;
+            return value;
+        }
+
+        /// <summary>
+        /// Creates a message for register ComplexConfiguration.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the ComplexConfiguration register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.ComplexConfiguration.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register ComplexConfiguration.
+    /// </summary>
+    [DisplayName("TimestampedComplexConfigurationPayload")]
+    [Description("Creates a timestamped message payload for register ComplexConfiguration.")]
+    public partial class CreateTimestampedComplexConfigurationPayload : CreateComplexConfigurationPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register ComplexConfiguration.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the ComplexConfiguration register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.ComplexConfiguration.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register Version.
+    /// </summary>
+    [DisplayName("VersionPayload")]
+    [Description("Creates a message payload for register Version.")]
+    public partial class CreateVersionPayload
+    {
+        /// <summary>
+        /// Gets or sets a value to write on payload member ProtocolVersion.
+        /// </summary>
+        [Description("")]
+        public HarpVersion ProtocolVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member FirmwareVersion.
+        /// </summary>
+        [Description("")]
+        public HarpVersion FirmwareVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member HardwareVersion.
+        /// </summary>
+        [Description("")]
+        public HarpVersion HardwareVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member CoreId.
+        /// </summary>
+        [Description("")]
+        public string CoreId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member InterfaceHash.
+        /// </summary>
+        [Description("")]
+        public byte[] InterfaceHash { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the Version register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public VersionPayload GetPayload()
+        {
+            VersionPayload value;
+            value.ProtocolVersion = ProtocolVersion;
+            value.FirmwareVersion = FirmwareVersion;
+            value.HardwareVersion = HardwareVersion;
+            value.CoreId = CoreId;
+            value.InterfaceHash = InterfaceHash;
+            return value;
+        }
+
+        /// <summary>
+        /// Creates a message for register Version.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the Version register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.Version.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register Version.
+    /// </summary>
+    [DisplayName("TimestampedVersionPayload")]
+    [Description("Creates a timestamped message payload for register Version.")]
+    public partial class CreateTimestampedVersionPayload : CreateVersionPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register Version.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the Version register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.Version.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register CustomPayload.
+    /// </summary>
+    [DisplayName("CustomPayloadPayload")]
+    [Description("Creates a message payload for register CustomPayload.")]
+    public partial class CreateCustomPayloadPayload
+    {
+        /// <summary>
+        /// Gets or sets the value for register CustomPayload.
+        /// </summary>
+        [Description("The value for register CustomPayload.")]
+        public HarpVersion CustomPayload { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the CustomPayload register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public HarpVersion GetPayload()
+        {
+            return CustomPayload;
+        }
+
+        /// <summary>
+        /// Creates a message for register CustomPayload.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the CustomPayload register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.CustomPayload.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register CustomPayload.
+    /// </summary>
+    [DisplayName("TimestampedCustomPayloadPayload")]
+    [Description("Creates a timestamped message payload for register CustomPayload.")]
+    public partial class CreateTimestampedCustomPayloadPayload : CreateCustomPayloadPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register CustomPayload.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the CustomPayload register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.CustomPayload.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register CustomRawPayload.
+    /// </summary>
+    [DisplayName("CustomRawPayloadPayload")]
+    [Description("Creates a message payload for register CustomRawPayload.")]
+    public partial class CreateCustomRawPayloadPayload
+    {
+        /// <summary>
+        /// Gets or sets the value for register CustomRawPayload.
+        /// </summary>
+        [Description("The value for register CustomRawPayload.")]
+        public HarpVersion CustomRawPayload { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the CustomRawPayload register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public HarpVersion GetPayload()
+        {
+            return CustomRawPayload;
+        }
+
+        /// <summary>
+        /// Creates a message for register CustomRawPayload.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the CustomRawPayload register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.CustomRawPayload.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register CustomRawPayload.
+    /// </summary>
+    [DisplayName("TimestampedCustomRawPayloadPayload")]
+    [Description("Creates a timestamped message payload for register CustomRawPayload.")]
+    public partial class CreateTimestampedCustomRawPayloadPayload : CreateCustomRawPayloadPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register CustomRawPayload.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the CustomRawPayload register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.CustomRawPayload.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register CustomMemberConverter.
+    /// </summary>
+    [DisplayName("CustomMemberConverterPayload")]
+    [Description("Creates a message payload for register CustomMemberConverter.")]
+    public partial class CreateCustomMemberConverterPayload
+    {
+        /// <summary>
+        /// Gets or sets a value to write on payload member Header.
+        /// </summary>
+        [Description("")]
+        public byte Header { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member Data.
+        /// </summary>
+        [Description("")]
+        public int Data { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the CustomMemberConverter register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public CustomMemberConverterPayload GetPayload()
+        {
+            CustomMemberConverterPayload value;
+            value.Header = Header;
+            value.Data = Data;
+            return value;
+        }
+
+        /// <summary>
+        /// Creates a message for register CustomMemberConverter.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the CustomMemberConverter register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.CustomMemberConverter.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register CustomMemberConverter.
+    /// </summary>
+    [DisplayName("TimestampedCustomMemberConverterPayload")]
+    [Description("Creates a timestamped message payload for register CustomMemberConverter.")]
+    public partial class CreateTimestampedCustomMemberConverterPayload : CreateCustomMemberConverterPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register CustomMemberConverter.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the CustomMemberConverter register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.CustomMemberConverter.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register BitmaskSplitter.
+    /// </summary>
+    [DisplayName("BitmaskSplitterPayload")]
+    [Description("Creates a message payload for register BitmaskSplitter.")]
+    public partial class CreateBitmaskSplitterPayload
+    {
+        /// <summary>
+        /// Gets or sets a value to write on payload member Low.
+        /// </summary>
+        [Description("")]
+        public int Low { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member High.
+        /// </summary>
+        [Description("")]
+        public int High { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the BitmaskSplitter register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public BitmaskSplitterPayload GetPayload()
+        {
+            BitmaskSplitterPayload value;
+            value.Low = Low;
+            value.High = High;
+            return value;
+        }
+
+        /// <summary>
+        /// Creates a message for register BitmaskSplitter.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the BitmaskSplitter register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.BitmaskSplitter.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register BitmaskSplitter.
+    /// </summary>
+    [DisplayName("TimestampedBitmaskSplitterPayload")]
+    [Description("Creates a timestamped message payload for register BitmaskSplitter.")]
+    public partial class CreateTimestampedBitmaskSplitterPayload : CreateBitmaskSplitterPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register BitmaskSplitter.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the BitmaskSplitter register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.BitmaskSplitter.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
     /// Represents the payload of the AnalogData register.
     /// </summary>
     public struct AnalogDataPayload
@@ -691,14 +1845,17 @@ namespace Interface.Tests
         /// <param name="analog0"></param>
         /// <param name="analog1"></param>
         /// <param name="analog2"></param>
+        /// <param name="accelerometer"></param>
         public AnalogDataPayload(
             float analog0,
             float analog1,
-            float analog2)
+            float analog2,
+            float[] accelerometer)
         {
             Analog0 = analog0;
             Analog1 = analog1;
             Analog2 = analog2;
+            Accelerometer = accelerometer;
         }
 
         /// <summary>
@@ -717,6 +1874,11 @@ namespace Interface.Tests
         public float Analog2;
 
         /// <summary>
+        /// 
+        /// </summary>
+        public float[] Accelerometer;
+
+        /// <summary>
         /// Returns a <see cref="string"/> that represents the payload of
         /// the AnalogData register.
         /// </summary>
@@ -729,8 +1891,358 @@ namespace Interface.Tests
             return "AnalogDataPayload { " +
                 "Analog0 = " + Analog0 + ", " +
                 "Analog1 = " + Analog1 + ", " +
-                "Analog2 = " + Analog2 + " " +
+                "Analog2 = " + Analog2 + ", " +
+                "Accelerometer = " + Accelerometer + " " +
             "}";
+        }
+    }
+
+    /// <summary>
+    /// Represents the payload of the ComplexConfiguration register.
+    /// </summary>
+    public struct ComplexConfigurationPayload
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ComplexConfigurationPayload"/> structure.
+        /// </summary>
+        /// <param name="pwmPort"></param>
+        /// <param name="dutyCycle"></param>
+        /// <param name="frequency"></param>
+        /// <param name="eventsEnabled"></param>
+        /// <param name="delta"></param>
+        public ComplexConfigurationPayload(
+            PwmPort pwmPort,
+            float dutyCycle,
+            float frequency,
+            bool eventsEnabled,
+            uint delta)
+        {
+            PwmPort = pwmPort;
+            DutyCycle = dutyCycle;
+            Frequency = frequency;
+            EventsEnabled = eventsEnabled;
+            Delta = delta;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public PwmPort PwmPort;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public float DutyCycle;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public float Frequency;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool EventsEnabled;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public uint Delta;
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents the payload of
+        /// the ComplexConfiguration register.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents the payload of the
+        /// ComplexConfiguration register.
+        /// </returns>
+        public override string ToString()
+        {
+            return "ComplexConfigurationPayload { " +
+                "PwmPort = " + PwmPort + ", " +
+                "DutyCycle = " + DutyCycle + ", " +
+                "Frequency = " + Frequency + ", " +
+                "EventsEnabled = " + EventsEnabled + ", " +
+                "Delta = " + Delta + " " +
+            "}";
+        }
+    }
+
+    /// <summary>
+    /// Represents the payload of the Version register.
+    /// </summary>
+    public struct VersionPayload
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VersionPayload"/> structure.
+        /// </summary>
+        /// <param name="protocolVersion"></param>
+        /// <param name="firmwareVersion"></param>
+        /// <param name="hardwareVersion"></param>
+        /// <param name="coreId"></param>
+        /// <param name="interfaceHash"></param>
+        public VersionPayload(
+            HarpVersion protocolVersion,
+            HarpVersion firmwareVersion,
+            HarpVersion hardwareVersion,
+            string coreId,
+            byte[] interfaceHash)
+        {
+            ProtocolVersion = protocolVersion;
+            FirmwareVersion = firmwareVersion;
+            HardwareVersion = hardwareVersion;
+            CoreId = coreId;
+            InterfaceHash = interfaceHash;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public HarpVersion ProtocolVersion;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public HarpVersion FirmwareVersion;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public HarpVersion HardwareVersion;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string CoreId;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public byte[] InterfaceHash;
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents the payload of
+        /// the Version register.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents the payload of the
+        /// Version register.
+        /// </returns>
+        public override string ToString()
+        {
+            return "VersionPayload { " +
+                "ProtocolVersion = " + ProtocolVersion + ", " +
+                "FirmwareVersion = " + FirmwareVersion + ", " +
+                "HardwareVersion = " + HardwareVersion + ", " +
+                "CoreId = " + CoreId + ", " +
+                "InterfaceHash = " + InterfaceHash + " " +
+            "}";
+        }
+    }
+
+    /// <summary>
+    /// Represents the payload of the CustomMemberConverter register.
+    /// </summary>
+    public struct CustomMemberConverterPayload
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomMemberConverterPayload"/> structure.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="data"></param>
+        public CustomMemberConverterPayload(
+            byte header,
+            int data)
+        {
+            Header = header;
+            Data = data;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public byte Header;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Data;
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents the payload of
+        /// the CustomMemberConverter register.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents the payload of the
+        /// CustomMemberConverter register.
+        /// </returns>
+        public override string ToString()
+        {
+            return "CustomMemberConverterPayload { " +
+                "Header = " + Header + ", " +
+                "Data = " + Data + " " +
+            "}";
+        }
+    }
+
+    /// <summary>
+    /// Represents the payload of the BitmaskSplitter register.
+    /// </summary>
+    public struct BitmaskSplitterPayload
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BitmaskSplitterPayload"/> structure.
+        /// </summary>
+        /// <param name="low"></param>
+        /// <param name="high"></param>
+        public BitmaskSplitterPayload(
+            int low,
+            int high)
+        {
+            Low = low;
+            High = high;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Low;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int High;
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents the payload of
+        /// the BitmaskSplitter register.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents the payload of the
+        /// BitmaskSplitter register.
+        /// </returns>
+        public override string ToString()
+        {
+            return "BitmaskSplitterPayload { " +
+                "Low = " + Low + ", " +
+                "High = " + High + " " +
+            "}";
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum PwmPort : byte
+    {
+        Pwm0 = 1,
+        Pwm1 = 2,
+        Pwm2 = 4
+    }
+
+    internal static partial class PayloadMarshal
+    {
+        internal static T[] GetSubArray<T>(T[] array, int offset, int count)
+        {
+            var result = new T[count];
+            Array.Copy(array, offset, result, 0, count);
+            return result;
+        }
+
+        internal static byte ReadByte(ArraySegment<byte> segment) => segment.Array[segment.Offset];
+
+        internal static sbyte ReadSByte(ArraySegment<byte> segment) => (sbyte)segment.Array[segment.Offset];
+
+        internal static ushort ReadUInt16(ArraySegment<byte> segment) => BitConverter.ToUInt16(segment.Array, segment.Offset);
+
+        internal static short ReadInt16(ArraySegment<byte> segment) => BitConverter.ToInt16(segment.Array, segment.Offset);
+
+        internal static uint ReadUInt32(ArraySegment<byte> segment) => BitConverter.ToUInt32(segment.Array, segment.Offset);
+
+        internal static int ReadInt32(ArraySegment<byte> segment) => BitConverter.ToInt32(segment.Array, segment.Offset);
+
+        internal static ulong ReadUInt64(ArraySegment<byte> segment) => BitConverter.ToUInt64(segment.Array, segment.Offset);
+
+        internal static long ReadInt64(ArraySegment<byte> segment) => BitConverter.ToInt64(segment.Array, segment.Offset);
+
+        internal static float ReadSingle(ArraySegment<byte> segment) => BitConverter.ToSingle(segment.Array, segment.Offset);
+
+        internal static string ReadUtf8String(ArraySegment<byte> segment)
+        {
+            var count = Array.IndexOf(segment.Array, (byte)0, segment.Offset, segment.Count) - segment.Offset;
+            return System.Text.Encoding.UTF8.GetString(segment.Array, segment.Offset, count < 0 ? segment.Count : count);
+        }
+
+        internal static void Write(ArraySegment<byte> segment, byte value) => segment.Array[segment.Offset] = value;
+
+        internal static void Write(ArraySegment<byte> segment, sbyte value) => segment.Array[segment.Offset] = (byte)value;
+
+        internal static void Write(ArraySegment<byte> segment, ushort value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+        }
+
+        internal static void Write(ArraySegment<byte> segment, short value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+        }
+
+        internal static void Write(ArraySegment<byte> segment, uint value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+        }
+
+        internal static void Write(ArraySegment<byte> segment, int value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+        }
+
+        internal static void Write(ArraySegment<byte> segment, ulong value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+            segment.Array[segment.Offset + 4] = (byte)(value >> 32);
+            segment.Array[segment.Offset + 5] = (byte)(value >> 40);
+            segment.Array[segment.Offset + 6] = (byte)(value >> 48);
+            segment.Array[segment.Offset + 7] = (byte)(value >> 56);
+        }
+
+        internal static void Write(ArraySegment<byte> segment, long value)
+        {
+            segment.Array[segment.Offset] = (byte)value;
+            segment.Array[segment.Offset + 1] = (byte)(value >> 8);
+            segment.Array[segment.Offset + 2] = (byte)(value >> 16);
+            segment.Array[segment.Offset + 3] = (byte)(value >> 24);
+            segment.Array[segment.Offset + 4] = (byte)(value >> 32);
+            segment.Array[segment.Offset + 5] = (byte)(value >> 40);
+            segment.Array[segment.Offset + 6] = (byte)(value >> 48);
+            segment.Array[segment.Offset + 7] = (byte)(value >> 56);
+        }
+
+        internal static unsafe void Write(ArraySegment<byte> segment, float value) => Write(segment, *(int*)&value);
+
+        internal static unsafe void Write(ArraySegment<byte> segment, string value) =>
+            System.Text.Encoding.UTF8.GetBytes(value, 0, Math.Min(value.Length, segment.Count), segment.Array, segment.Offset);
+
+        internal static void Write<T>(ArraySegment<byte> segment, T[] values) where T : unmanaged
+        {
+            Buffer.BlockCopy(values, 0, segment.Array, segment.Offset, segment.Count);
+        }
+
+        internal static void Write<T>(ArraySegment<T> segment, T[] values)
+        {
+            Array.Copy(values, 0, segment.Array, segment.Offset, segment.Count);
         }
     }
 }

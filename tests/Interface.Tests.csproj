@@ -15,11 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="..\interface\*.tt" />
+    <Compile Remove="EmbeddedSources\*.cs" />
+    <EmbeddedResource Include="EmbeddedSources\*.cs" />
+    <EmbeddedResource Include="PayloadMarshal.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using Mono.TextTemplating;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mono.TextTemplating;
 
 namespace Interface.Tests;
 
@@ -9,6 +10,7 @@ public sealed class GeneratorTests
     CompiledTemplate deviceTemplate;
     CompiledTemplate asyncDeviceTemplate;
     DirectoryInfo outputDirectory;
+    string payloadExtensions;
 
     [TestInitialize]
     public async Task Initialize()
@@ -16,6 +18,7 @@ public sealed class GeneratorTests
         generator = new TestTemplateGenerator();
         var deviceTemplateContents = TestHelper.GetManifestResourceText("Device.tt");
         var asyncDeviceTemplateContents = TestHelper.GetManifestResourceText("AsyncDevice.tt");
+        payloadExtensions = TestHelper.GetManifestResourceText("PayloadMarshal.cs");
         deviceTemplate = await generator.CompileTemplateAsync(deviceTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
@@ -60,9 +63,10 @@ public sealed class GeneratorTests
         TestHelper.AssertNoGeneratorErrors(generator);
 
         var outputFileName = $"{Path.GetFileNameWithoutExtension(metadataFileName)}.cs";
+        var customImplementation = TestHelper.GetManifestResourceText($"EmbeddedSources.{outputFileName}");
         try
         {
-            CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode);
+            CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode, payloadExtensions, customImplementation);
             AssertExpectedOutput(deviceCode, outputFileName);
         }
         catch (AssertFailedException)

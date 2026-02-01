@@ -1,6 +1,7 @@
 ﻿using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Interface.Tests;
 
@@ -26,7 +27,7 @@ internal static class CompilerTestHelper
             nameof(CompilerTestHelper),
             syntaxTrees: syntaxTrees,
             references: assemblyReferences,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
         using var memoryStream = new MemoryStream();
         var result = compilation.Emit(memoryStream);
         if (!result.Success)
