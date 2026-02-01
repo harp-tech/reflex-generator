@@ -31,6 +31,19 @@ static class TestHelper
         }
     }
 
+    public static void AssertExpectedOutput(string actual, string outputFileName)
+    {
+        var expectedFileName = Path.Combine("ExpectedOutput", outputFileName);
+        if (File.Exists(expectedFileName))
+        {
+            var expected = File.ReadAllText(expectedFileName);
+            if (!string.Equals(actual, expected, StringComparison.InvariantCulture))
+            {
+                Assert.Fail($"The generated output has diverged from the reference: {outputFileName}");
+            }
+        }
+    }
+
     public static string GetGeneratorErrorMessage(TemplateGenerator generator)
     {
         if (!generator.Errors.HasErrors)
