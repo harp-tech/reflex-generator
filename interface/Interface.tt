@@ -245,7 +245,7 @@ public static partial class TemplateHelper
         if (register.PayloadSpec != null || register.HasConverter)
             return $"ParsePayload({expression})";
         else if (register.InterfaceType == "string")
-            return $"{expression}.ToUTF8String()";
+            return $"PayloadMarshal.ReadUtf8String({expression})";
         else
             return GetConversionToInterfaceType(register.InterfaceType ?? register.MaskType, expression);
     }
@@ -324,7 +324,7 @@ public static partial class TemplateHelper
 
             GetMemberSize(member, register, deviceMetadata, out var memberInterfaceType, out var memberPayloadType);
             if (memberInterfaceType == "string")
-                return $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}).ToUTF8String()";
+                return $"PayloadMarshal.ReadUtf8String(new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}))";
             else if (member.Converter == MemberConverter.Payload || memberInterfaceType != GetInterfaceType(payloadType, register.Length))
             {
                 expression = $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength})";
@@ -332,16 +332,16 @@ public static partial class TemplateHelper
                     return $"ParsePayload{name}({expression})";
                 else if (memberPayloadType > 0)
                 {
-                    expression = $"{expression}.To{GetPayloadTypeSuffix(memberPayloadType)}()";
+                    expression = $"PayloadMarshal.Read{GetPayloadTypeSuffix(memberPayloadType)}({expression})";
                     return GetConversionToInterfaceType(member.MaskType, expression);
                 }
                 else
                 {
-                    return $"{expression}.To{memberInterfaceType}()";
+                    return $"PayloadMarshal.Read{memberInterfaceType}({expression})";
                 }
             }
             else
-                expression = $"{expression}.GetSubArray({memberOffset}, {memberLength})";
+                expression = $"PayloadMarshal.GetSubArray({expression}, {memberOffset}, {memberLength})";
         }
         else if (member.Offset.HasValue)
         {
@@ -392,7 +392,7 @@ public static partial class TemplateHelper
         {
             if (member.Converter == MemberConverter.RawPayload)
                 throw new NotSupportedException("Raw payload converters inside payload spec is not currently supported.");
-            return $"new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}).WriteBytes({memberConversion})";
+            return $"PayloadMarshal.Write(new ArraySegment<{payloadInterfaceType}>({expression}, {memberOffset}, {memberLength}), {memberConversion})";
         }
         else
         {

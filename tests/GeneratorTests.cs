@@ -18,7 +18,7 @@ public sealed class GeneratorTests
         generator = new TestTemplateGenerator();
         var deviceTemplateContents = TestHelper.GetManifestResourceText("Device.tt");
         var asyncDeviceTemplateContents = TestHelper.GetManifestResourceText("AsyncDevice.tt");
-        payloadExtensions = TestHelper.GetManifestResourceText("PayloadExtensions.cs");
+        payloadExtensions = TestHelper.GetManifestResourceText("PayloadMarshal.cs");
         deviceTemplate = await generator.CompileTemplateAsync(deviceTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 

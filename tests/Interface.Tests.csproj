@@ -18,7 +18,7 @@
     <EmbeddedResource Include="..\interface\*.tt" />
     <Compile Remove="EmbeddedSources\*.cs" />
     <EmbeddedResource Include="EmbeddedSources\*.cs" />
-    <EmbeddedResource Include="PayloadExtensions.cs" />
+    <EmbeddedResource Include="PayloadMarshal.cs" />
   </ItemGroup>
 
   <ItemGroup>

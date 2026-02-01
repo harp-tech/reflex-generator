@@ -22,13 +22,13 @@ namespace Interface.Tests
     {
         private static partial HarpVersion ParsePayload(ArraySegment<byte> payload)
         {
-            return payload.ToHarpVersion();
+            return PayloadMarshal.ReadHarpVersion(payload);
         }
 
         private static partial ArraySegment<byte> FormatPayload(HarpVersion value)
         {
             var result = new ArraySegment<byte>(new byte[sizeof(uint) * RegisterLength]);
-            result.WriteBytes(value);
+            PayloadMarshal.Write(result, value);
             return result;
         }
     }
@@ -37,13 +37,13 @@ namespace Interface.Tests
     {
         private static partial int ParsePayloadData(ArraySegment<byte> payloadData)
         {
-            return payloadData.ToInt16();
+            return PayloadMarshal.ReadInt16(payloadData);
         }
 
         private static partial byte[] FormatPayloadData(int data)
         {
             var result = new ArraySegment<byte>(new byte[2]);
-            result.WriteBytes((short)data);
+            PayloadMarshal.Write(result, (short)data);
             return result.Array;
         }
     }

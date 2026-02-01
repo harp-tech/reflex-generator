@@ -5,16 +5,16 @@ using Bonsai.Harp;
 
 namespace Interface.Tests;
 
-internal static partial class PayloadExtensions
+internal static partial class PayloadMarshal
 {
-    internal static HarpVersion ToHarpVersion(this ArraySegment<byte> segment)
+    internal static HarpVersion ReadHarpVersion(ArraySegment<byte> segment)
     {
         var major = segment.Array[segment.Offset];
         var minor = segment.Array[segment.Offset + 1];
         return new HarpVersion(major, minor);
     }
 
-    internal static void WriteBytes(this ArraySegment<byte> segment, HarpVersion value)
+    internal static void Write(ArraySegment<byte> segment, HarpVersion value)
     {
         segment.Array[segment.Offset] = (byte)value.Major.GetValueOrDefault();
         segment.Array[segment.Offset + 1] = (byte)value.Minor.GetValueOrDefault();
