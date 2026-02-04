@@ -38,6 +38,7 @@ public enum InterruptPriority
 
 public enum OutputPinMode
 {
+    Digital,
     WiredOr,
     WiredAnd,
     WiredOrPull,
@@ -109,6 +110,55 @@ public static partial class TemplateHelper
             case PayloadType.Float: return "float_t";
             default: throw new ArgumentOutOfRangeException(nameof(payloadType));
         }
+    }
+
+    public static string GetFirmwareSenseMode(TriggerMode trigger)
+    {
+        return trigger switch
+        {
+            TriggerMode.Rising => "SENSE_IO_EDGE_RISING",
+            TriggerMode.Falling => "SENSE_IO_EDGE_FALLING",
+            TriggerMode.Toggle => "SENSE_IO_EDGES_BOTH",
+            TriggerMode.Low => "SENSE_IO_LOW_LEVEL",
+            _ => throw new ArgumentOutOfRangeException(nameof(trigger))
+        };
+    }
+
+    public static string GetFirmwarePullMode(InputPinMode pinMode)
+    {
+        return pinMode switch
+        {
+            InputPinMode.PullUp => "PULL_IO_UP",
+            InputPinMode.PullDown => "PULL_IO_DOWN",
+            InputPinMode.TriState => "PULL_IO_TRISTATE",
+            InputPinMode.BusHolder => "PULL_IO_BUSHOLDER",
+            _ => throw new ArgumentOutOfRangeException(nameof(pinMode))
+        };
+    }
+
+    public static string GetFirmwareOutputIO(OutputPinMode pinMode)
+    {
+        return pinMode switch
+        {
+            OutputPinMode.Digital => "OUT_IO_DIGITAL",
+            OutputPinMode.WiredOr => "OUT_IO_WIREDOR",
+            OutputPinMode.WiredAnd => "OUT_IO_WIREDAND",
+            OutputPinMode.WiredOrPull => "OUT_IO_WIREDORPULL",
+            OutputPinMode.WiredAndPull => "OUT_IO_WIREDANDPULL",
+            _ => throw new ArgumentOutOfRangeException(nameof(pinMode))
+        };
+    }
+
+    public static string GetFirmwareInterruptPriority(InterruptPriority priority)
+    {
+        return priority switch
+        {
+            InterruptPriority.Off => "INT_LEVEL_OFF",
+            InterruptPriority.Low => "INT_LEVEL_LOW",
+            InterruptPriority.Medium => "INT_LEVEL_MED",
+            InterruptPriority.High => "INT_LEVEL_HIGH",
+            _ => throw new ArgumentOutOfRangeException(nameof(priority))
+        };
     }
 }
 

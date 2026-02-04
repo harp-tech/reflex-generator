@@ -5,7 +5,53 @@ DO3:
   port: PORTC
   pinNumber: 0
   direction: output
+  allowRead: true
+  initialState: low
   description: Output DO0
+DO2:
+  port: PORTD
+  pinNumber: 0
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Output DO1
+DO1:
+  port: PORTE
+  pinNumber: 0
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Output DO2
+DO0:
+  port: PORTF
+  pinNumber: 0
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Output DO3
+LED0:
+  port: PORTB
+  pinNumber: 6
+  direction: output
+  allowRead: true
+  initialState: low
+  invert: true
+  description: Output LED0
+LED1:
+  port: PORTB
+  pinNumber: 5
+  direction: output
+  allowRead: true
+  initialState: low
+  invert: true
+  description: Output LED1
+RGBS:
+  port: PORTC
+  pinNumber: 5
+  direction: output
+  allowRead: false
+  initialState: low
+  description: One wire LEDs
 POKE0_IR:
   port: PORTD
   pinNumber: 4
@@ -15,3 +61,108 @@ POKE0_IR:
   triggerMode: toggle
   pinMode: pullup
   description: Poke 0 infrared
+POKE0_IO:
+  port: PORTD
+  pinNumber: 5
+  direction: input
+  interruptNumber: 0
+  interruptPriority: "off"
+  triggerMode: toggle
+  pinMode: pullup
+  description: Poke 0 DIO
+POKE0_LED:
+  port: PORTD
+  pinNumber: 6
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Poke 0 digital output
+POKE0_VALVE:
+  port: PORTD
+  pinNumber: 7
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Poke 0 Valve
+POKE1_IR:
+  port: PORTE
+  pinNumber: 4
+  direction: input
+  interruptNumber: 0
+  interruptPriority: low
+  triggerMode: toggle
+  pinMode: pullup
+  description: Poke 1 infrared
+POKE1_IO:
+  port: PORTE
+  pinNumber: 5
+  direction: input
+  interruptNumber: 0
+  interruptPriority: "off"
+  triggerMode: toggle
+  pinMode: pullup
+  description: Poke 1 DIO
+POKE1_LED:
+  port: PORTE
+  pinNumber: 6
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Poke 1 digital output
+POKE1_VALVE:
+  port: PORTE
+  pinNumber: 7
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Poke 1 Valve
+POKE2_IR:
+  port: PORTF
+  pinNumber: 4
+  direction: input
+  interruptNumber: 0
+  interruptPriority: low
+  triggerMode: toggle
+  pinMode: pullup
+  description: Poke 2 infrared
+POKE2_IO:
+  port: PORTF
+  pinNumber: 5
+  direction: input
+  interruptNumber: 0
+  interruptPriority: "off"
+  triggerMode: toggle
+  pinMode: pullup
+  description: Poke 2 DIO
+POKE2_LED:
+  port: PORTF
+  pinNumber: 6
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Poke 2 digital output
+POKE2_VALVE:
+  port: PORTF
+  pinNumber: 7
+  direction: output
+  allowRead: true
+  initialState: low
+  description: Poke 2 Valve
+ADC1_AVAILABLE:
+  port: PORTJ
+  pinNumber: 0
+  direction: input
+  interruptNumber: 0
+  interruptPriority: "off"
+  triggerMode: toggle
+  pinMode: pulldown
+  description: ADC1 is available on hardware
+DI3:
+  port: PORTH
+  pinNumber: 0
+  direction: input
+  interruptNumber: 0
+  interruptPriority: low
+  triggerMode: toggle
+  pinMode: tristate
+  description: Input DI3

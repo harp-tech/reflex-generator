@@ -10,6 +10,7 @@ public sealed class FirmwareGeneratorTests
     CompiledTemplate appTemplate;
     CompiledTemplate appFuncsTemplate;
     CompiledTemplate appRegsTemplate;
+    CompiledTemplate appRegsImplTemplate;
     DirectoryInfo outputDirectory;
 
     [TestInitialize]
@@ -19,6 +20,7 @@ public sealed class FirmwareGeneratorTests
         var appTemplateContents = TestHelper.GetManifestResourceText("App.tt");
         var appFuncsTemplateContents = TestHelper.GetManifestResourceText("AppFuncs.tt");
         var appRegsTemplateContents = TestHelper.GetManifestResourceText("AppRegs.tt");
+        var appRegsImplTemplateContents = TestHelper.GetManifestResourceText("AppRegsImpl.tt");
         appTemplate = await generator.CompileTemplateAsync(appTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
@@ -26,6 +28,9 @@ public sealed class FirmwareGeneratorTests
         TestHelper.AssertNoGeneratorErrors(generator);
 
         appRegsTemplate = await generator.CompileTemplateAsync(appRegsTemplateContents);
+        TestHelper.AssertNoGeneratorErrors(generator);
+
+        appRegsImplTemplate = await generator.CompileTemplateAsync(appRegsImplTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
         outputDirectory = Directory.CreateDirectory("ActualOutput");
@@ -52,18 +57,24 @@ public sealed class FirmwareGeneratorTests
         var appFuncsCode = ProcessTemplate(appFuncsTemplate, metadataFileName);
         TestHelper.AssertNoGeneratorErrors(generator);
 
-        var appRegsCode = ProcessTemplate(appRegsTemplate, metadataFileName, Path.ChangeExtension(metadataFileName, ".ios.yml"));
+        var iosMetadataFileName = Path.ChangeExtension(metadataFileName, ".ios.yml");
+        var appRegsCode = ProcessTemplate(appRegsTemplate, metadataFileName, iosMetadataFileName);
+        TestHelper.AssertNoGeneratorErrors(generator);
+
+        var appRegsImplCode = ProcessTemplate(appRegsImplTemplate, metadataFileName, iosMetadataFileName);
         TestHelper.AssertNoGeneratorErrors(generator);
 
         var outputFileName = Path.GetFileNameWithoutExtension(metadataFileName);
         var appOutputFileName = $"{outputFileName}.app.h";
         var appFuncsOutputFileName = $"{outputFileName}.app_funcs.h";
         var appRegsOutputFileName = $"{outputFileName}.app_ios_and_regs.h";
+        var appRegsImplOutputFileName = $"{outputFileName}.app_ios_and_regs.c";
         try
         {
             TestHelper.AssertExpectedOutput(appCode, appOutputFileName);
             TestHelper.AssertExpectedOutput(appFuncsCode, appFuncsOutputFileName);
             TestHelper.AssertExpectedOutput(appRegsCode, appRegsOutputFileName);
+            TestHelper.AssertExpectedOutput(appRegsImplCode, appRegsImplOutputFileName);
         }
         catch (AssertFailedException)
         {
@@ -71,6 +82,7 @@ public sealed class FirmwareGeneratorTests
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appOutputFileName), appCode);
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appFuncsOutputFileName), appFuncsCode);
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appRegsOutputFileName), appRegsCode);
+            File.WriteAllText(Path.Combine(outputDirectory.FullName, appRegsImplOutputFileName), appRegsImplCode);
             throw;
         }
     }
