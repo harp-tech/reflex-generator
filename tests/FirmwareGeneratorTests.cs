@@ -12,6 +12,7 @@ public sealed class FirmwareGeneratorTests
     CompiledTemplate appFuncsImplTemplate;
     CompiledTemplate appRegsTemplate;
     CompiledTemplate appRegsImplTemplate;
+    CompiledTemplate interruptsTemplate;
     DirectoryInfo outputDirectory;
 
     [TestInitialize]
@@ -23,6 +24,7 @@ public sealed class FirmwareGeneratorTests
         var appFuncsImplTemplateContents = TestHelper.GetManifestResourceText("AppFuncsImpl.tt");
         var appRegsTemplateContents = TestHelper.GetManifestResourceText("AppRegs.tt");
         var appRegsImplTemplateContents = TestHelper.GetManifestResourceText("AppRegsImpl.tt");
+        var interruptsTemplateContents = TestHelper.GetManifestResourceText("Interrupts.tt");
         appTemplate = await generator.CompileTemplateAsync(appTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
@@ -36,6 +38,9 @@ public sealed class FirmwareGeneratorTests
         TestHelper.AssertNoGeneratorErrors(generator);
 
         appRegsImplTemplate = await generator.CompileTemplateAsync(appRegsImplTemplateContents);
+        TestHelper.AssertNoGeneratorErrors(generator);
+
+        interruptsTemplate = await generator.CompileTemplateAsync(interruptsTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
         outputDirectory = Directory.CreateDirectory("ActualOutput");
@@ -72,12 +77,16 @@ public sealed class FirmwareGeneratorTests
         var appRegsImplCode = ProcessTemplate(appRegsImplTemplate, metadataFileName, iosMetadataFileName);
         TestHelper.AssertNoGeneratorErrors(generator);
 
+        var interruptsCode = ProcessTemplate(interruptsTemplate, metadataFileName, iosMetadataFileName);
+        TestHelper.AssertNoGeneratorErrors(generator);
+
         var outputFileName = Path.GetFileNameWithoutExtension(metadataFileName);
         var appOutputFileName = $"{outputFileName}.app.h";
         var appFuncsOutputFileName = $"{outputFileName}.app_funcs.h";
         var appFuncsImplOutputFileName = $"{outputFileName}.app_funcs.c";
         var appRegsOutputFileName = $"{outputFileName}.app_ios_and_regs.h";
         var appRegsImplOutputFileName = $"{outputFileName}.app_ios_and_regs.c";
+        var interruptsOutputFileName = $"{outputFileName}.interrupts.c";
         try
         {
             TestHelper.AssertExpectedOutput(appCode, appOutputFileName);
@@ -85,6 +94,7 @@ public sealed class FirmwareGeneratorTests
             TestHelper.AssertExpectedOutput(appFuncsImplCode, appFuncsImplOutputFileName);
             TestHelper.AssertExpectedOutput(appRegsCode, appRegsOutputFileName);
             TestHelper.AssertExpectedOutput(appRegsImplCode, appRegsImplOutputFileName);
+            TestHelper.AssertExpectedOutput(interruptsCode, interruptsOutputFileName);
         }
         catch (AssertFailedException)
         {
@@ -94,6 +104,7 @@ public sealed class FirmwareGeneratorTests
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appFuncsImplOutputFileName), appFuncsImplCode);
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appRegsOutputFileName), appRegsCode);
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appRegsImplOutputFileName), appRegsImplCode);
+            File.WriteAllText(Path.Combine(outputDirectory.FullName, interruptsOutputFileName), interruptsCode);
             throw;
         }
     }
