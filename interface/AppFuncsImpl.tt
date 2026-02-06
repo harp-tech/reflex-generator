@@ -1,0 +1,61 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ parameter name="RegisterMetadataPath" type="string" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Firmware.tt" #><##>
+<#@ output extension=".h" #>
+#include "app_funcs.h"
+#include "app_ios_and_regs.h"
+#include "hwbp_core.h"
+<#
+var deviceMetadata = TemplateHelper.ReadDeviceMetadata(RegisterMetadataPath);
+#>
+
+
+/************************************************************************/
+/* Create pointers to functions                                         */
+/************************************************************************/
+extern AppRegs app_regs;
+
+void (*app_func_rd_pointer[])(void) = {
+<#
+foreach (var registerMetadata in deviceMetadata.Registers)
+{
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+#>
+	&app_read_REG_<#= registerName #>,
+<#
+}
+#>
+};
+
+bool (*app_func_wr_pointer[])(void*) = {
+<#
+foreach (var registerMetadata in deviceMetadata.Registers)
+{
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+#>
+	&app_write_REG_<#= registerName #>,
+<#
+}
+#>
+};
+<#
+foreach (var registerMetadata in deviceMetadata.Registers)
+{
+    var register = registerMetadata.Value;
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+	var allowWrite = (register.Access & RegisterAccess.Write) != 0;
+#>
+
+/************************************************************************/
+/* REG_<#= registerName #><#= new string(' ', 65 - registerName.Length) #>*/
+/************************************************************************/
+void app_read_REG_<#= registerName #>(void) {}
+bool app_write_REG_<#= registerName #>(void *a) { return <#= allowWrite.ToString().ToLowerInvariant() #>; }
+<#
+}
+#>
