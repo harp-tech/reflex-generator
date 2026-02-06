@@ -6,7 +6,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ include file="Firmware.tt" #><##>
-<#@ output extension=".h" #>
+<#@ output extension=".c" #>
 #include "app_funcs.h"
 #include "app_ios_and_regs.h"
 #include "hwbp_core.h"

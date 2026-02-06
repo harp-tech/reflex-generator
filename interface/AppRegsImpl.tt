@@ -7,7 +7,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ include file="Firmware.tt" #><##>
-<#@ output extension=".h" #>
+<#@ output extension=".c" #>
 #include <avr/io.h>
 #include "hwbp_core_types.h"
 #include "app_ios_and_regs.h"
