@@ -8,6 +8,7 @@ public sealed class FirmwareGeneratorTests
 {
     TemplateGenerator generator;
     CompiledTemplate appTemplate;
+    CompiledTemplate appImplTemplate;
     CompiledTemplate appFuncsTemplate;
     CompiledTemplate appFuncsImplTemplate;
     CompiledTemplate appRegsTemplate;
@@ -20,12 +21,16 @@ public sealed class FirmwareGeneratorTests
     {
         generator = new TestTemplateGenerator();
         var appTemplateContents = TestHelper.GetManifestResourceText("App.tt");
+        var appImplTemplateContents = TestHelper.GetManifestResourceText("AppImpl.tt");
         var appFuncsTemplateContents = TestHelper.GetManifestResourceText("AppFuncs.tt");
         var appFuncsImplTemplateContents = TestHelper.GetManifestResourceText("AppFuncsImpl.tt");
         var appRegsTemplateContents = TestHelper.GetManifestResourceText("AppRegs.tt");
         var appRegsImplTemplateContents = TestHelper.GetManifestResourceText("AppRegsImpl.tt");
         var interruptsTemplateContents = TestHelper.GetManifestResourceText("Interrupts.tt");
         appTemplate = await generator.CompileTemplateAsync(appTemplateContents);
+        TestHelper.AssertNoGeneratorErrors(generator);
+
+        appImplTemplate = await generator.CompileTemplateAsync(appImplTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
         appFuncsTemplate = await generator.CompileTemplateAsync(appFuncsTemplateContents);
@@ -64,6 +69,9 @@ public sealed class FirmwareGeneratorTests
         var appCode = ProcessTemplate(appTemplate, metadataFileName);
         TestHelper.AssertNoGeneratorErrors(generator);
 
+        var appImplCode = ProcessTemplate(appImplTemplate, metadataFileName);
+        TestHelper.AssertNoGeneratorErrors(generator);
+
         var appFuncsCode = ProcessTemplate(appFuncsTemplate, metadataFileName);
         TestHelper.AssertNoGeneratorErrors(generator);
 
@@ -82,6 +90,7 @@ public sealed class FirmwareGeneratorTests
 
         var outputFileName = Path.GetFileNameWithoutExtension(metadataFileName);
         var appOutputFileName = $"{outputFileName}.app.h";
+        var appImplOutputFileName = $"{outputFileName}.app.c";
         var appFuncsOutputFileName = $"{outputFileName}.app_funcs.h";
         var appFuncsImplOutputFileName = $"{outputFileName}.app_funcs.c";
         var appRegsOutputFileName = $"{outputFileName}.app_ios_and_regs.h";
@@ -90,6 +99,7 @@ public sealed class FirmwareGeneratorTests
         try
         {
             TestHelper.AssertExpectedOutput(appCode, appOutputFileName);
+            TestHelper.AssertExpectedOutput(appImplCode, appImplOutputFileName);
             TestHelper.AssertExpectedOutput(appFuncsCode, appFuncsOutputFileName);
             TestHelper.AssertExpectedOutput(appFuncsImplCode, appFuncsImplOutputFileName);
             TestHelper.AssertExpectedOutput(appRegsCode, appRegsOutputFileName);
@@ -100,6 +110,7 @@ public sealed class FirmwareGeneratorTests
         {
             outputDirectory.Create();
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appOutputFileName), appCode);
+            File.WriteAllText(Path.Combine(outputDirectory.FullName, appImplOutputFileName), appImplCode);
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appFuncsOutputFileName), appFuncsCode);
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appFuncsImplOutputFileName), appFuncsImplCode);
             File.WriteAllText(Path.Combine(outputDirectory.FullName, appRegsOutputFileName), appRegsCode);
