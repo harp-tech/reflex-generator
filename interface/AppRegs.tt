@@ -92,11 +92,13 @@ if (outputPins.Count > 0)
     {
         var pinInfo = pin.Value;
         var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var setFunc = pinInfo.Invert ? "clear_io" : "set_io";
+        var clrFunc = pinInfo.Invert ? "set_io" : "clear_io";
 #>
 
 /* <#= pinName #> */
-#define set_<#= pinName #> set_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
-#define clr_<#= pinName #> clear_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+#define set_<#= pinName #> <#= setFunc #>(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
+#define clr_<#= pinName #> <#= clrFunc #>(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
 #define tgl_<#= pinName #> toggle_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
 #define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)
 <#

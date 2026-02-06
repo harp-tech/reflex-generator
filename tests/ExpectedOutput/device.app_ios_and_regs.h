@@ -66,14 +66,14 @@ void init_ios(void);
 #define read_DO0 read_io(PORTF, 0)
 
 /* LED0 */
-#define set_LED0 set_io(PORTB, 6)
-#define clr_LED0 clear_io(PORTB, 6)
+#define set_LED0 clear_io(PORTB, 6)
+#define clr_LED0 set_io(PORTB, 6)
 #define tgl_LED0 toggle_io(PORTB, 6)
 #define read_LED0 read_io(PORTB, 6)
 
 /* LED1 */
-#define set_LED1 set_io(PORTB, 5)
-#define clr_LED1 clear_io(PORTB, 5)
+#define set_LED1 clear_io(PORTB, 5)
+#define clr_LED1 set_io(PORTB, 5)
 #define tgl_LED1 toggle_io(PORTB, 5)
 #define read_LED1 read_io(PORTB, 5)
 
