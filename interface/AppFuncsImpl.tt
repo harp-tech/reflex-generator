@@ -1,11 +1,13 @@
 ﻿<#@ template debug="false" hostspecific="true" language="C#" #>
 <#@ parameter name="RegisterMetadataPath" type="string" #>
 <#@ assembly name="System.Core" #>
+<#@ assembly name="Bonsai.Harp" #>
+<#@ assembly name="Harp.Generators" #>
+<#@ import namespace="Harp.Generators" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ include file="Firmware.tt" #><##>
 <#@ output extension=".c" #>
 #include "app_funcs.h"
 #include "app_ios_and_regs.h"

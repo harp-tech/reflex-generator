@@ -1,25 +1,24 @@
-﻿<#@ assembly name="System.Core" #>
-<#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Text" #>
-<#@ import namespace="System.Collections.Generic" #>
-<#@ assembly name="Bonsai.Harp.dll" #>
-<#@ assembly name="YamlDotNet.dll" #>
-<#@ import namespace="YamlDotNet" #>
-<#@ import namespace="YamlDotNet.Core" #>
-<#@ import namespace="YamlDotNet.Core.Events" #>
-<#@ import namespace="YamlDotNet.Serialization" #>
-<#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
-<#@ import namespace="Bonsai.Harp" #>
-<#+
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Bonsai.Harp;
+using YamlDotNet.Core;
+using YamlDotNet.Core.Events;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+
+namespace Harp.Generators;
+
 public class DeviceInfo
 {
     public string Device;
     public int WhoAmI;
     public HarpVersion FirmwareVersion;
     public HarpVersion HardwareTargets;
-    public Dictionary<string, RegisterInfo> Registers = new Dictionary<string, RegisterInfo>();
-    public Dictionary<string, BitMaskInfo> BitMasks = new Dictionary<string, BitMaskInfo>();
-    public Dictionary<string, GroupMaskInfo> GroupMasks = new Dictionary<string, GroupMaskInfo>();
+    public Dictionary<string, RegisterInfo> Registers = [];
+    public Dictionary<string, BitMaskInfo> BitMasks = [];
+    public Dictionary<string, GroupMaskInfo> GroupMasks = [];
 }
 
 [Flags]
@@ -88,7 +87,7 @@ public class PayloadMemberInfo
             MemberConverter.Payload => Length.GetValueOrDefault() > 0
                 ? $"ArraySegment<{TemplateHelper.GetInterfaceType(payloadType, 0)}>"
                 : TemplateHelper.GetInterfaceType(payloadType, 0),
-            MemberConverter.None => TemplateHelper.GetInterfaceType(payloadType, Length.GetValueOrDefault())
+            _ => TemplateHelper.GetInterfaceType(payloadType, Length.GetValueOrDefault())
         };
     }
 }
@@ -119,16 +118,14 @@ public static partial class TemplateHelper
 {
     public static DeviceInfo ReadDeviceMetadata(string path)
     {
-        using (var reader = new StreamReader(path))
-        {
-            var parser = new MergingParser(new Parser(reader));
-            var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .WithTypeConverter(RegisterAccessTypeConverter.Instance)
-                .WithTypeConverter(MaskValueTypeConverter.Instance)
-                .Build();
-            return deserializer.Deserialize<DeviceInfo>(parser);
-        }
+        using var reader = new StreamReader(path);
+        var parser = new MergingParser(new Parser(reader));
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithTypeConverter(RegisterAccessTypeConverter.Instance)
+            .WithTypeConverter(MaskValueTypeConverter.Instance)
+            .Build();
+        return deserializer.Deserialize<DeviceInfo>(parser);
     }
 
     public static string GetInterfaceType(string name, RegisterInfo register)
@@ -261,11 +258,11 @@ public static partial class TemplateHelper
     public static string GetConversionToInterfaceType(string interfaceType, string expression)
     {
         if (string.IsNullOrEmpty(interfaceType)) return expression;
-        switch (interfaceType)
+        return interfaceType switch
         {
-            case "bool": return $"{expression} != 0";
-            default: return $"({interfaceType}){expression}";
-        }
+            "bool" => $"{expression} != 0",
+            _ => $"({interfaceType}){expression}",
+        };
     }
 
     public static string GetConversionFromInterfaceType(
@@ -544,4 +541,3 @@ class RegisterAccessTypeConverter : IYamlTypeConverter
         throw new NotImplementedException();
     }
 }
-#>
