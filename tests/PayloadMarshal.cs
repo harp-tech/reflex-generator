@@ -3,7 +3,7 @@ using System;
 #pragma warning restore IDE0005
 using Bonsai.Harp;
 
-namespace Interface.Tests;
+namespace Harp.Generators.Tests;
 
 internal static partial class PayloadMarshal
 {

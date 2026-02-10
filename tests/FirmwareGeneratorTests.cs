@@ -1,7 +1,7 @@
 ﻿using Harp.Generators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Interface.Tests;
+namespace Harp.Generators.Tests;
 
 [TestClass]
 public sealed class FirmwareGeneratorTests

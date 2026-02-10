@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\interface\Harp.Generators.csproj" />
+    <ProjectReference Include="..\src\Harp.Generators.csproj" />
   </ItemGroup>
 
   <ItemGroup>

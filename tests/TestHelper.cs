@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.TextTemplating;
 
-namespace Interface.Tests;
+namespace Harp.Generators.Tests;
 
 static class TestHelper
 {

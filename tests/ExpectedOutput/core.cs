@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
 
-namespace Interface.Tests
+namespace Harp.Generators.Tests
 {
     /// <summary>
     /// Generates events and processes commands for the Tests device connected
@@ -1992,7 +1992,7 @@ namespace Interface.Tests
         /// <returns>A new message for the WhoAmI register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.WhoAmI.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.WhoAmI.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2012,7 +2012,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the WhoAmI register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.WhoAmI.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.WhoAmI.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2046,7 +2046,7 @@ namespace Interface.Tests
         /// <returns>A new message for the HardwareVersionHigh register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.HardwareVersionHigh.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.HardwareVersionHigh.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2066,7 +2066,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the HardwareVersionHigh register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.HardwareVersionHigh.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.HardwareVersionHigh.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2100,7 +2100,7 @@ namespace Interface.Tests
         /// <returns>A new message for the HardwareVersionLow register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.HardwareVersionLow.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.HardwareVersionLow.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2120,7 +2120,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the HardwareVersionLow register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.HardwareVersionLow.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.HardwareVersionLow.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2154,7 +2154,7 @@ namespace Interface.Tests
         /// <returns>A new message for the AssemblyVersion register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.AssemblyVersion.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.AssemblyVersion.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2174,7 +2174,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the AssemblyVersion register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.AssemblyVersion.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.AssemblyVersion.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2208,7 +2208,7 @@ namespace Interface.Tests
         /// <returns>A new message for the CoreVersionHigh register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.CoreVersionHigh.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.CoreVersionHigh.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2228,7 +2228,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the CoreVersionHigh register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.CoreVersionHigh.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.CoreVersionHigh.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2262,7 +2262,7 @@ namespace Interface.Tests
         /// <returns>A new message for the CoreVersionLow register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.CoreVersionLow.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.CoreVersionLow.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2282,7 +2282,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the CoreVersionLow register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.CoreVersionLow.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.CoreVersionLow.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2316,7 +2316,7 @@ namespace Interface.Tests
         /// <returns>A new message for the FirmwareVersionHigh register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.FirmwareVersionHigh.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.FirmwareVersionHigh.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2336,7 +2336,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the FirmwareVersionHigh register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.FirmwareVersionHigh.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.FirmwareVersionHigh.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2370,7 +2370,7 @@ namespace Interface.Tests
         /// <returns>A new message for the FirmwareVersionLow register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.FirmwareVersionLow.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.FirmwareVersionLow.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2390,7 +2390,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the FirmwareVersionLow register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.FirmwareVersionLow.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.FirmwareVersionLow.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2424,7 +2424,7 @@ namespace Interface.Tests
         /// <returns>A new message for the TimestampSeconds register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.TimestampSeconds.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.TimestampSeconds.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2444,7 +2444,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the TimestampSeconds register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.TimestampSeconds.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.TimestampSeconds.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2478,7 +2478,7 @@ namespace Interface.Tests
         /// <returns>A new message for the TimestampMicroseconds register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.TimestampMicroseconds.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.TimestampMicroseconds.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2498,7 +2498,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the TimestampMicroseconds register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.TimestampMicroseconds.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.TimestampMicroseconds.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2569,7 +2569,7 @@ namespace Interface.Tests
         /// <returns>A new message for the OperationControl register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.OperationControl.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.OperationControl.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2589,7 +2589,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the OperationControl register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.OperationControl.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.OperationControl.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2623,7 +2623,7 @@ namespace Interface.Tests
         /// <returns>A new message for the ResetDevice register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.ResetDevice.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.ResetDevice.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2643,7 +2643,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the ResetDevice register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.ResetDevice.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.ResetDevice.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2677,7 +2677,7 @@ namespace Interface.Tests
         /// <returns>A new message for the DeviceName register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.DeviceName.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.DeviceName.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2697,7 +2697,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the DeviceName register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.DeviceName.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.DeviceName.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2731,7 +2731,7 @@ namespace Interface.Tests
         /// <returns>A new message for the SerialNumber register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.SerialNumber.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.SerialNumber.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2751,7 +2751,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the SerialNumber register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.SerialNumber.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.SerialNumber.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
@@ -2785,7 +2785,7 @@ namespace Interface.Tests
         /// <returns>A new message for the ClockConfiguration register.</returns>
         public HarpMessage GetMessage(MessageType messageType)
         {
-            return Interface.Tests.ClockConfiguration.FromPayload(messageType, GetPayload());
+            return Harp.Generators.Tests.ClockConfiguration.FromPayload(messageType, GetPayload());
         }
     }
 
@@ -2805,7 +2805,7 @@ namespace Interface.Tests
         /// <returns>A new timestamped message for the ClockConfiguration register.</returns>
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
-            return Interface.Tests.ClockConfiguration.FromPayload(timestamp, messageType, GetPayload());
+            return Harp.Generators.Tests.ClockConfiguration.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
