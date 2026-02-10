@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Mono.TextTemplating;
 
@@ -108,6 +109,13 @@ public record struct FirmwareHeaders(string App, string AppFuncs, string AppRegs
     public const string AppFileName = "app.h";
     public const string AppFuncsFileName = "app_funcs.h";
     public const string AppRegsFileName = "app_ios_and_regs.h";
+
+    public readonly IEnumerable<KeyValuePair<string, string>> GetGeneratedFileContents()
+    {
+        yield return new(AppFileName, App);
+        yield return new(AppFuncsFileName, AppFuncs);
+        yield return new(AppRegsFileName, AppRegs);
+    }
 }
 
 public record struct FirmwareImplementation(string App, string AppFuncs, string AppRegs, string Interrupts)
@@ -116,4 +124,12 @@ public record struct FirmwareImplementation(string App, string AppFuncs, string 
     public const string AppFuncsFileName = "app_funcs.c";
     public const string AppRegsFileName = "app_ios_and_regs.c";
     public const string InterruptsFileName = "interrupts.c";
+
+    public readonly IEnumerable<KeyValuePair<string, string>> GetGeneratedFileContents()
+    {
+        yield return new(AppFileName, App);
+        yield return new(AppFuncsFileName, AppFuncs);
+        yield return new(AppRegsFileName, AppRegs);
+        yield return new(InterruptsFileName, Interrupts);
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Mono.TextTemplating;
 
@@ -50,4 +51,10 @@ public record struct InterfaceImplementation(string Device, string AsyncDevice)
 {
     public const string DeviceFileName = "Device.Generated.cs";
     public const string AsyncDeviceFileName = "AsyncDevice.Generated.cs";
+
+    public readonly IEnumerable<KeyValuePair<string, string>> GetGeneratedFileContents()
+    {
+        yield return new(DeviceFileName, Device);
+        yield return new(AsyncDeviceFileName, AsyncDevice);
+    }
 }
