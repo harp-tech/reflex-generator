@@ -2,8 +2,8 @@
 <#@ parameter name="RegisterMetadataPath" type="string" #>
 <#@ parameter name="IOMetadataPath" type="string" #>
 <#@ assembly name="System.Core" #>
-<#@ assembly name="Bonsai.Harp" #>
-<#@ assembly name="Harp.Generators" #>
+<#@ assembly name="Bonsai.Harp.dll" #>
+<#@ assembly name="Harp.Generators.dll" #>
 <#@ import namespace="Harp.Generators" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="System.Linq" #>

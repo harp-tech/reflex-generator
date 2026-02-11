@@ -2,8 +2,8 @@
 <#@ parameter name="Namespace" type="string" #>
 <#@ parameter name="MetadataPath" type="string" #>
 <#@ assembly name="System.Core" #>
-<#@ assembly name="Bonsai.Harp" #>
-<#@ assembly name="Harp.Generators" #>
+<#@ assembly name="Bonsai.Harp.dll" #>
+<#@ assembly name="Harp.Generators.dll" #>
 <#@ assembly name="YamlDotNet.dll" #>
 <#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
 <#@ import namespace="Harp.Generators" #>

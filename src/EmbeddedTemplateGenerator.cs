@@ -7,6 +7,11 @@ namespace Harp.Generators;
 
 internal class EmbeddedTemplateGenerator : TemplateGenerator
 {
+    public EmbeddedTemplateGenerator()
+    {
+        ReferencePaths.Add(Path.GetDirectoryName(GetType().Assembly.Location));
+    }
+
     static Stream GetManifestResourceStream(string name)
     {
         var qualifierType = typeof(EmbeddedTemplateGenerator);
@@ -47,10 +52,5 @@ internal class EmbeddedTemplateGenerator : TemplateGenerator
         content = GetManifestResourceText(requestFileName);
         location = string.Empty;
         return true;
-    }
-
-    protected override string ResolveAssemblyReference(string assemblyReference)
-    {
-        return base.ResolveAssemblyReference(assemblyReference);
     }
 }
