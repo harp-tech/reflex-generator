@@ -463,7 +463,7 @@ public static partial class TemplateHelper
 
 class MaskValueTypeConverter : IYamlTypeConverter
 {
-    public static MaskValueTypeConverter Instance = new MaskValueTypeConverter();
+    public static readonly MaskValueTypeConverter Instance = new();
     static readonly IDeserializer ValueDeserializer = new Deserializer();
 
     public bool Accepts(Type type)
@@ -510,7 +510,7 @@ class MaskValueTypeConverter : IYamlTypeConverter
 
 class RegisterAccessTypeConverter : IYamlTypeConverter
 {
-    public static RegisterAccessTypeConverter Instance = new RegisterAccessTypeConverter();
+    public static readonly RegisterAccessTypeConverter Instance = new();
 
     public bool Accepts(Type type)
     {

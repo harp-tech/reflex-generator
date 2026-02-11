@@ -221,7 +221,7 @@ class PortPinInfoTypeConverter(IDeserializer deserializer) : IYamlTypeConverter
 
 public class FirmwareNamingConvention : INamingConvention
 {
-    public static FirmwareNamingConvention Instance = new FirmwareNamingConvention();
+    public static readonly FirmwareNamingConvention Instance = new();
 
     public string Apply(string value)
     {
@@ -255,9 +255,9 @@ public class FirmwareNamingConvention : INamingConvention
 
 public class FirmwareGroupMaskNamingConvention : INamingConvention
 {
-    public static FirmwareGroupMaskNamingConvention Instance = new FirmwareGroupMaskNamingConvention();
-    static readonly string[] TrimSuffixes = new[] { "StateConfiguration", "Configuration" };
-    static readonly Dictionary<string, string> TokenSubstitutions = new Dictionary<string, string>
+    public static readonly FirmwareGroupMaskNamingConvention Instance = new();
+    static readonly string[] TrimSuffixes = ["StateConfiguration", "Configuration"];
+    static readonly Dictionary<string, string> TokenSubstitutions = new()
     {
         { "DIGITAL_INPUT", "DI" },
         { "DIGITAL_OUTPUT", "DO" }
