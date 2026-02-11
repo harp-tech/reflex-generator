@@ -25,7 +25,7 @@ public sealed class InterfaceGeneratorTests
         asyncDeviceTemplate = await generator.CompileTemplateAsync(asyncDeviceTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
-        outputDirectory = Directory.CreateDirectory("ActualOutput");
+        outputDirectory = Directory.CreateDirectory("InterfaceOutput");
         try { Directory.Delete(outputDirectory.FullName, recursive: true); }
         catch { } // best effort
     }

@@ -48,7 +48,7 @@ public sealed class FirmwareGeneratorTests
         interruptsTemplate = await generator.CompileTemplateAsync(interruptsTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
-        outputDirectory = Directory.CreateDirectory("ActualOutput");
+        outputDirectory = Directory.CreateDirectory("FirmwareOutput");
         try { Directory.Delete(outputDirectory.FullName, recursive: true); }
         catch { } // best effort
     }
