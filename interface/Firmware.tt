@@ -79,13 +79,11 @@ public static partial class TemplateHelper
 {
     public static Dictionary<string, PortPinInfo> ReadPortPinMetadata(string path)
     {
-        using (var reader = new StreamReader(path))
-        {
-            var deserializerBuilder = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance);
-            var portPinConverter = new PortPinInfoTypeConverter(deserializerBuilder.Build());
-            var deserializer = deserializerBuilder.WithTypeConverter(portPinConverter).Build();
-            return deserializer.Deserialize<Dictionary<string, PortPinInfo>>(reader);
-        }
+        using var reader = new StreamReader(path);
+        var deserializerBuilder = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance);
+        var portPinConverter = new PortPinInfoTypeConverter(deserializerBuilder.Build());
+        var deserializer = deserializerBuilder.WithTypeConverter(portPinConverter).Build();
+        return deserializer.Deserialize<Dictionary<string, PortPinInfo>>(reader);
     }
 
     public static IEnumerable<KeyValuePair<string, T>> GetPortPinsOfType<T>(IDictionary<string, PortPinInfo> portPins) where T : PortPinInfo
@@ -97,19 +95,19 @@ public static partial class TemplateHelper
 
     public static string GetFirmwareType(PayloadType payloadType)
     {
-        switch (payloadType)
+        return payloadType switch
         {
-            case PayloadType.U8: return "uint8_t";
-            case PayloadType.S8: return "int8_t";
-            case PayloadType.U16: return "uint16_t";
-            case PayloadType.S16: return "int16_t";
-            case PayloadType.U32: return "uint32_t";
-            case PayloadType.S32: return "int32_t";
-            case PayloadType.U64: return "uint64_t";
-            case PayloadType.S64: return "int64_t";
-            case PayloadType.Float: return "float_t";
-            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
-        }
+            PayloadType.U8 => "uint8_t",
+            PayloadType.S8 => "int8_t",
+            PayloadType.U16 => "uint16_t",
+            PayloadType.S16 => "int16_t",
+            PayloadType.U32 => "uint32_t",
+            PayloadType.S32 => "int32_t",
+            PayloadType.U64 => "uint64_t",
+            PayloadType.S64 => "int64_t",
+            PayloadType.Float => "float_t",
+            _ => throw new ArgumentOutOfRangeException(nameof(payloadType)),
+        };
     }
 
     public static string GetFirmwareSenseMode(TriggerMode trigger)
@@ -162,17 +160,12 @@ public static partial class TemplateHelper
     }
 }
 
-class PortPinInfoTypeConverter : IYamlTypeConverter
+class PortPinInfoTypeConverter(IDeserializer deserializer) : IYamlTypeConverter
 {
     static readonly string DirectionProperty = CamelCaseNamingConvention.Instance.Apply(nameof(PortPinInfo.Direction));
     static readonly ISerializer DefaultSerializer = new Serializer();
 
-    public PortPinInfoTypeConverter(IDeserializer deserializer)
-    {
-        Deserializer = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
-    }
-
-    public IDeserializer Deserializer { get; }
+    public IDeserializer Deserializer { get; } = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
 
     public bool Accepts(Type type)
     {
@@ -184,20 +177,13 @@ class PortPinInfoTypeConverter : IYamlTypeConverter
         var portPin = Deserializer.Deserialize<Dictionary<object, object>>(parser);
         if (portPin.TryGetValue(DirectionProperty, out object value))
         {
-            Type portPinType;
             var pinDirection = PascalCaseNamingConvention.Instance.Apply((string)value);
-            switch (pinDirection)
+            Type portPinType = pinDirection switch
             {
-                case nameof(PinDirection.Input):
-                    portPinType = typeof(InputPinInfo);
-                    break;
-                case nameof(PinDirection.Output):
-                    portPinType = typeof(OutputPinInfo);
-                    break;
-                default:
-                    throw new YamlException($"Invalid value for '{DirectionProperty}' when deserializing type '{typeof(PortPinInfo)}'");
-            }
-
+                nameof(PinDirection.Input) => typeof(InputPinInfo),
+                nameof(PinDirection.Output) => typeof(OutputPinInfo),
+                _ => throw new YamlException($"Invalid value for '{DirectionProperty}' when deserializing type '{typeof(PortPinInfo)}'"),
+            };
             var yaml = DefaultSerializer.Serialize(portPin);
             return Deserializer.Deserialize(yaml, portPinType);
         }
