@@ -221,11 +221,12 @@ class PortPinInfoTypeConverter(IDeserializer deserializer) : IYamlTypeConverter
 
 public class FirmwareNamingConvention : INamingConvention
 {
+    private const char Separator = '_';
+
     public static readonly FirmwareNamingConvention Instance = new();
 
     public string Apply(string value)
     {
-        const string Separator = "_";
         var startIndex = 0;
         while (startIndex < value.Length && (char.IsUpper(value[startIndex]) || !char.IsLetter(value[startIndex])))
         {
@@ -249,7 +250,13 @@ public class FirmwareNamingConvention : INamingConvention
 
     public string Reverse(string value)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        var words = Array.ConvertAll(
+            value.Split(Separator),
+            word => PascalCaseNamingConvention.Instance.Apply(word.ToLowerInvariant()));
+        return string.Concat(words);
     }
 }
 
