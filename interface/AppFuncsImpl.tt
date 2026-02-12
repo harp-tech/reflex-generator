@@ -52,14 +52,40 @@ foreach (var registerMetadata in deviceRegisters)
 {
     var register = registerMetadata.Value;
     var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var firmwareType = TemplateHelper.GetFirmwareType(register.Type);
 	var allowWrite = (register.Access & RegisterAccess.Write) != 0;
+    var isArrayRegister = register.Length > 0;
+    var arrayAccess = isArrayRegister ? "[0]" : string.Empty;
+    var arrayPointer = isArrayRegister ? "*" : string.Empty;
+    var dereferenceValue = !isArrayRegister ? "*" : string.Empty;
 #>
 
 /************************************************************************/
 /* REG_<#= registerName #><#= new string(' ', 65 - registerName.Length) #>*/
 /************************************************************************/
-void app_read_REG_<#= registerName #>(void) {}
-bool app_write_REG_<#= registerName #>(void *a) { return <#= allowWrite.ToString().ToLowerInvariant() #>; }
 <#
+    if (isArrayRegister)
+        WriteLine($"// This register is an array with {register.Length} positions");
+#>
+void app_read_REG_<#= registerName #>(void)
+{
+	//app_regs.REG_<#= registerName #><#= arrayAccess #> = 0;
+
+}
+
+bool app_write_REG_<#= registerName #>(void *a)<#
+    if (!allowWrite)
+        WriteLine(" { return false; }");
+    else
+    {
+        WriteLine(string.Empty); #>
+{
+	<#= firmwareType #> <#= arrayPointer #>reg = <#= dereferenceValue #>((<#= firmwareType #>*)a);
+
+	app_regs.REG_<#= registerName #><#= arrayAccess #> = reg<#= arrayAccess #>;
+    return true;
+}
+<#
+    }
 }
 #>
