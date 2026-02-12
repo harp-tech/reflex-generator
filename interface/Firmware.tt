@@ -235,7 +235,7 @@ class FirmwareNamingConvention : INamingConvention
             var length = match.Index - previousMatch;
             previousMatch = match.Index;
             var character = match.Groups["char"].Value.ToLowerInvariant();
-            var separate = length != 1 || previousLength == 1;
+            var separate = length != 1 || (match.Index + 1) < value.Length && char.IsLower(value[match.Index + 1]);
             previousLength = length;
             return separate ? Separator + character : character;
         });

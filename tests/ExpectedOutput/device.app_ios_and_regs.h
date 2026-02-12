@@ -133,6 +133,9 @@ typedef struct
     uint8_t REG_CUSTOM_MEMBER_CONVERTER[3];
     uint8_t REG_BITMASK_SPLITTER;
     int32_t REG_COUNTER0;
+    uint8_t REG_PORT_DIO_SET;
+    uint16_t REG_PULSE_DO_PORT0;
+    uint16_t REG_PULSE_DO0;
 } AppRegs;
 
 /************************************************************************/
@@ -148,6 +151,9 @@ typedef struct
 #define ADD_REG_CUSTOM_MEMBER_CONVERTER    38 // U8     
 #define ADD_REG_BITMASK_SPLITTER           39 // U8     
 #define ADD_REG_COUNTER0                   40 // I32    
+#define ADD_REG_PORT_DIO_SET               41 // U8     
+#define ADD_REG_PULSE_DO_PORT0             42 // U16    
+#define ADD_REG_PULSE_DO0                  43 // U16    
 
 /************************************************************************/
 /* Tests registers' memory limits                                       */
@@ -157,12 +163,15 @@ typedef struct
 /************************************************************************/
 /* Memory limits */
 #define APP_REGS_ADD_MIN                    0x20
-#define APP_REGS_ADD_MAX                    0x28
-#define APP_NBYTES_OF_REG_BANK              106
+#define APP_REGS_ADD_MAX                    0x2B
+#define APP_NBYTES_OF_REG_BANK              111
 
 /************************************************************************/
 /* Registers' bits                                                      */
 /************************************************************************/
+#define B_DIO0              (1<<0)       // 
+#define B_DIO1              (1<<1)       // 
+#define B_DIO2              (1<<2)       // 
 #define MSK_PWM_PORT_SEL    (7<<0)       // 
 #define GM_PWM_PORT_PWM0    (1<<0)       // 
 #define GM_PWM_PORT_PWM1    (2<<0)       // 

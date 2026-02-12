@@ -45,7 +45,10 @@ namespace Interface.Tests
             { 37, typeof(CustomRawPayload) },
             { 38, typeof(CustomMemberConverter) },
             { 39, typeof(BitmaskSplitter) },
-            { 40, typeof(Counter0) }
+            { 40, typeof(Counter0) },
+            { 41, typeof(PortDIOSet) },
+            { 42, typeof(PulseDOPort0) },
+            { 43, typeof(PulseDO0) }
         };
 
         /// <summary>
@@ -269,6 +272,9 @@ namespace Interface.Tests
     /// <seealso cref="CustomMemberConverter"/>
     /// <seealso cref="BitmaskSplitter"/>
     /// <seealso cref="Counter0"/>
+    /// <seealso cref="PortDIOSet"/>
+    /// <seealso cref="PulseDOPort0"/>
+    /// <seealso cref="PulseDO0"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -278,6 +284,9 @@ namespace Interface.Tests
     [XmlInclude(typeof(CustomMemberConverter))]
     [XmlInclude(typeof(BitmaskSplitter))]
     [XmlInclude(typeof(Counter0))]
+    [XmlInclude(typeof(PortDIOSet))]
+    [XmlInclude(typeof(PulseDOPort0))]
+    [XmlInclude(typeof(PulseDO0))]
     [Description("Filters register-specific messages reported by the Tests device.")]
     public class FilterRegister : FilterRegisterBuilder, INamedElement
     {
@@ -308,6 +317,9 @@ namespace Interface.Tests
     /// <seealso cref="CustomMemberConverter"/>
     /// <seealso cref="BitmaskSplitter"/>
     /// <seealso cref="Counter0"/>
+    /// <seealso cref="PortDIOSet"/>
+    /// <seealso cref="PulseDOPort0"/>
+    /// <seealso cref="PulseDO0"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -317,6 +329,9 @@ namespace Interface.Tests
     [XmlInclude(typeof(CustomMemberConverter))]
     [XmlInclude(typeof(BitmaskSplitter))]
     [XmlInclude(typeof(Counter0))]
+    [XmlInclude(typeof(PortDIOSet))]
+    [XmlInclude(typeof(PulseDOPort0))]
+    [XmlInclude(typeof(PulseDO0))]
     [XmlInclude(typeof(TimestampedDigitalInputs))]
     [XmlInclude(typeof(TimestampedAnalogData))]
     [XmlInclude(typeof(TimestampedComplexConfiguration))]
@@ -326,6 +341,9 @@ namespace Interface.Tests
     [XmlInclude(typeof(TimestampedCustomMemberConverter))]
     [XmlInclude(typeof(TimestampedBitmaskSplitter))]
     [XmlInclude(typeof(TimestampedCounter0))]
+    [XmlInclude(typeof(TimestampedPortDIOSet))]
+    [XmlInclude(typeof(TimestampedPulseDOPort0))]
+    [XmlInclude(typeof(TimestampedPulseDO0))]
     [Description("Filters and selects specific messages reported by the Tests device.")]
     public partial class Parse : ParseBuilder, INamedElement
     {
@@ -353,6 +371,9 @@ namespace Interface.Tests
     /// <seealso cref="CustomMemberConverter"/>
     /// <seealso cref="BitmaskSplitter"/>
     /// <seealso cref="Counter0"/>
+    /// <seealso cref="PortDIOSet"/>
+    /// <seealso cref="PulseDOPort0"/>
+    /// <seealso cref="PulseDO0"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -362,6 +383,9 @@ namespace Interface.Tests
     [XmlInclude(typeof(CustomMemberConverter))]
     [XmlInclude(typeof(BitmaskSplitter))]
     [XmlInclude(typeof(Counter0))]
+    [XmlInclude(typeof(PortDIOSet))]
+    [XmlInclude(typeof(PulseDOPort0))]
+    [XmlInclude(typeof(PulseDO0))]
     [Description("Formats a sequence of values as specific Tests register messages.")]
     public partial class Format : FormatBuilder, INamedElement
     {
@@ -1364,6 +1388,295 @@ namespace Interface.Tests
     }
 
     /// <summary>
+    /// Represents a register that manipulates messages from register PortDIOSet.
+    /// </summary>
+    [Description("")]
+    public partial class PortDIOSet
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="PortDIOSet"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 41;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="PortDIOSet"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U8;
+
+        /// <summary>
+        /// Represents the length of the <see cref="PortDIOSet"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 1;
+
+        /// <summary>
+        /// Returns the payload data for <see cref="PortDIOSet"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static PortDigitalIOS GetPayload(HarpMessage message)
+        {
+            return (PortDigitalIOS)message.GetPayloadByte();
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="PortDIOSet"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<PortDigitalIOS> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayloadByte();
+            return Timestamped.Create((PortDigitalIOS)payload.Value, payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="PortDIOSet"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="PortDIOSet"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, PortDigitalIOS value)
+        {
+            return HarpMessage.FromByte(Address, messageType, (byte)value);
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="PortDIOSet"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="PortDIOSet"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, PortDigitalIOS value)
+        {
+            return HarpMessage.FromByte(Address, timestamp, messageType, (byte)value);
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// PortDIOSet register.
+    /// </summary>
+    /// <seealso cref="PortDIOSet"/>
+    [Description("Filters and selects timestamped messages from the PortDIOSet register.")]
+    public partial class TimestampedPortDIOSet
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="PortDIOSet"/> register. This field is constant.
+        /// </summary>
+        public const int Address = PortDIOSet.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="PortDIOSet"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<PortDigitalIOS> GetPayload(HarpMessage message)
+        {
+            return PortDIOSet.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register PulseDOPort0.
+    /// </summary>
+    [Description("")]
+    public partial class PulseDOPort0
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="PulseDOPort0"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 42;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="PulseDOPort0"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U16;
+
+        /// <summary>
+        /// Represents the length of the <see cref="PulseDOPort0"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 1;
+
+        /// <summary>
+        /// Returns the payload data for <see cref="PulseDOPort0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static ushort GetPayload(HarpMessage message)
+        {
+            return message.GetPayloadUInt16();
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="PulseDOPort0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ushort> GetTimestampedPayload(HarpMessage message)
+        {
+            return message.GetTimestampedPayloadUInt16();
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="PulseDOPort0"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="PulseDOPort0"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, ushort value)
+        {
+            return HarpMessage.FromUInt16(Address, messageType, value);
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="PulseDOPort0"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="PulseDOPort0"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, ushort value)
+        {
+            return HarpMessage.FromUInt16(Address, timestamp, messageType, value);
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// PulseDOPort0 register.
+    /// </summary>
+    /// <seealso cref="PulseDOPort0"/>
+    [Description("Filters and selects timestamped messages from the PulseDOPort0 register.")]
+    public partial class TimestampedPulseDOPort0
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="PulseDOPort0"/> register. This field is constant.
+        /// </summary>
+        public const int Address = PulseDOPort0.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="PulseDOPort0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ushort> GetPayload(HarpMessage message)
+        {
+            return PulseDOPort0.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register PulseDO0.
+    /// </summary>
+    [Description("")]
+    public partial class PulseDO0
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="PulseDO0"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 43;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="PulseDO0"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U16;
+
+        /// <summary>
+        /// Represents the length of the <see cref="PulseDO0"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 1;
+
+        /// <summary>
+        /// Returns the payload data for <see cref="PulseDO0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static ushort GetPayload(HarpMessage message)
+        {
+            return message.GetPayloadUInt16();
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="PulseDO0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ushort> GetTimestampedPayload(HarpMessage message)
+        {
+            return message.GetTimestampedPayloadUInt16();
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="PulseDO0"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="PulseDO0"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, ushort value)
+        {
+            return HarpMessage.FromUInt16(Address, messageType, value);
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="PulseDO0"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="PulseDO0"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, ushort value)
+        {
+            return HarpMessage.FromUInt16(Address, timestamp, messageType, value);
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// PulseDO0 register.
+    /// </summary>
+    /// <seealso cref="PulseDO0"/>
+    [Description("Filters and selects timestamped messages from the PulseDO0 register.")]
+    public partial class TimestampedPulseDO0
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="PulseDO0"/> register. This field is constant.
+        /// </summary>
+        public const int Address = PulseDO0.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="PulseDO0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ushort> GetPayload(HarpMessage message)
+        {
+            return PulseDO0.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
     /// Represents an operator which creates standard message payloads for the
     /// Tests device.
     /// </summary>
@@ -1376,6 +1689,9 @@ namespace Interface.Tests
     /// <seealso cref="CreateCustomMemberConverterPayload"/>
     /// <seealso cref="CreateBitmaskSplitterPayload"/>
     /// <seealso cref="CreateCounter0Payload"/>
+    /// <seealso cref="CreatePortDIOSetPayload"/>
+    /// <seealso cref="CreatePulseDOPort0Payload"/>
+    /// <seealso cref="CreatePulseDO0Payload"/>
     [XmlInclude(typeof(CreateDigitalInputsPayload))]
     [XmlInclude(typeof(CreateAnalogDataPayload))]
     [XmlInclude(typeof(CreateComplexConfigurationPayload))]
@@ -1385,6 +1701,9 @@ namespace Interface.Tests
     [XmlInclude(typeof(CreateCustomMemberConverterPayload))]
     [XmlInclude(typeof(CreateBitmaskSplitterPayload))]
     [XmlInclude(typeof(CreateCounter0Payload))]
+    [XmlInclude(typeof(CreatePortDIOSetPayload))]
+    [XmlInclude(typeof(CreatePulseDOPort0Payload))]
+    [XmlInclude(typeof(CreatePulseDO0Payload))]
     [XmlInclude(typeof(CreateTimestampedDigitalInputsPayload))]
     [XmlInclude(typeof(CreateTimestampedAnalogDataPayload))]
     [XmlInclude(typeof(CreateTimestampedComplexConfigurationPayload))]
@@ -1394,6 +1713,9 @@ namespace Interface.Tests
     [XmlInclude(typeof(CreateTimestampedCustomMemberConverterPayload))]
     [XmlInclude(typeof(CreateTimestampedBitmaskSplitterPayload))]
     [XmlInclude(typeof(CreateTimestampedCounter0Payload))]
+    [XmlInclude(typeof(CreateTimestampedPortDIOSetPayload))]
+    [XmlInclude(typeof(CreateTimestampedPulseDOPort0Payload))]
+    [XmlInclude(typeof(CreateTimestampedPulseDO0Payload))]
     [Description("Creates standard message payloads for the Tests device.")]
     public partial class CreateMessage : CreateMessageBuilder, INamedElement
     {
@@ -1996,6 +2318,172 @@ namespace Interface.Tests
     }
 
     /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register PortDIOSet.
+    /// </summary>
+    [DisplayName("PortDIOSetPayload")]
+    [Description("Creates a message payload for register PortDIOSet.")]
+    public partial class CreatePortDIOSetPayload
+    {
+        /// <summary>
+        /// Gets or sets the value for register PortDIOSet.
+        /// </summary>
+        [Description("The value for register PortDIOSet.")]
+        public PortDigitalIOS PortDIOSet { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the PortDIOSet register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public PortDigitalIOS GetPayload()
+        {
+            return PortDIOSet;
+        }
+
+        /// <summary>
+        /// Creates a message for register PortDIOSet.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the PortDIOSet register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.PortDIOSet.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register PortDIOSet.
+    /// </summary>
+    [DisplayName("TimestampedPortDIOSetPayload")]
+    [Description("Creates a timestamped message payload for register PortDIOSet.")]
+    public partial class CreateTimestampedPortDIOSetPayload : CreatePortDIOSetPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register PortDIOSet.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the PortDIOSet register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.PortDIOSet.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register PulseDOPort0.
+    /// </summary>
+    [DisplayName("PulseDOPort0Payload")]
+    [Description("Creates a message payload for register PulseDOPort0.")]
+    public partial class CreatePulseDOPort0Payload
+    {
+        /// <summary>
+        /// Gets or sets the value for register PulseDOPort0.
+        /// </summary>
+        [Range(min: 1, max: long.MaxValue)]
+        [Editor(DesignTypes.NumericUpDownEditor, DesignTypes.UITypeEditor)]
+        [Description("The value for register PulseDOPort0.")]
+        public ushort PulseDOPort0 { get; set; } = 1;
+
+        /// <summary>
+        /// Creates a message payload for the PulseDOPort0 register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public ushort GetPayload()
+        {
+            return PulseDOPort0;
+        }
+
+        /// <summary>
+        /// Creates a message for register PulseDOPort0.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the PulseDOPort0 register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.PulseDOPort0.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register PulseDOPort0.
+    /// </summary>
+    [DisplayName("TimestampedPulseDOPort0Payload")]
+    [Description("Creates a timestamped message payload for register PulseDOPort0.")]
+    public partial class CreateTimestampedPulseDOPort0Payload : CreatePulseDOPort0Payload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register PulseDOPort0.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the PulseDOPort0 register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.PulseDOPort0.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register PulseDO0.
+    /// </summary>
+    [DisplayName("PulseDO0Payload")]
+    [Description("Creates a message payload for register PulseDO0.")]
+    public partial class CreatePulseDO0Payload
+    {
+        /// <summary>
+        /// Gets or sets the value for register PulseDO0.
+        /// </summary>
+        [Range(min: 1, max: long.MaxValue)]
+        [Editor(DesignTypes.NumericUpDownEditor, DesignTypes.UITypeEditor)]
+        [Description("The value for register PulseDO0.")]
+        public ushort PulseDO0 { get; set; } = 1;
+
+        /// <summary>
+        /// Creates a message payload for the PulseDO0 register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public ushort GetPayload()
+        {
+            return PulseDO0;
+        }
+
+        /// <summary>
+        /// Creates a message for register PulseDO0.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the PulseDO0 register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.PulseDO0.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register PulseDO0.
+    /// </summary>
+    [DisplayName("TimestampedPulseDO0Payload")]
+    [Description("Creates a timestamped message payload for register PulseDO0.")]
+    public partial class CreateTimestampedPulseDO0Payload : CreatePulseDO0Payload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register PulseDO0.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the PulseDO0 register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.PulseDO0.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
     /// Represents the payload of the AnalogData register.
     /// </summary>
     public struct AnalogDataPayload
@@ -2290,6 +2778,18 @@ namespace Interface.Tests
                 "High = " + High + " " +
             "}";
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Flags]
+    public enum PortDigitalIOS : byte
+    {
+        None = 0x0,
+        DIO0 = 0x1,
+        DIO1 = 0x2,
+        DIO2 = 0x4
     }
 
     /// <summary>

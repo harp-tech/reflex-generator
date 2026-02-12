@@ -17,7 +17,10 @@ void (*app_func_rd_pointer[])(void) = {
 	&app_read_REG_CUSTOM_RAW_PAYLOAD,
 	&app_read_REG_CUSTOM_MEMBER_CONVERTER,
 	&app_read_REG_BITMASK_SPLITTER,
-	&app_read_REG_COUNTER0
+	&app_read_REG_COUNTER0,
+	&app_read_REG_PORT_DIO_SET,
+	&app_read_REG_PULSE_DO_PORT0,
+	&app_read_REG_PULSE_DO0
 };
 
 bool (*app_func_wr_pointer[])(void*) = {
@@ -29,7 +32,10 @@ bool (*app_func_wr_pointer[])(void*) = {
 	&app_write_REG_CUSTOM_RAW_PAYLOAD,
 	&app_write_REG_CUSTOM_MEMBER_CONVERTER,
 	&app_write_REG_BITMASK_SPLITTER,
-	&app_write_REG_COUNTER0
+	&app_write_REG_COUNTER0,
+	&app_write_REG_PORT_DIO_SET,
+	&app_write_REG_PULSE_DO_PORT0,
+	&app_write_REG_PULSE_DO0
 };
 
 /************************************************************************/
@@ -85,3 +91,21 @@ bool app_write_REG_BITMASK_SPLITTER(void *a) { return true; }
 /************************************************************************/
 void app_read_REG_COUNTER0(void) {}
 bool app_write_REG_COUNTER0(void *a) { return false; }
+
+/************************************************************************/
+/* REG_PORT_DIO_SET                                                     */
+/************************************************************************/
+void app_read_REG_PORT_DIO_SET(void) {}
+bool app_write_REG_PORT_DIO_SET(void *a) { return true; }
+
+/************************************************************************/
+/* REG_PULSE_DO_PORT0                                                   */
+/************************************************************************/
+void app_read_REG_PULSE_DO_PORT0(void) {}
+bool app_write_REG_PULSE_DO_PORT0(void *a) { return true; }
+
+/************************************************************************/
+/* REG_PULSE_DO0                                                        */
+/************************************************************************/
+void app_read_REG_PULSE_DO0(void) {}
+bool app_write_REG_PULSE_DO0(void *a) { return true; }

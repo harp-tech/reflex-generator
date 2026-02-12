@@ -117,9 +117,28 @@ registers:
     address: 40
     type: S32
     access: Event
+  PortDIOSet:
+    address: 41
+    type: U8
+    access: Write
+    maskType: PortDigitalIOS
+  PulseDOPort0: &pulseDO
+    address: 42
+    type: U16
+    access: Write
+    minValue: 1
+  PulseDO0:
+    <<: *pulseDO
+    address: 43
 groupMasks:
   PwmPort:
     values:
       Pwm0: 0x1
       Pwm1: 0x2
       Pwm2: 0x4
+bitMasks:
+  PortDigitalIOS:
+    bits:
+      DIO0: 0x1
+      DIO1: 0x2
+      DIO2: 0x4
