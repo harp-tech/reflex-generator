@@ -180,8 +180,9 @@ foreach (var bitMask in deviceMetadata.BitMasks)
         var fieldName = FirmwareNamingConvention.Instance.Apply(bitField.Key);
         var fieldNamePadding = new string(' ', maxBitMemberNameLength - fieldName.Length + 6);
         var bitShift = (int)Math.Log(fieldInfo.Value, 2);
+        var bitShiftPadding = new string(' ', 8 - bitShift.ToString().Length);
 #>
-#define B_<#= fieldName #><#= fieldNamePadding #>(1<<<#= bitShift #>)       // <#= fieldInfo.Description ?? string.Empty #>
+#define B_<#= fieldName #><#= fieldNamePadding #>(1<<<#= bitShift #>)<#= bitShiftPadding #>// <#= fieldInfo.Description ?? string.Empty #>
 <#
     }
 }
@@ -190,11 +191,12 @@ foreach (var bitMask in deviceMetadata.BitMasks)
 foreach (var groupMask in deviceMetadata.GroupMasks)
 {
     var mask = groupMask.Value;
-    var maskSelect = TemplateHelper.GetMaskSelect(mask);
+    var maskSelect = TemplateHelper.GetMaskSelect(mask).ToString("X2");
     var maskName = FirmwareGroupMaskNamingConvention.Instance.Apply(groupMask.Key);
     var maskNamePadding = new string(' ', maxBitMemberNameLength - maskName.Length);
+    var maskSelectPadding = new string(' ', 11 - maskSelect.Length);
 #>
-#define MSK_<#= maskName #>_SEL<#= maskNamePadding #>(<#= maskSelect #><<0)       // 
+#define MSK_<#= maskName #>_SEL<#= maskNamePadding #>0x<#= maskSelect #><#= maskSelectPadding #>// 
 <#
 
     foreach (var member in mask.Values)
@@ -202,8 +204,10 @@ foreach (var groupMask in deviceMetadata.GroupMasks)
         var memberInfo = member.Value;
         var memberName = FirmwareNamingConvention.Instance.Apply(member.Key);
         var memberNamePadding = new string(' ', maxBitMemberNameLength - memberName.Length - maskName.Length + 4);
+        var memberHexValue = memberInfo.Value.ToString("X2");
+        var memberHexPadding = new string(' ', 11 - memberHexValue.Length);
 #>
-#define GM_<#= maskName #>_<#= memberName #><#= memberNamePadding #>(<#= memberInfo.Value #><<0)       // <#= memberInfo.Description ?? string.Empty #>
+#define GM_<#= maskName #>_<#= memberName #><#= memberNamePadding #>0x<#= memberHexValue #><#= memberHexPadding #>// <#= memberInfo.Description ?? string.Empty #>
 <#
     }
 }

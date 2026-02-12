@@ -2784,12 +2784,13 @@ namespace Interface.Tests
     /// 
     /// </summary>
     [Flags]
-    public enum PortDigitalIOS : byte
+    public enum PortDigitalIOS : ushort
     {
         None = 0x0,
         DIO0 = 0x1,
         DIO1 = 0x2,
-        DIO2 = 0x4
+        DIO2 = 0x4,
+        DIO3 = 0x400
     }
 
     /// <summary>
@@ -2799,7 +2800,8 @@ namespace Interface.Tests
     {
         Pwm0 = 1,
         Pwm1 = 2,
-        Pwm2 = 4
+        Pwm2 = 4,
+        Pwm3 = 10
     }
 
     internal static partial class PayloadMarshal

@@ -136,9 +136,11 @@ groupMasks:
       Pwm0: 0x1
       Pwm1: 0x2
       Pwm2: 0x4
+      Pwm3: 0xA
 bitMasks:
   PortDigitalIOS:
     bits:
       DIO0: 0x1
       DIO1: 0x2
       DIO2: 0x4
+      DIO3: 0x400

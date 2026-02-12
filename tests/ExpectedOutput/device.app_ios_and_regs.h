@@ -172,9 +172,11 @@ typedef struct
 #define B_DIO0              (1<<0)       // 
 #define B_DIO1              (1<<1)       // 
 #define B_DIO2              (1<<2)       // 
-#define MSK_PWM_PORT_SEL    (7<<0)       // 
-#define GM_PWM_PORT_PWM0    (1<<0)       // 
-#define GM_PWM_PORT_PWM1    (2<<0)       // 
-#define GM_PWM_PORT_PWM2    (4<<0)       // 
+#define B_DIO3              (1<<10)      // 
+#define MSK_PWM_PORT_SEL    0x0F         // 
+#define GM_PWM_PORT_PWM0    0x01         // 
+#define GM_PWM_PORT_PWM1    0x02         // 
+#define GM_PWM_PORT_PWM2    0x04         // 
+#define GM_PWM_PORT_PWM3    0x0A         // 
 
 #endif /* _APP_REGS_H_ */
