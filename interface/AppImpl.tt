@@ -122,6 +122,14 @@ void core_callback_t_500us(void) {}
 void core_callback_t_1ms(void) {}
 
 /************************************************************************/
+/* Callbacks: clock control                                             */
+/************************************************************************/
+void core_callback_clock_to_repeater(void) {}
+void core_callback_clock_to_generator(void) {}
+void core_callback_clock_to_unlock(void) {}
+void core_callback_clock_to_lock(void) {}
+
+/************************************************************************/
 /* Callbacks: uart control                                              */
 /************************************************************************/
 void core_callback_uart_rx_before_exec(void) {}
