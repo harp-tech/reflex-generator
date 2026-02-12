@@ -12,6 +12,8 @@
 #include "hwbp_core.h"
 <#
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(RegisterMetadataPath);
+var deviceRegisters = deviceMetadata.Registers;
+int registerIndex;
 #>
 
 
@@ -22,11 +24,12 @@ extern AppRegs app_regs;
 
 void (*app_func_rd_pointer[])(void) = {
 <#
-foreach (var registerMetadata in deviceMetadata.Registers)
+registerIndex = 0;
+foreach (var registerMetadata in deviceRegisters)
 {
     var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
 #>
-	&app_read_REG_<#= registerName #>,
+	&app_read_REG_<#= registerName #><#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
 <#
 }
 #>
@@ -34,17 +37,18 @@ foreach (var registerMetadata in deviceMetadata.Registers)
 
 bool (*app_func_wr_pointer[])(void*) = {
 <#
-foreach (var registerMetadata in deviceMetadata.Registers)
+registerIndex = 0;
+foreach (var registerMetadata in deviceRegisters)
 {
     var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
 #>
-	&app_write_REG_<#= registerName #>,
+	&app_write_REG_<#= registerName #><#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
 <#
 }
 #>
 };
 <#
-foreach (var registerMetadata in deviceMetadata.Registers)
+foreach (var registerMetadata in deviceRegisters)
 {
     var register = registerMetadata.Value;
     var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);

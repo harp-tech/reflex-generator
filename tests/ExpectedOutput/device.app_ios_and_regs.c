@@ -70,7 +70,7 @@ uint8_t app_regs_type[] = {
     TYPE_U32,
     TYPE_U8,
     TYPE_U8,
-    TYPE_I32,
+    TYPE_I32
 };
 
 uint16_t app_regs_n_elements[] = {
@@ -82,7 +82,7 @@ uint16_t app_regs_n_elements[] = {
     3,
     3,
     1,
-    1,
+    1
 };
 
 uint8_t *app_regs_pointer[] = {
@@ -94,5 +94,5 @@ uint8_t *app_regs_pointer[] = {
     (uint8_t*)(&app_regs.REG_CUSTOM_RAW_PAYLOAD),
     (uint8_t*)(&app_regs.REG_CUSTOM_MEMBER_CONVERTER),
     (uint8_t*)(&app_regs.REG_BITMASK_SPLITTER),
-    (uint8_t*)(&app_regs.REG_COUNTER0),
+    (uint8_t*)(&app_regs.REG_COUNTER0)
 };

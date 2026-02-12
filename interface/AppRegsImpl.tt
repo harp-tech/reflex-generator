@@ -18,13 +18,15 @@ var deviceMetadata = TemplateHelper.ReadDeviceMetadata(RegisterMetadataPath);
 var portPinMetadata = TemplateHelper.ReadPortPinMetadata(IOMetadataPath);
 var inputPins = TemplateHelper.GetPortPinsOfType<InputPinInfo>(portPinMetadata).ToList();
 var outputPins = TemplateHelper.GetPortPinsOfType<OutputPinInfo>(portPinMetadata).ToList();
+var deviceRegisters = deviceMetadata.Registers;
 var deviceName = deviceMetadata.Device;
+int registerIndex;
 
 int maxRegisterNameLength = 0;
 int minRegisterAddress = byte.MaxValue;
 int maxRegisterAddress = 32;
 int totalRegisterSize = 0;
-foreach (var registerMetadata in deviceMetadata.Registers)
+foreach (var registerMetadata in deviceRegisters)
 {
     var register = registerMetadata.Value;
     var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
@@ -122,11 +124,12 @@ AppRegs app_regs;
 
 uint8_t app_regs_type[] = {
 <#
-foreach (var register in deviceMetadata.Registers.Values)
+registerIndex = 0;
+foreach (var register in deviceRegisters.Values)
 {
     var registerType = TemplateHelper.GetFirmwareRegisterType(register.Type);
 #>
-    TYPE_<#= registerType #>,
+    TYPE_<#= registerType #><#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
 <#
 }
 #>
@@ -134,10 +137,11 @@ foreach (var register in deviceMetadata.Registers.Values)
 
 uint16_t app_regs_n_elements[] = {
 <#
-foreach (var register in deviceMetadata.Registers.Values)
+registerIndex = 0;
+foreach (var register in deviceRegisters.Values)
 {
 #>
-    <#= register.Length == 0 ? 1 : register.Length #>,
+    <#= register.Length == 0 ? 1 : register.Length #><#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
 <#
 }
 #>
@@ -145,11 +149,12 @@ foreach (var register in deviceMetadata.Registers.Values)
 
 uint8_t *app_regs_pointer[] = {
 <#
-foreach (var registerMetadata in deviceMetadata.Registers)
+registerIndex = 0;
+foreach (var registerMetadata in deviceRegisters)
 {
     var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
 #>
-    (uint8_t*)(&app_regs.REG_<#= registerName #>),
+    (uint8_t*)(&app_regs.REG_<#= registerName #>)<#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
 <#
 }
 #>

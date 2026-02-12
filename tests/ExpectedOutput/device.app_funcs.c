@@ -17,7 +17,7 @@ void (*app_func_rd_pointer[])(void) = {
 	&app_read_REG_CUSTOM_RAW_PAYLOAD,
 	&app_read_REG_CUSTOM_MEMBER_CONVERTER,
 	&app_read_REG_BITMASK_SPLITTER,
-	&app_read_REG_COUNTER0,
+	&app_read_REG_COUNTER0
 };
 
 bool (*app_func_wr_pointer[])(void*) = {
@@ -29,7 +29,7 @@ bool (*app_func_wr_pointer[])(void*) = {
 	&app_write_REG_CUSTOM_RAW_PAYLOAD,
 	&app_write_REG_CUSTOM_MEMBER_CONVERTER,
 	&app_write_REG_BITMASK_SPLITTER,
-	&app_write_REG_COUNTER0,
+	&app_write_REG_COUNTER0
 };
 
 /************************************************************************/
