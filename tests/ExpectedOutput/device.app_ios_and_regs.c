@@ -16,8 +16,8 @@ void init_ios(void)
     io_pin2in(&PORTE, 5, PULL_IO_UP, SENSE_IO_EDGES_BOTH);               // POKE1_IO
     io_pin2in(&PORTF, 4, PULL_IO_UP, SENSE_IO_EDGES_BOTH);               // POKE2_IR
     io_pin2in(&PORTF, 5, PULL_IO_UP, SENSE_IO_EDGES_BOTH);               // POKE2_IO
-    io_pin2in(&PORTJ, 0, PULL_IO_DOWN, SENSE_IO_EDGES_BOTH);               // ADC1_AVAILABLE
-    io_pin2in(&PORTH, 0, PULL_IO_TRISTATE, SENSE_IO_EDGES_BOTH);               // DI3
+    io_pin2in(&PORTJ, 0, PULL_IO_DOWN, SENSE_IO_EDGES_BOTH);             // ADC1_AVAILABLE
+    io_pin2in(&PORTH, 0, PULL_IO_TRISTATE, SENSE_IO_EDGES_BOTH);         // DI3
 
     /* Configure input interrupts */
     io_set_int(&PORTD, INT_LEVEL_LOW, 0, (1<<4), false);                 // POKE0_IR
@@ -26,19 +26,19 @@ void init_ios(void)
     io_set_int(&PORTH, INT_LEVEL_LOW, 0, (1<<0), false);                 // DI3
 
     /* Configure output pins */
-    io_pin2out(&PORTC, 0, OUT_IO_DIGITAL, IN_EN_IO_EN);               // DO3
-    io_pin2out(&PORTD, 0, OUT_IO_DIGITAL, IN_EN_IO_EN);               // DO2
-    io_pin2out(&PORTE, 0, OUT_IO_DIGITAL, IN_EN_IO_EN);               // DO1
-    io_pin2out(&PORTF, 0, OUT_IO_DIGITAL, IN_EN_IO_EN);               // DO0
-    io_pin2out(&PORTB, 6, OUT_IO_DIGITAL, IN_EN_IO_EN);               // LED0
-    io_pin2out(&PORTB, 5, OUT_IO_DIGITAL, IN_EN_IO_EN);               // LED1
-    io_pin2out(&PORTC, 5, OUT_IO_DIGITAL, IN_EN_IO_DIS);               // RGBS
-    io_pin2out(&PORTD, 6, OUT_IO_DIGITAL, IN_EN_IO_EN);               // POKE0_LED
-    io_pin2out(&PORTD, 7, OUT_IO_DIGITAL, IN_EN_IO_EN);               // POKE0_VALVE
-    io_pin2out(&PORTE, 6, OUT_IO_DIGITAL, IN_EN_IO_EN);               // POKE1_LED
-    io_pin2out(&PORTE, 7, OUT_IO_DIGITAL, IN_EN_IO_EN);               // POKE1_VALVE
-    io_pin2out(&PORTF, 6, OUT_IO_DIGITAL, IN_EN_IO_EN);               // POKE2_LED
-    io_pin2out(&PORTF, 7, OUT_IO_DIGITAL, IN_EN_IO_EN);               // POKE2_VALVE
+    io_pin2out(&PORTC, 0, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // DO3
+    io_pin2out(&PORTD, 0, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // DO2
+    io_pin2out(&PORTE, 0, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // DO1
+    io_pin2out(&PORTF, 0, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // DO0
+    io_pin2out(&PORTB, 6, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // LED0
+    io_pin2out(&PORTB, 5, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // LED1
+    io_pin2out(&PORTC, 5, OUT_IO_DIGITAL, IN_EN_IO_DIS);                 // RGBS
+    io_pin2out(&PORTD, 6, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // POKE0_LED
+    io_pin2out(&PORTD, 7, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // POKE0_VALVE
+    io_pin2out(&PORTE, 6, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // POKE1_LED
+    io_pin2out(&PORTE, 7, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // POKE1_VALVE
+    io_pin2out(&PORTF, 6, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // POKE2_LED
+    io_pin2out(&PORTF, 7, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // POKE2_VALVE
 
     /* Initialize output pins */
     clr_DO3;

@@ -55,11 +55,11 @@ if (inputPins.Count > 0)
     {
         var pinInfo = pin.Value;
         var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
-        var descriptionOffset = maxPinNameLength - pinName.Length + 10;
         var pullMode = TemplateHelper.GetFirmwarePullMode(pinInfo.PinMode);
         var senseMode = TemplateHelper.GetFirmwareSenseMode(pinInfo.TriggerMode);
+        var descriptionPadding = new string(' ', 49 - pinInfo.Port.Length - pullMode.Length - senseMode.Length);
 #>
-    io_pin2in(&<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>, <#= pullMode #>, <#= senseMode #>);               // <#= pinName #>
+    io_pin2in(&<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>, <#= pullMode #>, <#= senseMode #>);<#= descriptionPadding #>// <#= pinName #>
 <#
     }
 
@@ -74,12 +74,13 @@ if (inputPins.Count > 0)
         {
             var pinInfo = pin.Value;
             var port = pinInfo.Port;
-            var pinNumber = pinInfo.PinNumber;
+            var pinNumber = pinInfo.PinNumber.ToString();
             var interruptNumber = pinInfo.InterruptNumber;
             var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
             var interruptPriority = TemplateHelper.GetFirmwareInterruptPriority(pinInfo.InterruptPriority);
+            var descriptionPadding = new string(' ', 36 - port.Length - interruptPriority.Length - pinNumber.Length);
 #>
-    io_set_int(&<#= port #>, <#= interruptPriority #>, <#= interruptNumber #>, (1<<<#= pinNumber #>), false);                 // <#= pinName #>
+    io_set_int(&<#= port #>, <#= interruptPriority #>, <#= interruptNumber #>, (1<<<#= pinNumber #>), false);<#= descriptionPadding #>// <#= pinName #>
 <#
         }
     }
@@ -98,8 +99,9 @@ if (outputPins.Count > 0)
         var descriptionOffset = maxPinNameLength - pinName.Length + 10;
         var inputEnable = pinInfo.AllowRead ? "IN_EN_IO_EN" : "IN_EN_IO_DIS";
         var outMode = TemplateHelper.GetFirmwareOutputIO(pinInfo.PinMode);
+        var descriptionPadding = new string(' ', 48 - pinInfo.Port.Length - outMode.Length - inputEnable.Length);
 #>
-    io_pin2out(&<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>, <#= outMode #>, <#= inputEnable #>);               // <#= pinName #>
+    io_pin2out(&<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>, <#= outMode #>, <#= inputEnable #>);<#= descriptionPadding #>// <#= pinName #>
 <#
     }
 #>
