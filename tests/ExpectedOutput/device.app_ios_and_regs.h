@@ -132,6 +132,7 @@ typedef struct
     uint32_t REG_CUSTOM_RAW_PAYLOAD[3];
     uint8_t REG_CUSTOM_MEMBER_CONVERTER[3];
     uint8_t REG_BITMASK_SPLITTER;
+    int32_t REG_COUNTER0;
 } AppRegs;
 
 /************************************************************************/
@@ -139,13 +140,14 @@ typedef struct
 /************************************************************************/
 /* Registers */
 #define ADD_REG_DIGITAL_INPUTS             32 // U8     
-#define ADD_REG_ANALOG_DATA                33 // Float  
+#define ADD_REG_ANALOG_DATA                33 // FLOAT  
 #define ADD_REG_COMPLEX_CONFIGURATION      34 // U8     
 #define ADD_REG_VERSION                    35 // U8     
 #define ADD_REG_CUSTOM_PAYLOAD             36 // U32    
 #define ADD_REG_CUSTOM_RAW_PAYLOAD         37 // U32    
 #define ADD_REG_CUSTOM_MEMBER_CONVERTER    38 // U8     
 #define ADD_REG_BITMASK_SPLITTER           39 // U8     
+#define ADD_REG_COUNTER0                   40 // I32    
 
 /************************************************************************/
 /* Tests registers' memory limits                                       */
@@ -155,8 +157,8 @@ typedef struct
 /************************************************************************/
 /* Memory limits */
 #define APP_REGS_ADD_MIN                    0x20
-#define APP_REGS_ADD_MAX                    0x27
-#define APP_NBYTES_OF_REG_BANK              102
+#define APP_REGS_ADD_MAX                    0x28
+#define APP_NBYTES_OF_REG_BANK              106
 
 /************************************************************************/
 /* Registers' bits                                                      */

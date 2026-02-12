@@ -110,6 +110,23 @@ public static partial class TemplateHelper
         };
     }
 
+    public static string GetFirmwareRegisterType(PayloadType payloadType)
+    {
+        return payloadType switch
+        {
+            PayloadType.U8 => "U8",
+            PayloadType.S8 => "I8",
+            PayloadType.U16 => "U16",
+            PayloadType.S16 => "I16",
+            PayloadType.U32 => "U32",
+            PayloadType.S32 => "I32",
+            PayloadType.U64 => "U64",
+            PayloadType.S64 => "I64",
+            PayloadType.Float => "FLOAT",
+            _ => throw new ArgumentOutOfRangeException(nameof(payloadType)),
+        };
+    }
+
     public static string GetFirmwareSenseMode(TriggerMode trigger)
     {
         return trigger switch

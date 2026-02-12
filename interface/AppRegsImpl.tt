@@ -124,7 +124,7 @@ uint8_t app_regs_type[] = {
 <#
 foreach (var register in deviceMetadata.Registers.Values)
 {
-    var registerType = FirmwareNamingConvention.Instance.Apply(register.Type.ToString());
+    var registerType = TemplateHelper.GetFirmwareRegisterType(register.Type);
 #>
     TYPE_<#= registerType #>,
 <#

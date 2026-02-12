@@ -113,6 +113,10 @@ registers:
       High:
         interfaceType: int
         mask: 0xF0
+  Counter0:
+    address: 40
+    type: S32
+    access: Event
 groupMasks:
   PwmPort:
     values:

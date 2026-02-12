@@ -44,7 +44,8 @@ namespace Interface.Tests
             { 36, typeof(CustomPayload) },
             { 37, typeof(CustomRawPayload) },
             { 38, typeof(CustomMemberConverter) },
-            { 39, typeof(BitmaskSplitter) }
+            { 39, typeof(BitmaskSplitter) },
+            { 40, typeof(Counter0) }
         };
 
         /// <summary>
@@ -267,6 +268,7 @@ namespace Interface.Tests
     /// <seealso cref="CustomRawPayload"/>
     /// <seealso cref="CustomMemberConverter"/>
     /// <seealso cref="BitmaskSplitter"/>
+    /// <seealso cref="Counter0"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -275,6 +277,7 @@ namespace Interface.Tests
     [XmlInclude(typeof(CustomRawPayload))]
     [XmlInclude(typeof(CustomMemberConverter))]
     [XmlInclude(typeof(BitmaskSplitter))]
+    [XmlInclude(typeof(Counter0))]
     [Description("Filters register-specific messages reported by the Tests device.")]
     public class FilterRegister : FilterRegisterBuilder, INamedElement
     {
@@ -304,6 +307,7 @@ namespace Interface.Tests
     /// <seealso cref="CustomRawPayload"/>
     /// <seealso cref="CustomMemberConverter"/>
     /// <seealso cref="BitmaskSplitter"/>
+    /// <seealso cref="Counter0"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -312,6 +316,7 @@ namespace Interface.Tests
     [XmlInclude(typeof(CustomRawPayload))]
     [XmlInclude(typeof(CustomMemberConverter))]
     [XmlInclude(typeof(BitmaskSplitter))]
+    [XmlInclude(typeof(Counter0))]
     [XmlInclude(typeof(TimestampedDigitalInputs))]
     [XmlInclude(typeof(TimestampedAnalogData))]
     [XmlInclude(typeof(TimestampedComplexConfiguration))]
@@ -320,6 +325,7 @@ namespace Interface.Tests
     [XmlInclude(typeof(TimestampedCustomRawPayload))]
     [XmlInclude(typeof(TimestampedCustomMemberConverter))]
     [XmlInclude(typeof(TimestampedBitmaskSplitter))]
+    [XmlInclude(typeof(TimestampedCounter0))]
     [Description("Filters and selects specific messages reported by the Tests device.")]
     public partial class Parse : ParseBuilder, INamedElement
     {
@@ -346,6 +352,7 @@ namespace Interface.Tests
     /// <seealso cref="CustomRawPayload"/>
     /// <seealso cref="CustomMemberConverter"/>
     /// <seealso cref="BitmaskSplitter"/>
+    /// <seealso cref="Counter0"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -354,6 +361,7 @@ namespace Interface.Tests
     [XmlInclude(typeof(CustomRawPayload))]
     [XmlInclude(typeof(CustomMemberConverter))]
     [XmlInclude(typeof(BitmaskSplitter))]
+    [XmlInclude(typeof(Counter0))]
     [Description("Formats a sequence of values as specific Tests register messages.")]
     public partial class Format : FormatBuilder, INamedElement
     {
@@ -1260,6 +1268,102 @@ namespace Interface.Tests
     }
 
     /// <summary>
+    /// Represents a register that manipulates messages from register Counter0.
+    /// </summary>
+    [Description("")]
+    public partial class Counter0
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="Counter0"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 40;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="Counter0"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.S32;
+
+        /// <summary>
+        /// Represents the length of the <see cref="Counter0"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 1;
+
+        /// <summary>
+        /// Returns the payload data for <see cref="Counter0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static int GetPayload(HarpMessage message)
+        {
+            return message.GetPayloadInt32();
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="Counter0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<int> GetTimestampedPayload(HarpMessage message)
+        {
+            return message.GetTimestampedPayloadInt32();
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="Counter0"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="Counter0"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, int value)
+        {
+            return HarpMessage.FromInt32(Address, messageType, value);
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="Counter0"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="Counter0"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, int value)
+        {
+            return HarpMessage.FromInt32(Address, timestamp, messageType, value);
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// Counter0 register.
+    /// </summary>
+    /// <seealso cref="Counter0"/>
+    [Description("Filters and selects timestamped messages from the Counter0 register.")]
+    public partial class TimestampedCounter0
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="Counter0"/> register. This field is constant.
+        /// </summary>
+        public const int Address = Counter0.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="Counter0"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<int> GetPayload(HarpMessage message)
+        {
+            return Counter0.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
     /// Represents an operator which creates standard message payloads for the
     /// Tests device.
     /// </summary>
@@ -1271,6 +1375,7 @@ namespace Interface.Tests
     /// <seealso cref="CreateCustomRawPayloadPayload"/>
     /// <seealso cref="CreateCustomMemberConverterPayload"/>
     /// <seealso cref="CreateBitmaskSplitterPayload"/>
+    /// <seealso cref="CreateCounter0Payload"/>
     [XmlInclude(typeof(CreateDigitalInputsPayload))]
     [XmlInclude(typeof(CreateAnalogDataPayload))]
     [XmlInclude(typeof(CreateComplexConfigurationPayload))]
@@ -1279,6 +1384,7 @@ namespace Interface.Tests
     [XmlInclude(typeof(CreateCustomRawPayloadPayload))]
     [XmlInclude(typeof(CreateCustomMemberConverterPayload))]
     [XmlInclude(typeof(CreateBitmaskSplitterPayload))]
+    [XmlInclude(typeof(CreateCounter0Payload))]
     [XmlInclude(typeof(CreateTimestampedDigitalInputsPayload))]
     [XmlInclude(typeof(CreateTimestampedAnalogDataPayload))]
     [XmlInclude(typeof(CreateTimestampedComplexConfigurationPayload))]
@@ -1287,6 +1393,7 @@ namespace Interface.Tests
     [XmlInclude(typeof(CreateTimestampedCustomRawPayloadPayload))]
     [XmlInclude(typeof(CreateTimestampedCustomMemberConverterPayload))]
     [XmlInclude(typeof(CreateTimestampedBitmaskSplitterPayload))]
+    [XmlInclude(typeof(CreateTimestampedCounter0Payload))]
     [Description("Creates standard message payloads for the Tests device.")]
     public partial class CreateMessage : CreateMessageBuilder, INamedElement
     {
@@ -1831,6 +1938,60 @@ namespace Interface.Tests
         public HarpMessage GetMessage(double timestamp, MessageType messageType)
         {
             return Interface.Tests.BitmaskSplitter.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register Counter0.
+    /// </summary>
+    [DisplayName("Counter0Payload")]
+    [Description("Creates a message payload for register Counter0.")]
+    public partial class CreateCounter0Payload
+    {
+        /// <summary>
+        /// Gets or sets the value for register Counter0.
+        /// </summary>
+        [Description("The value for register Counter0.")]
+        public int Counter0 { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the Counter0 register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public int GetPayload()
+        {
+            return Counter0;
+        }
+
+        /// <summary>
+        /// Creates a message for register Counter0.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the Counter0 register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Interface.Tests.Counter0.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register Counter0.
+    /// </summary>
+    [DisplayName("TimestampedCounter0Payload")]
+    [Description("Creates a timestamped message payload for register Counter0.")]
+    public partial class CreateTimestampedCounter0Payload : CreateCounter0Payload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register Counter0.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the Counter0 register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Interface.Tests.Counter0.FromPayload(timestamp, messageType, GetPayload());
         }
     }
 
