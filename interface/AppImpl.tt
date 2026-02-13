@@ -70,7 +70,8 @@ void core_callback_catastrophic_error_detected(void)
 /************************************************************************/
 /* Initialization Callbacks                                             */
 /************************************************************************/
-void core_callback_1st_config_hw_after_boot(void)
+void core_callback_define_clock_default(void) {}
+void core_callback_initialize_hardware(void)
 {
 	/* Initialize IOs */
 	/* Don't delete this function!!! */
