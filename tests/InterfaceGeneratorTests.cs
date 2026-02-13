@@ -4,7 +4,7 @@ using Mono.TextTemplating;
 namespace Interface.Tests;
 
 [TestClass]
-public sealed class GeneratorTests
+public sealed class InterfaceGeneratorTests
 {
     TemplateGenerator generator;
     CompiledTemplate deviceTemplate;
@@ -25,7 +25,7 @@ public sealed class GeneratorTests
         asyncDeviceTemplate = await generator.CompileTemplateAsync(asyncDeviceTemplateContents);
         TestHelper.AssertNoGeneratorErrors(generator);
 
-        outputDirectory = Directory.CreateDirectory("ActualOutput");
+        outputDirectory = Directory.CreateDirectory("InterfaceOutput");
         try { Directory.Delete(outputDirectory.FullName, recursive: true); }
         catch { } // best effort
     }
@@ -33,22 +33,9 @@ public sealed class GeneratorTests
     private string ProcessTemplate(CompiledTemplate template, string metadataFileName)
     {
         var session = generator.GetOrCreateSession();
-        session["Namespace"] = typeof(GeneratorTests).Namespace;
+        session["Namespace"] = typeof(InterfaceGeneratorTests).Namespace;
         session["MetadataPath"] = Path.GetFullPath(Path.Combine("Metadata", metadataFileName));
         return template.Process();
-    }
-
-    private void AssertExpectedOutput(string actual, string outputFileName)
-    {
-        var expectedFileName = Path.Combine("ExpectedOutput", outputFileName);
-        if (File.Exists(expectedFileName))
-        {
-            var expected = File.ReadAllText(expectedFileName);
-            if (!string.Equals(actual, expected, StringComparison.InvariantCulture))
-            {
-                Assert.Fail($"The generated output has diverged from the reference: {outputFileName}");
-            }
-        }
     }
 
     [DataTestMethod]
@@ -67,7 +54,7 @@ public sealed class GeneratorTests
         try
         {
             CompilerTestHelper.CompileFromSource(deviceCode, asyncDeviceCode, payloadExtensions, customImplementation);
-            AssertExpectedOutput(deviceCode, outputFileName);
+            TestHelper.AssertExpectedOutput(deviceCode, outputFileName);
         }
         catch (AssertFailedException)
         {

@@ -1,0 +1,91 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ parameter name="RegisterMetadataPath" type="string" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Firmware.tt" #><##>
+<#@ output extension=".c" #>
+#include "app_funcs.h"
+#include "app_ios_and_regs.h"
+#include "hwbp_core.h"
+<#
+var deviceMetadata = TemplateHelper.ReadDeviceMetadata(RegisterMetadataPath);
+var deviceRegisters = deviceMetadata.Registers;
+int registerIndex;
+#>
+
+
+/************************************************************************/
+/* Create pointers to functions                                         */
+/************************************************************************/
+extern AppRegs app_regs;
+
+void (*app_func_rd_pointer[])(void) = {
+<#
+registerIndex = 0;
+foreach (var registerMetadata in deviceRegisters)
+{
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+#>
+	&app_read_REG_<#= registerName #><#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
+<#
+}
+#>
+};
+
+bool (*app_func_wr_pointer[])(void*) = {
+<#
+registerIndex = 0;
+foreach (var registerMetadata in deviceRegisters)
+{
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+#>
+	&app_write_REG_<#= registerName #><#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
+<#
+}
+#>
+};
+<#
+foreach (var registerMetadata in deviceRegisters)
+{
+    var register = registerMetadata.Value;
+    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var firmwareType = TemplateHelper.GetFirmwareType(register.Type);
+	var allowWrite = (register.Access & RegisterAccess.Write) != 0;
+    var isArrayRegister = register.Length > 0;
+    var arrayAccess = isArrayRegister ? "[0]" : string.Empty;
+    var arrayPointer = isArrayRegister ? "*" : string.Empty;
+    var dereferenceValue = !isArrayRegister ? "*" : string.Empty;
+#>
+
+/************************************************************************/
+/* REG_<#= registerName #><#= new string(' ', 65 - registerName.Length) #>*/
+/************************************************************************/
+<#
+    if (isArrayRegister)
+        WriteLine($"// This register is an array with {register.Length} positions");
+#>
+void app_read_REG_<#= registerName #>(void)
+{
+	//app_regs.REG_<#= registerName #><#= arrayAccess #> = 0;
+
+}
+
+bool app_write_REG_<#= registerName #>(void *a)<#
+    if (!allowWrite)
+        WriteLine(" { return false; }");
+    else
+    {
+        WriteLine(string.Empty); #>
+{
+	<#= firmwareType #> <#= arrayPointer #>reg = <#= dereferenceValue #>((<#= firmwareType #>*)a);
+
+	app_regs.REG_<#= registerName #><#= arrayAccess #> = reg<#= arrayAccess #>;
+    return true;
+}
+<#
+    }
+}
+#>

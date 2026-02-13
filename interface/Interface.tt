@@ -96,7 +96,7 @@ public class PayloadMemberInfo
 public class BitMaskInfo
 {
     public string Description = "";
-    public Dictionary<string, MaskValue> Bits = new Dictionary<string, MaskValue>();
+    public Dictionary<string, MaskValue> Bits = [];
 
     public string InterfaceType => TemplateHelper.GetInterfaceType(Bits);
 }
@@ -104,7 +104,7 @@ public class BitMaskInfo
 public class GroupMaskInfo
 {
     public string Description = "";
-    public Dictionary<string, MaskValue> Values = new Dictionary<string, MaskValue>();
+    public Dictionary<string, MaskValue> Values = [];
 
     public string InterfaceType => TemplateHelper.GetInterfaceType(Values);
 }
@@ -148,19 +148,19 @@ public static partial class TemplateHelper
 
     public static string GetInterfaceType(PayloadType payloadType)
     {
-        switch (payloadType)
+        return payloadType switch
         {
-            case PayloadType.U8: return "byte";
-            case PayloadType.S8: return "sbyte";
-            case PayloadType.U16: return "ushort";
-            case PayloadType.S16: return "short";
-            case PayloadType.U32: return "uint";
-            case PayloadType.S32: return "int";
-            case PayloadType.U64: return "ulong";
-            case PayloadType.S64: return "long";
-            case PayloadType.Float: return "float";
-            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
-        }
+            PayloadType.U8 => "byte",
+            PayloadType.S8 => "sbyte",
+            PayloadType.U16 => "ushort",
+            PayloadType.S16 => "short",
+            PayloadType.U32 => "uint",
+            PayloadType.S32 => "int",
+            PayloadType.U64 => "ulong",
+            PayloadType.S64 => "long",
+            PayloadType.Float => "float",
+            _ => throw new ArgumentOutOfRangeException(nameof(payloadType)),
+        };
     }
 
     public static string GetInterfaceType(PayloadType payloadType, int payloadLength)
@@ -206,22 +206,22 @@ public static partial class TemplateHelper
             return $"Array<{baseType}>";
         }
 
-        switch (payloadType)
+        return payloadType switch
         {
-            case PayloadType.U8: return "Byte";
-            case PayloadType.S8: return "SByte";
-            case PayloadType.U16: return "UInt16";
-            case PayloadType.S16: return "Int16";
-            case PayloadType.U32: return "UInt32";
-            case PayloadType.S32: return "Int32";
-            case PayloadType.U64: return "UInt64";
-            case PayloadType.S64: return "Int64";
-            case PayloadType.Float: return "Single";
-            default: throw new ArgumentOutOfRangeException(nameof(payloadType));
-        }
+            PayloadType.U8 => "Byte",
+            PayloadType.S8 => "SByte",
+            PayloadType.U16 => "UInt16",
+            PayloadType.S16 => "Int16",
+            PayloadType.U32 => "UInt32",
+            PayloadType.S32 => "Int32",
+            PayloadType.U64 => "UInt64",
+            PayloadType.S64 => "Int64",
+            PayloadType.Float => "Single",
+            _ => throw new ArgumentOutOfRangeException(nameof(payloadType)),
+        };
     }
 
-    static int GetPayloadTypeSize(PayloadType payloadType)
+    public static int GetPayloadTypeSize(PayloadType payloadType)
     {
         return (int)payloadType & 0xF;
     }
@@ -285,6 +285,16 @@ public static partial class TemplateHelper
     {
         var lsb = mask & (~mask + 1);
         return (int)Math.Log(lsb, 2);
+    }
+
+    public static int GetMaskSelect(GroupMaskInfo groupMask)
+    {
+        var maxValue = groupMask.Values.Max(member => member.Value.Value);
+        if (maxValue == 0)
+            return 1;
+
+        var msb = 1 << (int)Math.Log(maxValue, 2);
+        return (msb << 1) - 1;
     }
 
     static int GetMemberSize(
@@ -351,7 +361,7 @@ public static partial class TemplateHelper
         {
             var mask = member.Mask.Value;
             var shift = GetMaskShift(mask);
-            expression = $"({expression} & 0x{mask.ToString("X")})";
+            expression = $"({expression} & 0x{mask:X})";
             if (member.InterfaceType != "bool" || member.HasConverter)
             {
                 if (shift > 0)
@@ -383,7 +393,7 @@ public static partial class TemplateHelper
         var memberOffset = member.Offset.GetValueOrDefault();
         var payloadInterfaceType = GetInterfaceType(payloadType);
 
-        var memberConversion = TemplateHelper.GetPayloadMemberValueFormatter(
+        var memberConversion = GetPayloadMemberValueFormatter(
             name,
             member,
             $"value.{name}",
@@ -426,7 +436,7 @@ public static partial class TemplateHelper
         {
             if (isBoolean)
             {
-                var bitValue = member.Mask.HasValue ? $"0x{member.Mask.Value.ToString("X")}" : "1";
+                var bitValue = member.Mask.HasValue ? $"0x{member.Mask.Value:X}" : "1";
                 expression = $"({expression} ? {bitValue} : 0)";
             }
             expression = $"({payloadInterfaceType}){expression}";
@@ -440,7 +450,7 @@ public static partial class TemplateHelper
                 expression = $"({expression} << {shift})";
             }
 
-            expression = $"({payloadInterfaceType})({expression} & 0x{mask.ToString("X")})";
+            expression = $"({payloadInterfaceType})({expression} & 0x{mask:X})";
         }
 
         return expression;
