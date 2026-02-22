@@ -1,5 +1,4 @@
-﻿using Harp.Generators;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Harp.Generators.Tests;
 
@@ -22,6 +21,7 @@ public sealed class FirmwareGeneratorTests
     [DataRow("device.yml")]
     public void FirmwareTemplate_GenerateAndBuildWithoutErrors(string metadataFileName)
     {
+        metadataFileName = TestHelper.GetMetadataPath(metadataFileName);
         var iosMetadataFileName = Path.ChangeExtension(metadataFileName, ".ios.yml");
         var headers = generator.GenerateHeaders(metadataFileName, iosMetadataFileName);
         var implementation = generator.GenerateImplementation(metadataFileName, iosMetadataFileName);

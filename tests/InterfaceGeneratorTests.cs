@@ -1,5 +1,4 @@
-﻿using Harp.Generators;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Harp.Generators.Tests;
 
@@ -25,6 +24,7 @@ public sealed class InterfaceGeneratorTests
     [DataRow("device.yml")]
     public void DeviceTemplate_GenerateAndBuildWithoutErrors(string metadataFileName)
     {
+        metadataFileName = TestHelper.GetMetadataPath(metadataFileName);
         var implementation = generator.GenerateImplementation(metadataFileName, typeof(InterfaceGeneratorTests).Namespace);
         var outputFileName = $"{Path.GetFileNameWithoutExtension(metadataFileName)}.cs";
         var customImplementation = TestHelper.GetManifestResourceText($"EmbeddedSources.{outputFileName}");

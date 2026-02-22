@@ -21,6 +21,11 @@ static class TestHelper
         return resourceReader.ReadToEnd();
     }
 
+    public static string GetMetadataPath(string fileName)
+    {
+        return Path.Combine("Metadata", fileName);
+    }
+
     public static void AssertExpectedOutput(string actual, string outputFileName)
     {
         var expectedFileName = Path.Combine("ExpectedOutput", outputFileName);

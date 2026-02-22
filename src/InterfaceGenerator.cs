@@ -36,7 +36,7 @@ public sealed class InterfaceGenerator
     {
         var session = generator.GetOrCreateSession();
         session["Namespace"] = ns;
-        session["MetadataPath"] = Path.GetFullPath(Path.Combine("Metadata", metadataFileName));
+        session["MetadataPath"] = Path.GetFullPath(metadataFileName);
         var code = template.Process();
         generator.ThrowExceptionForGeneratorError();
         return code;

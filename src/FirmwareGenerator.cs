@@ -86,9 +86,9 @@ public class FirmwareGenerator
         string iosMetadataFileName = default)
     {
         var session = generator.GetOrCreateSession();
-        session["RegisterMetadataPath"] = Path.GetFullPath(Path.Combine("Metadata", registerMetadataFileName));
+        session["RegisterMetadataPath"] = Path.GetFullPath(registerMetadataFileName);
         if (!string.IsNullOrEmpty(iosMetadataFileName))
-            session["IOMetadataPath"] = Path.GetFullPath(Path.Combine("Metadata", iosMetadataFileName));
+            session["IOMetadataPath"] = Path.GetFullPath(iosMetadataFileName);
         return template.Process();
     }
 
