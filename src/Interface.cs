@@ -44,12 +44,11 @@ public enum MemberConverter
 
 public class RegisterInfo
 {
+    [YamlMember(DefaultValuesHandling = DefaultValuesHandling.Preserve)]
     public int Address;
-    public string Description = "";
-    public RegisterAccess Access = RegisterAccess.Read;
     public PayloadType Type;
     public int Length;
-    public Dictionary<string, PayloadMemberInfo> PayloadSpec;
+    public RegisterAccess Access = RegisterAccess.Read;
     public RegisterVisibility Visibility;
     public bool Volatile;
     public string MaskType;
@@ -58,8 +57,13 @@ public class RegisterInfo
     public float? MinValue;
     public float? MaxValue;
     public float? DefaultValue;
+    public string Description = "";
+    public Dictionary<string, PayloadMemberInfo> PayloadSpec;
 
+    [YamlIgnore]
     public bool HasConverter => Converter > MemberConverter.None;
+
+    [YamlIgnore]
     public string PayloadInterfaceType => Converter == MemberConverter.RawPayload
         ? "ArraySegment<byte>"
         : TemplateHelper.GetInterfaceType(Type, Length);
@@ -73,12 +77,14 @@ public class PayloadMemberInfo
     public string MaskType;
     public string InterfaceType;
     public MemberConverter Converter;
-    public string Description = "";
     public float? MinValue;
     public float? MaxValue;
     public float? DefaultValue;
+    public string Description = "";
 
+    [YamlIgnore]
     public bool HasConverter => Converter > MemberConverter.None;
+
     public string GetConverterInterfaceType(PayloadType payloadType)
     {
         return Converter switch
@@ -97,6 +103,7 @@ public class BitMaskInfo
     public string Description = "";
     public Dictionary<string, MaskValue> Bits = [];
 
+    [YamlIgnore]
     public string InterfaceType => TemplateHelper.GetInterfaceType(Bits);
 }
 
@@ -105,6 +112,7 @@ public class GroupMaskInfo
     public string Description = "";
     public Dictionary<string, MaskValue> Values = [];
 
+    [YamlIgnore]
     public string InterfaceType => TemplateHelper.GetInterfaceType(Values);
 }
 
@@ -116,16 +124,29 @@ public class MaskValue
 
 public static partial class TemplateHelper
 {
+    public static readonly IDeserializer Deserializer = new DeserializerBuilder()
+        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .WithTypeConverter(RegisterAccessTypeConverter.Instance)
+        .WithTypeConverter(MaskValueTypeConverter.Instance)
+        .WithTypeConverter(HarpVersionTypeConverter.Instance)
+        .Build();
+
+    public static readonly ISerializer Serializer = new SerializerBuilder()
+        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .WithTypeConverter(RegisterAccessTypeConverter.Instance)
+        .WithTypeConverter(MaskValueTypeConverter.Instance)
+        .WithTypeConverter(HarpVersionTypeConverter.Instance)
+        .ConfigureDefaultValuesHandling(
+            DefaultValuesHandling.OmitNull |
+            DefaultValuesHandling.OmitDefaults |
+            DefaultValuesHandling.OmitEmptyCollections)
+        .Build();
+
     public static DeviceInfo ReadDeviceMetadata(string path)
     {
         using var reader = new StreamReader(path);
         var parser = new MergingParser(new Parser(reader));
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .WithTypeConverter(RegisterAccessTypeConverter.Instance)
-            .WithTypeConverter(MaskValueTypeConverter.Instance)
-            .Build();
-        return deserializer.Deserialize<DeviceInfo>(parser);
+        return Deserializer.Deserialize<DeviceInfo>(parser);
     }
 
     public static string GetInterfaceType(string name, RegisterInfo register)
@@ -461,10 +482,42 @@ public static partial class TemplateHelper
     }
 }
 
+class HarpVersionTypeConverter : IYamlTypeConverter
+{
+    public static readonly HarpVersionTypeConverter Instance = new();
+
+    public bool Accepts(Type type)
+    {
+        return type == typeof(HarpVersion);
+    }
+
+    public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
+    {
+        var scalar = parser.Consume<Scalar>();
+        return HarpVersion.Parse(scalar.Value);
+    }
+
+    public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
+    {
+        var scalar = new Scalar(
+            AnchorName.Empty,
+            TagName.Empty,
+            ((HarpVersion)value).ToString(),
+            ScalarStyle.DoubleQuoted,
+            isPlainImplicit: false,
+            isQuotedImplicit: true);
+        emitter.Emit(scalar);
+    }
+}
+
 class MaskValueTypeConverter : IYamlTypeConverter
 {
     public static readonly MaskValueTypeConverter Instance = new();
     static readonly IDeserializer ValueDeserializer = new Deserializer();
+    static readonly IValueSerializer DefaultSerializer = new SerializerBuilder()
+        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull)
+        .BuildValueSerializer();
 
     public bool Accepts(Type type)
     {
@@ -504,7 +557,11 @@ class MaskValueTypeConverter : IYamlTypeConverter
 
     public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
     {
-        throw new NotImplementedException();
+        var maskValue = (MaskValue)value;
+        if (string.IsNullOrEmpty(maskValue.Description))
+            DefaultSerializer.SerializeValue(emitter, maskValue.Value, typeof(int));
+        else
+            DefaultSerializer.SerializeValue(emitter, value, type);
     }
 }
 
@@ -521,7 +578,7 @@ class RegisterAccessTypeConverter : IYamlTypeConverter
     {
         if (parser.TryConsume(out SequenceStart _))
         {
-            RegisterAccess value = RegisterAccess.Read;
+            RegisterAccess value = 0;
             while (parser.TryConsume(out Scalar scalar))
             {
                 value |= (RegisterAccess)Enum.Parse(typeof(RegisterAccess), scalar.Value);
@@ -538,6 +595,23 @@ class RegisterAccessTypeConverter : IYamlTypeConverter
 
     public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
     {
-        throw new NotImplementedException();
+        var access = (RegisterAccess)value;
+        switch (access)
+        {
+            case RegisterAccess.Read:
+            case RegisterAccess.Write:
+            case RegisterAccess.Event:
+                emitter.Emit(new Scalar(access.ToString()));
+                return;
+        }
+        
+        emitter.Emit(new SequenceStart(AnchorName.Empty, TagName.Empty, isImplicit: true, SequenceStyle.Flow));
+        if ((access | RegisterAccess.Read) != 0)
+            emitter.Emit(new Scalar(nameof(RegisterAccess.Read)));
+        if ((access | RegisterAccess.Write) != 0)
+            emitter.Emit(new Scalar(nameof(RegisterAccess.Write)));
+        if ((access | RegisterAccess.Event) != 0)
+            emitter.Emit(new Scalar(nameof(RegisterAccess.Event)));
+        emitter.Emit(new SequenceEnd());
     }
 }
