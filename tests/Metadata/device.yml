@@ -1,8 +1,5 @@
-%YAML 1.1
----
-# yaml-language-server: $schema=https://harp-tech.org/draft-02/schema/device.json
+# yaml-language-server: $schema=https://harp-tech.org/draft-02/schema/registers.json
 device: Tests
-whoAmI: 0000
 firmwareVersion: "0.1"
 hardwareTargets: "1.0"
 registers:
@@ -28,8 +25,8 @@ registers:
   ComplexConfiguration:
     address: 34
     type: U8
-    access: Write
     length: 17
+    access: Write
     payloadSpec:
       PwmPort:
         offset: 0
@@ -107,12 +104,12 @@ registers:
     access: Write
     payloadSpec:
       Low:
-        mask: 0x0F
+        mask: 0xF
         interfaceType: int
         converter: Payload
       High:
-        interfaceType: int
         mask: 0xF0
+        interfaceType: int
   Counter0:
     address: 40
     type: S32
@@ -130,13 +127,6 @@ registers:
   PulseDO0:
     <<: *pulseDO
     address: 43
-groupMasks:
-  PwmPort:
-    values:
-      Pwm0: 0x1
-      Pwm1: 0x2
-      Pwm2: 0x4
-      Pwm3: 0xA
 bitMasks:
   PortDigitalIOS:
     bits:
@@ -144,3 +134,10 @@ bitMasks:
       DIO1: 0x2
       DIO2: 0x4
       DIO3: 0x400
+groupMasks:
+  PwmPort:
+    values:
+      Pwm0: 0x1
+      Pwm1: 0x2
+      Pwm2: 0x4
+      Pwm3: 0xA
