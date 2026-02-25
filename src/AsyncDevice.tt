@@ -2,11 +2,13 @@
 <#@ parameter name="Namespace" type="string" #>
 <#@ parameter name="MetadataPath" type="string" #>
 <#@ assembly name="System.Core" #>
+<#@ assembly name="Bonsai.Harp.dll" #>
+<#@ assembly name="Harp.Generators.dll" #>
+<#@ import namespace="Harp.Generators" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ include file="Interface.tt" #><##>
 <#@ output extension=".Generated.cs" #>
 <#
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(MetadataPath);

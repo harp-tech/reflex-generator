@@ -1,6 +1,6 @@
 ﻿using Mono.TextTemplating;
 
-namespace Interface.Tests;
+namespace Harp.Generators.Tests;
 
 public class TestTemplateGenerator : TemplateGenerator
 {

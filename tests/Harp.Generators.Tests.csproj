@@ -15,7 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\interface\*.tt" />
+    <ProjectReference Include="..\src\Harp.Generators.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="EmbeddedSources\*.cs" />
     <EmbeddedResource Include="EmbeddedSources\*.cs" />
     <EmbeddedResource Include="PayloadMarshal.cs" />

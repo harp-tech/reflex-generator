@@ -1,10 +1,15 @@
-﻿<#@ assembly name="System.Core" #>
-<#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Text" #>
-<#@ import namespace="System.Text.RegularExpressions" #>
-<#@ import namespace="System.Collections.Generic" #>
-<#@ include file="Interface.tt" #><##>
-<#+
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Bonsai.Harp;
+using YamlDotNet.Core;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+
+namespace Harp.Generators;
+
 public enum PinDirection
 {
     Input,
@@ -214,13 +219,14 @@ class PortPinInfoTypeConverter(IDeserializer deserializer) : IYamlTypeConverter
     }
 }
 
-class FirmwareNamingConvention : INamingConvention
+public class FirmwareNamingConvention : INamingConvention
 {
-    public static FirmwareNamingConvention Instance = new FirmwareNamingConvention();
+    private const char Separator = '_';
+
+    public static readonly FirmwareNamingConvention Instance = new();
 
     public string Apply(string value)
     {
-        const string Separator = "_";
         var startIndex = 0;
         while (startIndex < value.Length && (char.IsUpper(value[startIndex]) || !char.IsLetter(value[startIndex])))
         {
@@ -230,7 +236,7 @@ class FirmwareNamingConvention : INamingConvention
         value = value.Substring(0, startIndex).ToLowerInvariant() + value.Substring(startIndex);
         var previousMatch = 0;
         var previousLength = 0;
-        value = Regex.Replace(value, "(?<sep>[_\\-])?(?<char>[A-Z])", (Match match) =>
+        value = Regex.Replace(value, "(?<sep>[_\\-])?(?<char>[A-Z])", match =>
         {
             var length = match.Index - previousMatch;
             previousMatch = match.Index;
@@ -244,15 +250,21 @@ class FirmwareNamingConvention : INamingConvention
 
     public string Reverse(string value)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        var words = Array.ConvertAll(
+            value.Split(Separator),
+            word => PascalCaseNamingConvention.Instance.Apply(word.ToLowerInvariant()));
+        return string.Concat(words);
     }
 }
 
-class FirmwareGroupMaskNamingConvention : INamingConvention
+public class FirmwareGroupMaskNamingConvention : INamingConvention
 {
-    public static FirmwareGroupMaskNamingConvention Instance = new FirmwareGroupMaskNamingConvention();
-    static readonly string[] TrimSuffixes = new[] { "StateConfiguration", "Configuration" };
-    static readonly Dictionary<string, string> TokenSubstitutions = new Dictionary<string, string>
+    public static readonly FirmwareGroupMaskNamingConvention Instance = new();
+    static readonly string[] TrimSuffixes = ["StateConfiguration", "Configuration"];
+    static readonly Dictionary<string, string> TokenSubstitutions = new()
     {
         { "DIGITAL_INPUT", "DI" },
         { "DIGITAL_OUTPUT", "DO" }
@@ -283,4 +295,3 @@ class FirmwareGroupMaskNamingConvention : INamingConvention
         throw new NotImplementedException();
     }
 }
-#>

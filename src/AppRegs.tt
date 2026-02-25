@@ -2,11 +2,13 @@
 <#@ parameter name="RegisterMetadataPath" type="string" #>
 <#@ parameter name="IOMetadataPath" type="string" #>
 <#@ assembly name="System.Core" #>
+<#@ assembly name="Bonsai.Harp.dll" #>
+<#@ assembly name="Harp.Generators.dll" #>
+<#@ import namespace="Harp.Generators" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ include file="Firmware.tt" #><##>
 <#@ output extension=".h" #>
 #ifndef _APP_IOS_AND_REGS_H_
 #define _APP_IOS_AND_REGS_H_
