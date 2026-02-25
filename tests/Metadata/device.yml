@@ -1,8 +1,5 @@
-%YAML 1.1
----
-# yaml-language-server: $schema=https://harp-tech.org/draft-02/schema/device.json
+# yaml-language-server: $schema=https://harp-tech.org/draft-02/schema/registers.json
 device: Tests
-whoAmI: 0000
 firmwareVersion: "0.1"
 hardwareTargets: "1.0"
 registers:
@@ -107,7 +104,7 @@ registers:
     access: Write
     payloadSpec:
       Low:
-        mask: 0x0F
+        mask: 0xF
         interfaceType: int
         converter: Payload
       High:

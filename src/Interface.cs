@@ -71,6 +71,7 @@ public class RegisterInfo
 
 public class PayloadMemberInfo
 {
+    [YamlConverter(typeof(HexValueTypeConverter))]
     public int? Mask;
     public int? Offset;
     public int? Length;
@@ -118,6 +119,7 @@ public class GroupMaskInfo
 
 public class MaskValue
 {
+    [YamlConverter(typeof(HexValueTypeConverter))]
     public int Value;
     public string Description;
 }
@@ -129,6 +131,7 @@ public static partial class TemplateHelper
         .WithTypeConverter(RegisterAccessTypeConverter.Instance)
         .WithTypeConverter(MaskValueTypeConverter.Instance)
         .WithTypeConverter(HarpVersionTypeConverter.Instance)
+        .WithTypeConverter(HexValueTypeConverter.Instance)
         .Build();
 
     public static readonly ISerializer Serializer = new SerializerBuilder()
@@ -136,6 +139,7 @@ public static partial class TemplateHelper
         .WithTypeConverter(RegisterAccessTypeConverter.Instance)
         .WithTypeConverter(MaskValueTypeConverter.Instance)
         .WithTypeConverter(HarpVersionTypeConverter.Instance)
+        .WithTypeConverter(HexValueTypeConverter.Instance)
         .ConfigureDefaultValuesHandling(
             DefaultValuesHandling.OmitNull |
             DefaultValuesHandling.OmitDefaults |
@@ -510,13 +514,33 @@ class HarpVersionTypeConverter : IYamlTypeConverter
     }
 }
 
+class HexValueTypeConverter : IYamlTypeConverter
+{
+    public static readonly HexValueTypeConverter Instance = new();
+
+    public bool Accepts(Type type) => false;
+
+    public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
+    {
+        return rootDeserializer(type);
+    }
+
+    public void WriteYaml(IEmitter emitter, object value, Type type, ObjectSerializer serializer)
+    {
+        emitter.Emit(new Scalar(string.Format($"0x{value:X}")));
+    }
+}
+
 class MaskValueTypeConverter : IYamlTypeConverter
 {
     public static readonly MaskValueTypeConverter Instance = new();
-    static readonly IDeserializer ValueDeserializer = new Deserializer();
+    static readonly IDeserializer ValueDeserializer = new DeserializerBuilder()
+        .WithTypeConverter(HexValueTypeConverter.Instance)
+        .Build();
     static readonly IValueSerializer DefaultSerializer = new SerializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull)
+        .WithTypeConverter(HexValueTypeConverter.Instance)
         .BuildValueSerializer();
 
     public bool Accepts(Type type)
@@ -559,7 +583,7 @@ class MaskValueTypeConverter : IYamlTypeConverter
     {
         var maskValue = (MaskValue)value;
         if (string.IsNullOrEmpty(maskValue.Description))
-            DefaultSerializer.SerializeValue(emitter, maskValue.Value, typeof(int));
+            HexValueTypeConverter.Instance.WriteYaml(emitter, maskValue.Value, typeof(int), serializer);
         else
             DefaultSerializer.SerializeValue(emitter, value, type);
     }
