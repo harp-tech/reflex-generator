@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="*.tt" />
+    <T4Preprocess Include="*.tt" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mono.TextTemplating" Version="3.0.0" />
+    <PackageReference Include="T4.BuildTools" Version="3.0.0" />
   </ItemGroup>
 
 </Project>

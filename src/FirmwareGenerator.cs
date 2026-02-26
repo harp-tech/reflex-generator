@@ -1,107 +1,51 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using Mono.TextTemplating;
 
 namespace Harp.Generators;
 
 public class FirmwareGenerator
 {
-    readonly EmbeddedTemplateGenerator _generator;
-    readonly CompiledTemplate _appTemplate;
-    readonly CompiledTemplate _appImplTemplate;
-    readonly CompiledTemplate _appFuncsTemplate;
-    readonly CompiledTemplate _appFuncsImplTemplate;
-    readonly CompiledTemplate _appRegsTemplate;
-    readonly CompiledTemplate _appRegsImplTemplate;
-    readonly CompiledTemplate _interruptsTemplate;
+    readonly App _appTemplate = new();
+    readonly AppImpl _appImplTemplate = new();
+    readonly AppFuncs _appFuncsTemplate = new();
+    readonly AppFuncsImpl _appFuncsImplTemplate = new();
+    readonly AppRegs _appRegsTemplate = new();
+    readonly AppRegsImpl _appRegsImplTemplate = new();
+    readonly Interrupts _interruptsTemplate = new();
 
-    private FirmwareGenerator(
-        EmbeddedTemplateGenerator generator,
-        CompiledTemplate appTemplate,
-        CompiledTemplate appImplTemplate,
-        CompiledTemplate appFuncsTemplate,
-        CompiledTemplate appFuncsImplTemplate,
-        CompiledTemplate appRegsTemplate,
-        CompiledTemplate appRegsImplTemplate,
-        CompiledTemplate interruptsTemplate)
+    public FirmwareGenerator(string registerMetadataFileName, string iosMetadataFileName)
     {
-        _generator = generator;
-        _appTemplate = appTemplate;
-        _appImplTemplate = appImplTemplate;
-        _appFuncsTemplate = appFuncsTemplate;
-        _appFuncsImplTemplate = appFuncsImplTemplate;
-        _appRegsTemplate = appRegsTemplate;
-        _appRegsImplTemplate = appRegsImplTemplate;
-        _interruptsTemplate = interruptsTemplate;
+        var session = new Dictionary<string, object>
+        {
+            { "RegisterMetadataPath", Path.GetFullPath(registerMetadataFileName) },
+            { "IOMetadataPath", Path.GetFullPath(iosMetadataFileName) }
+        };
+        _appTemplate.Session = session;
+        _appImplTemplate.Session = session;
+        _appFuncsTemplate.Session = session;
+        _appFuncsImplTemplate.Session = session;
+        _appRegsTemplate.Session = session;
+        _appRegsImplTemplate.Session = session;
+        _interruptsTemplate.Session = session;
+        _appTemplate.Initialize();
+        _appImplTemplate.Initialize();
+        _appFuncsTemplate.Initialize();
+        _appFuncsImplTemplate.Initialize();
+        _appRegsTemplate.Initialize();
+        _appRegsImplTemplate.Initialize();
+        _interruptsTemplate.Initialize();
     }
 
-    public static async Task<FirmwareGenerator> Create()
-    {
-        var generator = new EmbeddedTemplateGenerator();
-        var appTemplateContents = EmbeddedTemplateGenerator.GetManifestResourceText("App.tt");
-        var appImplTemplateContents = EmbeddedTemplateGenerator.GetManifestResourceText("AppImpl.tt");
-        var appFuncsTemplateContents = EmbeddedTemplateGenerator.GetManifestResourceText("AppFuncs.tt");
-        var appFuncsImplTemplateContents = EmbeddedTemplateGenerator.GetManifestResourceText("AppFuncsImpl.tt");
-        var appRegsTemplateContents = EmbeddedTemplateGenerator.GetManifestResourceText("AppRegs.tt");
-        var appRegsImplTemplateContents = EmbeddedTemplateGenerator.GetManifestResourceText("AppRegsImpl.tt");
-        var interruptsTemplateContents = EmbeddedTemplateGenerator.GetManifestResourceText("Interrupts.tt");
+    public FirmwareHeaders GenerateHeaders() =>
+        new(App: _appTemplate.TransformText(),
+            AppFuncs: _appFuncsTemplate.TransformText(),
+            AppRegs: _appRegsTemplate.TransformText());
 
-        var appTemplate = await generator.CompileTemplateAsync(appTemplateContents);
-        generator.ThrowExceptionForGeneratorError();
-
-        var appImplTemplate = await generator.CompileTemplateAsync(appImplTemplateContents);
-        generator.ThrowExceptionForGeneratorError();
-
-        var appFuncsTemplate = await generator.CompileTemplateAsync(appFuncsTemplateContents);
-        generator.ThrowExceptionForGeneratorError();
-
-        var appFuncsImplTemplate = await generator.CompileTemplateAsync(appFuncsImplTemplateContents);
-        generator.ThrowExceptionForGeneratorError();
-
-        var appRegsTemplate = await generator.CompileTemplateAsync(appRegsTemplateContents);
-        generator.ThrowExceptionForGeneratorError();
-
-        var appRegsImplTemplate = await generator.CompileTemplateAsync(appRegsImplTemplateContents);
-        generator.ThrowExceptionForGeneratorError();
-
-        var interruptsTemplate = await generator.CompileTemplateAsync(interruptsTemplateContents);
-        generator.ThrowExceptionForGeneratorError();
-
-        return new FirmwareGenerator(
-            generator,
-            appTemplate,
-            appImplTemplate,
-            appFuncsTemplate,
-            appFuncsImplTemplate,
-            appRegsTemplate,
-            appRegsImplTemplate,
-            interruptsTemplate);
-    }
-
-    static string ProcessTemplate(
-        EmbeddedTemplateGenerator generator,
-        CompiledTemplate template,
-        string registerMetadataFileName,
-        string iosMetadataFileName = default)
-    {
-        var session = generator.GetOrCreateSession();
-        session["RegisterMetadataPath"] = Path.GetFullPath(registerMetadataFileName);
-        if (!string.IsNullOrEmpty(iosMetadataFileName))
-            session["IOMetadataPath"] = Path.GetFullPath(iosMetadataFileName);
-        return template.Process();
-    }
-
-    public FirmwareHeaders GenerateHeaders(string registerMetadataFileName, string iosMetadataFileName) =>
-        new(App: ProcessTemplate(_generator, _appTemplate, registerMetadataFileName, iosMetadataFileName),
-            AppFuncs: ProcessTemplate(_generator, _appFuncsTemplate, registerMetadataFileName, iosMetadataFileName),
-            AppRegs: ProcessTemplate(_generator, _appRegsTemplate, registerMetadataFileName, iosMetadataFileName));
-
-    public FirmwareImplementation GenerateImplementation(string registerMetadataFileName, string iosMetadataFileName) =>
-        new(App: ProcessTemplate(_generator, _appImplTemplate, registerMetadataFileName, iosMetadataFileName),
-            AppFuncs: ProcessTemplate(_generator, _appFuncsImplTemplate, registerMetadataFileName, iosMetadataFileName),
-            AppRegs: ProcessTemplate(_generator, _appRegsImplTemplate, registerMetadataFileName, iosMetadataFileName),
-            Interrupts: ProcessTemplate(_generator, _interruptsTemplate, registerMetadataFileName, iosMetadataFileName));
+    public FirmwareImplementation GenerateImplementation() =>
+        new(App: _appImplTemplate.TransformText(),
+            AppFuncs: _appFuncsImplTemplate.TransformText(),
+            AppRegs: _appRegsImplTemplate.TransformText(),
+            Interrupts: _interruptsTemplate.TransformText());
 }
 
 public record struct FirmwareHeaders(string App, string AppFuncs, string AppRegs)

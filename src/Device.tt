@@ -20,12 +20,7 @@ var deviceName = deviceMetadata.Device;
 #>
 using Bonsai;
 using Bonsai.Harp;
-<#
-foreach (var ns in Host.StandardImports)
-{
-    WriteLine("using " + ns + ";");
-}
-#>
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
