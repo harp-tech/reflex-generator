@@ -5,13 +5,11 @@ namespace Harp.Generators.Tests;
 [TestClass]
 public sealed class FirmwareGeneratorTests
 {
-    FirmwareGenerator generator;
     DirectoryInfo outputDirectory;
 
     [TestInitialize]
-    public async Task Initialize()
+    public void Initialize()
     {
-        generator = await FirmwareGenerator.Create();
         outputDirectory = Directory.CreateDirectory("FirmwareOutput");
         try { Directory.Delete(outputDirectory.FullName, recursive: true); }
         catch { } // best effort
@@ -23,8 +21,9 @@ public sealed class FirmwareGeneratorTests
     {
         metadataFileName = TestHelper.GetMetadataPath(metadataFileName);
         var iosMetadataFileName = Path.ChangeExtension(metadataFileName, ".ios.yml");
-        var headers = generator.GenerateHeaders(metadataFileName, iosMetadataFileName);
-        var implementation = generator.GenerateImplementation(metadataFileName, iosMetadataFileName);
+        var generator = new FirmwareGenerator(metadataFileName, iosMetadataFileName);
+        var headers = generator.GenerateHeaders();
+        var implementation = generator.GenerateImplementation();
 
         var outputFileName = Path.GetFileNameWithoutExtension(metadataFileName);
         var appOutputFileName = $"{outputFileName}.{FirmwareHeaders.AppFileName}";
