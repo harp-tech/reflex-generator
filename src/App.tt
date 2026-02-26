@@ -16,11 +16,21 @@
 <#
 var deviceMetadata = TemplateHelper.ReadDeviceMetadata(RegisterMetadataPath);
 #>
+#ifndef MAJOR_HW_VERSION
 #define MAJOR_HW_VERSION <#= deviceMetadata.HardwareTargets.Major #>
+#endif
+#ifndef MINOR_HW_VERSION
 #define MINOR_HW_VERSION <#= deviceMetadata.HardwareTargets.Minor #>
+#endif
+#ifndef MAJOR_FW_VERSION
 #define MAJOR_FW_VERSION <#= deviceMetadata.FirmwareVersion.Major #>
+#endif
+#ifndef MINOR_FW_VERSION
 #define MINOR_FW_VERSION <#= deviceMetadata.FirmwareVersion.Minor #>
+#endif
+#ifndef ASSEMBLY_VERSION
 #define ASSEMBLY_VERSION 0
+#endif
 
 
 /************************************************************************/
