@@ -6,11 +6,21 @@
 /************************************************************************/
 /* Define versions                                                      */
 /************************************************************************/
+#ifndef MAJOR_HW_VERSION
 #define MAJOR_HW_VERSION 1
+#endif
+#ifndef MINOR_HW_VERSION
 #define MINOR_HW_VERSION 0
+#endif
+#ifndef MAJOR_FW_VERSION
 #define MAJOR_FW_VERSION 0
+#endif
+#ifndef MINOR_FW_VERSION
 #define MINOR_FW_VERSION 1
+#endif
+#ifndef ASSEMBLY_VERSION
 #define ASSEMBLY_VERSION 0
+#endif
 
 
 /************************************************************************/
