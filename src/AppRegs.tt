@@ -1,9 +1,6 @@
-﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+﻿<#@ template debug="true" hostspecific="false" visibility="internal" language="C#" #>
 <#@ parameter name="RegisterMetadataPath" type="string" #>
 <#@ parameter name="IOMetadataPath" type="string" #>
-<#@ assembly name="System.Core" #>
-<#@ assembly name="Bonsai.Harp.dll" #>
-<#@ assembly name="Harp.Generators.dll" #>
 <#@ import namespace="Harp.Generators" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="System.Linq" #>
