@@ -1,4 +1,4 @@
-﻿<#@ template debug="true" hostspecific="false" visibility="internal" language="C#" #>
+﻿<#@ template debug="true" hostspecific="false" visibility="internal" language="C#" inherits="TemplateBase" #>
 <#@ parameter name="Namespace" type="string" #>
 <#@ parameter name="MetadataPath" type="string" #>
 <#@ import namespace="YamlDotNet.Serialization.NamingConventions" #>
