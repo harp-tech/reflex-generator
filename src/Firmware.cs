@@ -10,85 +10,239 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Harp.Generators;
 
+/// <summary>
+/// Specifies whether an IO pin will be used as input or output.
+/// </summary>
 public enum PinDirection
 {
+    /// <summary>
+    /// Specifies the pin will be used as an input.
+    /// </summary>
     Input,
+
+    /// <summary>
+    /// Specifies the pin will be used as an output.
+    /// </summary>
     Output
 }
 
+/// <summary>
+/// Specifies how an input pin is configured to handle floating inputs.
+/// </summary>
 public enum InputPinMode
 {
+    /// <summary>
+    /// Configures a pull-up on the input pin.
+    /// </summary>
     PullUp,
+
+    /// <summary>
+    /// Configures a pull-down on the input pin.
+    /// </summary>
     PullDown,
+
+    /// <summary>
+    /// Configures the input pin to a state of high impedance.
+    /// </summary>
     TriState,
+
+    /// <summary>
+    /// Configures a bus-holder latch circuit on the input pin.
+    /// </summary>
     BusHolder
 }
 
+/// <summary>
+/// Specifies when the interrupt event for an input pin should be triggered.
+/// </summary>
 public enum TriggerMode
 {
+    /// <summary>
+    /// No triggers will be configured for the input pin.
+    /// </summary>
     None,
+
+    /// <summary>
+    /// The interrupt event will be triggered on a rising edge.
+    /// </summary>
     Rising,
+
+    /// <summary>
+    /// The interrupt event will be triggered on a falling edge.
+    /// </summary>
     Falling,
+
+    /// <summary>
+    /// The interrupt event will be triggered when the input pin
+    /// changes logical state in either direction.
+    /// </summary>
     Toggle,
+
+    /// <summary>
+    /// The interrupt event will be triggered when the input pin is in
+    /// a logical low state.
+    /// </summary>
     Low
 }
 
+/// <summary>
+/// Specifies the priority of the interrupt event for an input pin.
+/// </summary>
 public enum InterruptPriority
 {
+    /// <summary>
+    /// Specifies no interrupt events will be raised.
+    /// </summary>
     Off,
+
+    /// <summary>
+    /// Specifies interrupt events will be raised with low priority.
+    /// </summary>
     Low,
+
+    /// <summary>
+    /// Specifies interrupt events will be raised with normal priority.
+    /// </summary>
     Medium,
+
+    /// <summary>
+    /// Specifies interrupt events will be raised with the highest priority.
+    /// </summary>
     High
 }
 
+/// <summary>
+/// Specifies the wiring configuration for an output pin.
+/// </summary>
 public enum OutputPinMode
 {
+    /// <summary>
+    /// Configures the output pin to be driven hard to either VCC or GND
+    /// following the digital logic state.
+    /// </summary>
     Digital,
+
+    /// <summary>
+    /// Configures the output pin for Wired-OR connection.
+    /// </summary>
     WiredOr,
+
+    /// <summary>
+    /// Configures the output pin for Wired-AND connection.
+    /// </summary>
     WiredAnd,
+
+    /// <summary>
+    /// Configures the output pin for Wired-OR with pull-down operation.
+    /// </summary>
     WiredOrPull,
+
+    /// <summary>
+    /// Configures the output pin for Wired-AND with pull-up operation.
+    /// </summary>
     WiredAndPull
 }
 
+/// <summary>
+/// Specifies the logical state of an IO pin.
+/// </summary>
 public enum LogicState
 {
+    /// <summary>
+    /// Specifies the pin is in a logical low state.
+    /// </summary>
     Low,
+
+    /// <summary>
+    /// Specifies the pin is in a logical high state.
+    /// </summary>
     High
 }
 
+/// <summary>
+/// Represents information about an IO pin configuration used to automatically generate firmware.
+/// </summary>
 public class PortPinInfo
 {
+    /// <summary>
+    /// Specifies the microcontroller port where the pin is located.
+    /// </summary>
     public string Port;
+
+    /// <summary>
+    /// Specifies the unique pin number in the defined port.
+    /// </summary>
     public int PinNumber;
+
+    /// <summary>
+    /// Specifies whether the pin will be used as input or output.
+    /// </summary>
     public PinDirection Direction;
+
+    /// <summary>
+    /// Specifies a summary description of the IO pin function.
+    /// </summary>
     public string Description = "";
 }
 
+/// <summary>
+/// Represents information about an input pin configuration used to automatically generate firmware.
+/// </summary>
 public class InputPinInfo : PortPinInfo
 {
+    /// <summary>
+    /// Specifies how the input pin is configured to handle floating inputs.
+    /// </summary>
     public InputPinMode PinMode;
+
+    /// <summary>
+    /// Specifies when the interrupt event for this pin should be triggered.
+    /// </summary>
     public TriggerMode TriggerMode;
+
+    /// <summary>
+    /// Specifies the priority of the interrupt event for this pin.
+    /// </summary>
     public InterruptPriority InterruptPriority;
+
+    /// <summary>
+    /// Specifies the interrupt number associated with this pin.
+    /// </summary>
     public int InterruptNumber;
 }
 
+/// <summary>
+/// Represents information about an output pin configuration used to automatically generate firmware.
+/// </summary>
 public class OutputPinInfo : PortPinInfo
 {
+    /// <summary>
+    /// Specifies whether reading the state of the output pin is allowed.
+    /// </summary>
     public bool AllowRead;
+
+    /// <summary>
+    /// Specifies the output pin wiring configuration.
+    /// </summary>
     public OutputPinMode PinMode;
+
+    /// <summary>
+    /// Specifies the initial state of the output pin at boot time.
+    /// </summary>
     public LogicState InitialState;
+
+    /// <summary>
+    /// Specifies whether the output logic of the pin should be inverted.
+    /// </summary>
     public bool Invert;
 }
 
-public static partial class TemplateHelper
+internal static partial class TemplateHelper
 {
     public static Dictionary<string, PortPinInfo> ReadPortPinMetadata(string path)
     {
         using var reader = new StreamReader(path);
-        var deserializerBuilder = new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance);
-        var portPinConverter = new PortPinInfoTypeConverter(deserializerBuilder.Build());
-        var deserializer = deserializerBuilder.WithTypeConverter(portPinConverter).Build();
-        return deserializer.Deserialize<Dictionary<string, PortPinInfo>>(reader);
+        return MetadataDeserializer.Instance.Deserialize<Dictionary<string, PortPinInfo>>(reader);
     }
 
     public static IEnumerable<KeyValuePair<string, T>> GetPortPinsOfType<T>(IDictionary<string, PortPinInfo> portPins) where T : PortPinInfo
@@ -219,12 +373,24 @@ class PortPinInfoTypeConverter(IDeserializer deserializer) : IYamlTypeConverter
     }
 }
 
-public class FirmwareNamingConvention : INamingConvention
+/// <summary>
+/// Translates property names into screaming snake case following the current
+/// ATxmega register naming convention.
+/// </summary>
+public sealed class FirmwareNamingConvention : INamingConvention
 {
     private const char Separator = '_';
 
+    /// <summary>
+    /// Gets a singleton instance of the <see cref="FirmwareNamingConvention"/> class.
+    /// </summary>
     public static readonly FirmwareNamingConvention Instance = new();
 
+    /// <summary>
+    /// Forward converts a property name from camel case into screaming snake case. 
+    /// </summary>
+    /// <param name="value">A property name in camel case.</param>
+    /// <returns>The corresponding property name in screaming snake case.</returns>
     public string Apply(string value)
     {
         var startIndex = 0;
@@ -248,6 +414,11 @@ public class FirmwareNamingConvention : INamingConvention
         return value.ToUpperInvariant();
     }
 
+    /// <summary>
+    /// Backward converts a property name from screaming snake case into camel case. 
+    /// </summary>
+    /// <param name="value">A property name in screaming snake case.</param>
+    /// <returns>The corresponding property name in camel case.</returns>
     public string Reverse(string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -260,7 +431,7 @@ public class FirmwareNamingConvention : INamingConvention
     }
 }
 
-public class FirmwareGroupMaskNamingConvention : INamingConvention
+class FirmwareGroupMaskNamingConvention : INamingConvention
 {
     public static readonly FirmwareGroupMaskNamingConvention Instance = new();
     static readonly string[] TrimSuffixes = ["StateConfiguration", "Configuration"];
