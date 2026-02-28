@@ -546,7 +546,6 @@ if (isPrivate)
                 member.Value,
                 "result",
                 register,
-                deviceMetadata,
                 assigned[payloadIndex]);
             assigned[payloadIndex] = true;
 #>

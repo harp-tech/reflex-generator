@@ -42,8 +42,8 @@ public sealed class MetadataSerializerTests
         var metadataContents = File.ReadAllText(metadataFileName);
         metadataContents = NormalizeYaml(metadataContents);
 
-        var deviceMetadata = TemplateHelper.Deserializer.Deserialize<DeviceInfo>(metadataContents);
-        var roundTripContents = TemplateHelper.Serializer.Serialize(deviceMetadata);
+        var deviceMetadata = MetadataDeserializer.Instance.Deserialize<DeviceInfo>(metadataContents);
+        var roundTripContents = MetadataSerializer.Instance.Serialize(deviceMetadata);
         try
         {
             Assert.AreEqual(metadataContents, roundTripContents);

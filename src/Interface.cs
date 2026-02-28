@@ -10,82 +10,273 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Harp.Generators;
 
+/// <summary>
+/// Represents information about Harp device functionality and operation registers.
+/// </summary>
 public class DeviceInfo
 {
+    /// <summary>
+    /// Specifies the name of the device.
+    /// </summary>
     public string Device;
+
+    /// <summary>
+    /// Specifies the unique identifier for this device type.
+    /// </summary>
     public int WhoAmI;
+
+    /// <summary>
+    /// Specifies the version of the device firmware.
+    /// </summary>
     public HarpVersion FirmwareVersion;
+
+    /// <summary>
+    /// Specifies the version of the device hardware.
+    /// </summary>
     public HarpVersion HardwareTargets;
+
+    /// <summary>
+    /// Specifies the collection of registers implementing the device function.
+    /// </summary>
     public Dictionary<string, RegisterInfo> Registers = [];
+
+    /// <summary>
+    /// Specifies the collection of masks available to be used with the different registers.
+    /// </summary>
     public Dictionary<string, BitMaskInfo> BitMasks = [];
+
+    /// <summary>
+    /// Specifies the collection of group masks available to be used with the different registers.
+    /// </summary>
     public Dictionary<string, GroupMaskInfo> GroupMasks = [];
 }
 
+/// <summary>
+/// Specifies the operations which can be used to access register data.
+/// </summary>
 [Flags]
 public enum RegisterAccess
 {
+    /// <summary>
+    /// Specifies that the register will accept a request to read the payload value. 
+    /// </summary>
     Read = 0x1,
+
+    /// <summary>
+    /// Specifies that the register will accept a request to write the payload value. 
+    /// </summary>
     Write = 0x2,
+
+    /// <summary>
+    /// Specifies that the device may send messages to the controller reporting the
+    /// contents of the register.
+    /// </summary>
     Event = 0x4
 }
 
+/// <summary>
+/// Specifies whether a register is exposed in the high-level interface.
+/// </summary>
 public enum RegisterVisibility
 {
+    /// <summary>
+    /// Specifies whether the register is exposed to the high-level interface.
+    /// </summary>
     Public,
+
+    /// <summary>
+    /// Specifies whether the register is hidden to the high-level interface.
+    /// </summary>
     Private
 }
 
+/// <summary>
+/// Specifies a custom converter which will be used to parse or format the payload or
+/// payload member value.
+/// </summary>
 public enum MemberConverter
 {
+    /// <summary>
+    /// Specifies that no custom conversion is required.
+    /// </summary>
     None,
+
+    /// <summary>
+    /// Specifies that the custom converter will operate on the specified payload type.
+    /// </summary>
     Payload,
+
+    /// <summary>
+    /// Specifies that the custom converter should operate directly in raw payload bytes.
+    /// </summary>
     RawPayload
 }
 
+/// <summary>
+/// Represents information about the functionality and operation of a specific register.
+/// </summary>
 public class RegisterInfo
 {
+    /// <summary>
+    /// Specifies the unique 8-bit address of the register.
+    /// </summary>
     [YamlMember(DefaultValuesHandling = DefaultValuesHandling.Preserve)]
     public int Address;
+
+    /// <summary>
+    /// Specifies the type of the register payload.
+    /// </summary>
     public PayloadType Type;
+
+    /// <summary>
+    /// Specifies the length of the register payload.
+    /// </summary>
     public int Length;
+
+    /// <summary>
+    /// Specifies the expected use of the register.
+    /// </summary>
     public RegisterAccess Access = RegisterAccess.Read;
+
+    /// <summary>
+    /// Specifies whether the register function is exposed in the high-level interface.
+    /// </summary>
     public RegisterVisibility Visibility;
+
+    /// <summary>
+    /// Specifies whether register values can be saved in non-volatile memory.
+    /// </summary>
     public bool Volatile;
+
+    /// <summary>
+    /// Specifies the name of the bit mask or group mask used to represent the payload value.
+    /// </summary>
     public string MaskType;
+
+    /// <summary>
+    /// Specifies the name of the type used to represent the payload value in the high-level interface.
+    /// </summary>
     public string InterfaceType;
+
+    /// <summary>
+    /// Specifies a custom converter which will be used to parse or format the payload value.
+    /// </summary>
     public MemberConverter Converter;
+
+    /// <summary>
+    /// Specifies the minimum allowable value for the payload.
+    /// </summary>
     public float? MinValue;
+
+    /// <summary>
+    /// Specifies the maximum allowable value for the payload.
+    /// </summary>
     public float? MaxValue;
+
+    /// <summary>
+    /// Specifies the default value for the payload.
+    /// </summary>
     public float? DefaultValue;
+
+    /// <summary>
+    /// Specifies a summary description of the register function.
+    /// </summary>
     public string Description = "";
+
+    /// <summary>
+    /// Specifies a collection of payload members describing the contents
+    /// of the raw payload value.
+    /// </summary>
     public Dictionary<string, PayloadMemberInfo> PayloadSpec;
 
+    /// <summary>
+    /// Gets a value indicating whether a custom converter will be used to parse or
+    /// format the payload.
+    /// </summary>
     [YamlIgnore]
     public bool HasConverter => Converter > MemberConverter.None;
 
+    /// <summary>
+    /// Gets the name of the type used to represent the payload for interface conversions.
+    /// </summary>
     [YamlIgnore]
     public string PayloadInterfaceType => Converter == MemberConverter.RawPayload
         ? "ArraySegment<byte>"
         : TemplateHelper.GetInterfaceType(Type, Length);
 }
 
+/// <summary>
+/// Represents information about a specific payload member.
+/// </summary>
 public class PayloadMemberInfo
 {
+    /// <summary>
+    /// Specifies the mask used to read and write this payload member.
+    /// </summary>
     [YamlConverter(typeof(HexValueTypeConverter))]
     public int? Mask;
+
+    /// <summary>
+    /// Specifies the zero-based index at which encoding of this payload member starts.
+    /// </summary>
     public int? Offset;
+
+    /// <summary>
+    /// Specifies the number of elements used to encode this payload member.
+    /// </summary>
     public int? Length;
+
+    /// <summary>
+    /// Specifies the name of the bit mask or group mask used to represent this payload member.
+    /// </summary>
     public string MaskType;
+
+    /// <summary>
+    /// Specifies the name of the type used to represent this payload member in the high-level interface.
+    /// </summary>
     public string InterfaceType;
+
+    /// <summary>
+    /// Specifies a custom converter which will be used to parse or format this payload member.
+    /// </summary>
     public MemberConverter Converter;
+
+    /// <summary>
+    /// Specifies the minimum allowable value for this payload member.
+    /// </summary>
     public float? MinValue;
+
+    /// <summary>
+    /// Specifies the maximum allowable value for this payload member.
+    /// </summary>
     public float? MaxValue;
+
+    /// <summary>
+    /// Specifies the default value for this payload member.
+    /// </summary>
     public float? DefaultValue;
+
+    /// <summary>
+    /// Specifies a summary description of this payload member.
+    /// </summary>
     public string Description = "";
 
+    /// <summary>
+    /// Gets a value indicating whether a custom converter will be used to parse or
+    /// format this payload member.
+    /// </summary>
     [YamlIgnore]
     public bool HasConverter => Converter > MemberConverter.None;
 
+    /// <summary>
+    /// Gets the name of the type used to represent this payload member in the high-level interface.
+    /// </summary>
+    /// <param name="payloadType">
+    /// The raw payload type of the register where this payload member is located.
+    /// </param>
+    /// <returns>
+    /// The high-level interface type.
+    /// </returns>
     public string GetConverterInterfaceType(PayloadType payloadType)
     {
         return Converter switch
@@ -99,58 +290,76 @@ public class PayloadMemberInfo
     }
 }
 
+/// <summary>
+/// Represents a bit mask used for reading or writing specific registers.
+/// </summary>
 public class BitMaskInfo
 {
+    /// <summary>
+    /// Specifies a summary description of the bit mask function.
+    /// </summary>
     public string Description = "";
+
+    /// <summary>
+    /// Specifies the collection of bit mask values.
+    /// </summary>
     public Dictionary<string, MaskValue> Bits = [];
 
+    /// <summary>
+    /// Gets the name of the underlying primitive type used to represent a bit mask value
+    /// in the high-level interface.
+    /// </summary>
     [YamlIgnore]
     public string InterfaceType => TemplateHelper.GetInterfaceType(Bits);
 }
 
+/// <summary>
+/// Represents a group mask used for reading or writing specific registers.
+/// </summary>
 public class GroupMaskInfo
 {
+    /// <summary>
+    /// Specifies a summary description of the group mask function.
+    /// </summary>
     public string Description = "";
+
+    /// <summary>
+    /// Specifies the collection of group mask values.
+    /// </summary>
     public Dictionary<string, MaskValue> Values = [];
 
+    /// <summary>
+    /// Gets the name of the underlying primitive type used to represent a group mask value
+    /// in the high-level interface.
+    /// </summary>
     [YamlIgnore]
     public string InterfaceType => TemplateHelper.GetInterfaceType(Values);
 }
 
+/// <summary>
+/// Represents a bit mask or group mask value.
+/// </summary>
 public class MaskValue
 {
+    /// <summary>
+    /// Specifies the numerical mask value.
+    /// </summary>
     [YamlConverter(typeof(HexValueTypeConverter))]
     public int Value;
+
+    /// <summary>
+    /// Specifies a summary description of the mask value function.
+    /// </summary>
     public string Description;
 }
 
-public static partial class TemplateHelper
+internal static partial class TemplateHelper
 {
-    public static readonly IDeserializer Deserializer = new DeserializerBuilder()
-        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        .WithTypeConverter(RegisterAccessTypeConverter.Instance)
-        .WithTypeConverter(MaskValueTypeConverter.Instance)
-        .WithTypeConverter(HarpVersionTypeConverter.Instance)
-        .WithTypeConverter(HexValueTypeConverter.Instance)
-        .Build();
-
-    public static readonly ISerializer Serializer = new SerializerBuilder()
-        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        .WithTypeConverter(RegisterAccessTypeConverter.Instance)
-        .WithTypeConverter(MaskValueTypeConverter.Instance)
-        .WithTypeConverter(HarpVersionTypeConverter.Instance)
-        .WithTypeConverter(HexValueTypeConverter.Instance)
-        .ConfigureDefaultValuesHandling(
-            DefaultValuesHandling.OmitNull |
-            DefaultValuesHandling.OmitDefaults |
-            DefaultValuesHandling.OmitEmptyCollections)
-        .Build();
-
     public static DeviceInfo ReadDeviceMetadata(string path)
     {
         using var reader = new StreamReader(path);
         var parser = new MergingParser(new Parser(reader));
-        return Deserializer.Deserialize<DeviceInfo>(parser);
+        return MetadataDeserializer.Instance.Deserialize<DeviceInfo>(parser);
     }
 
     public static string GetInterfaceType(string name, RegisterInfo register)
@@ -407,7 +616,6 @@ public static partial class TemplateHelper
         PayloadMemberInfo member,
         string expression,
         RegisterInfo register,
-        DeviceInfo deviceMetadata,
         bool assigned)
     {
         var payloadType = register.Type;
@@ -438,7 +646,6 @@ public static partial class TemplateHelper
             return $"{expression}{memberIndexer}{memberConversion}";
         }
     }
-
 
     public static string GetPayloadMemberValueFormatter(
         string name,
