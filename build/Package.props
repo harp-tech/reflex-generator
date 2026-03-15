@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <PackageTags>Harp Generators</PackageTags>
-    <PackageProjectUrl>https://harp-tech.org</PackageProjectUrl>
+    <PackageProjectUrl>https://harp-tech.org/generators</PackageProjectUrl>
 
     <Authors>harp-tech</Authors>
     <Copyright>Copyright © harp-tech and Contributors</Copyright>
