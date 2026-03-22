@@ -75,8 +75,8 @@ foreach (var registerMetadata in publicRegisters)
         /// A <see cref="CancellationToken"/> which can be used to cancel the operation.
         /// </param>
         /// <returns>
-        /// A task that represents the asynchronous read operation. The <see cref="Task{TResult}.Result"/>
-        /// property contains the register payload.
+        /// A task that represents the asynchronous read operation. The task result contains
+        /// the register payload.
         /// </returns>
         public async Task<<#= interfaceType #>> Read<#= registerMetadata.Key #>Async(CancellationToken cancellationToken = default)
         {
@@ -91,8 +91,8 @@ foreach (var registerMetadata in publicRegisters)
         /// A <see cref="CancellationToken"/> which can be used to cancel the operation.
         /// </param>
         /// <returns>
-        /// A task that represents the asynchronous read operation. The <see cref="Task{TResult}.Result"/>
-        /// property contains the timestamped register payload.
+        /// A task that represents the asynchronous read operation. The task result contains
+        /// the timestamped register payload.
         /// </returns>
         public async Task<Timestamped<<#= interfaceType #>>> ReadTimestamped<#= registerMetadata.Key #>Async(CancellationToken cancellationToken = default)
         {
@@ -107,7 +107,7 @@ foreach (var registerMetadata in publicRegisters)
         /// <summary>
         /// Asynchronously writes a value to the <see cref="<#= registerMetadata.Key #>"/> register.
         /// </summary>
-        /// <param name="value">The value to be stored in the register.</param>
+        /// <param name="value">The value to write in the register.</param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken"/> which can be used to cancel the operation.
         /// </param>
