@@ -190,12 +190,12 @@ typedef struct
 #define B_TEST_DI_PORT1                 (1<<9)       // 
 #define B_SUPPLY_PORT0                  (1<<10)      // 
 #define B_PORT_DIO1                     (1<<11)      // 
-#define MSK_PWM_PORT_SEL                0x0F         // 
+#define MSK_PWM_PORT                    0x0F         // 
 #define GM_PWM_PORT_PWM0                0x01         // 
 #define GM_PWM_PORT_PWM1                0x02         // 
 #define GM_PWM_PORT_PWM2                0x04         // 
 #define GM_PWM_PORT_PWM3                0x0A         // 
-#define MSK_ENCODER_MODE_SEL            0x01         // 
+#define MSK_ENCODER_MODE                0x01         // 
 #define GM_ENCODER_MODE_POSITION        0x00         // 
 #define GM_ENCODER_MODE_DISPLACEMENT    0x01         // 
 

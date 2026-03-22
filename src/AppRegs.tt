@@ -183,10 +183,10 @@ foreach (var groupMask in DeviceMetadata.GroupMasks)
     var mask = groupMask.Value;
     var maskSelect = TemplateHelper.GetMaskSelect(mask).ToString("X2");
     var maskName = TemplateHelper.GetFirmwareGroupMaskName(groupMask.Key);
-    var maskNamePadding = new string(' ', maxMaskNameLength - maskName.Length);
+    var maskNamePadding = new string(' ', maxMaskNameLength - maskName.Length + 4);
     var maskSelectPadding = new string(' ', 11 - maskSelect.Length);
 #>
-#define MSK_<#= maskName #>_SEL<#= maskNamePadding #>0x<#= maskSelect #><#= maskSelectPadding #>// 
+#define MSK_<#= maskName #><#= maskNamePadding #>0x<#= maskSelect #><#= maskSelectPadding #>// 
 <#
 
     foreach (var member in mask.Values)
