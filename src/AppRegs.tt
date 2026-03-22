@@ -22,7 +22,7 @@ int totalRegisterSize = 0;
 foreach (var registerMetadata in DeviceMetadata.Registers)
 {
     var register = registerMetadata.Value;
-    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var registerName = TemplateHelper.GetFirmwareName(registerMetadata.Key);
     maxRegisterNameLength = Math.Max(maxRegisterNameLength, registerName.Length);
     minRegisterAddress = Math.Min(minRegisterAddress, register.Address);
     maxRegisterAddress = Math.Max(maxRegisterAddress, register.Address);
@@ -33,8 +33,8 @@ foreach (var registerMetadata in DeviceMetadata.Registers)
 void init_ios(void);
 <#
 var maxPinNameLength = Math.Max(
-    inputPins.Count > 0 ? inputPins.Max(pin => FirmwareNamingConvention.Instance.Apply(pin.Key).Length) : 0,
-    outputPins.Count > 0 ? outputPins.Max(pin => FirmwareNamingConvention.Instance.Apply(pin.Key).Length) : 0);
+    inputPins.Count > 0 ? inputPins.Max(pin => TemplateHelper.GetFirmwareName(pin.Key).Length) : 0,
+    outputPins.Count > 0 ? outputPins.Max(pin => TemplateHelper.GetFirmwareName(pin.Key).Length) : 0);
 if (inputPins.Count > 0)
 {
 #>
@@ -44,7 +44,7 @@ if (inputPins.Count > 0)
 <#
     foreach (var pin in inputPins)
     {
-        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
         var descriptionOffset = maxPinNameLength - pinName.Length + 10;
 #>
 // <#= pinName #><#= new string(' ', descriptionOffset) #>Description: <#= pin.Value.Description #>
@@ -56,7 +56,7 @@ if (inputPins.Count > 0)
     foreach (var pin in inputPins)
     {
         var pinInfo = pin.Value;
-        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
         var nameOffset = maxPinNameLength - pinName.Length + 4;
 #>
 #define read_<#= pinName #> read_io(<#= pinInfo.Port #>, <#= pinInfo.PinNumber #>)<#= new string(' ', nameOffset) #>// <#= pinName #>
@@ -77,7 +77,7 @@ if (outputPins.Count > 0)
 <#
     foreach (var pin in outputPins)
     {
-        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
         var descriptionOffset = maxPinNameLength - pinName.Length + 10;
 #>
 // <#= pinName #><#= new string(' ', descriptionOffset) #>Description: <#= pin.Value.Description #>
@@ -88,7 +88,7 @@ if (outputPins.Count > 0)
     foreach (var pin in outputPins)
     {
         var pinInfo = pin.Value;
-        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
         var setFunc = pinInfo.Invert ? "clear_io" : "set_io";
         var clrFunc = pinInfo.Invert ? "set_io" : "clear_io";
 #>
@@ -114,7 +114,7 @@ typedef struct
 foreach (var registerMetadata in DeviceMetadata.Registers)
 {
     var register = registerMetadata.Value;
-    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var registerName = TemplateHelper.GetFirmwareName(registerMetadata.Key);
     var arrayType = register.Length > 0 ? $"[{register.Length}]" : string.Empty;
     var firmwareType = TemplateHelper.GetFirmwareType(register.Type);
 #>
@@ -133,7 +133,7 @@ foreach (var registerMetadata in DeviceMetadata.Registers)
 {
     var register = registerMetadata.Value;
     var registerAddress = register.Address.ToString();
-    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var registerName = TemplateHelper.GetFirmwareName(registerMetadata.Key);
     var registerType = TemplateHelper.GetFirmwareRegisterType(register.Type);
     var addressOffset = new string(' ', maxRegisterNameLength - registerName.Length - registerAddress.Length + 6);
     var descriptionOffset = new string(' ', 7 - registerType.Length);
@@ -158,25 +158,17 @@ foreach (var registerMetadata in DeviceMetadata.Registers)
 /* Registers' bits                                                      */
 /************************************************************************/
 <#
-var maxBitNameLength = DeviceMetadata.BitMasks.Values
-    .SelectMany(mask => mask.Bits)
-    .Select(bitField => FirmwareNamingConvention.Instance.Apply(bitField.Key).Length)
-    .Prepend(0).Max();
-var maxMemberNameLength = (from groupMask in DeviceMetadata.GroupMasks
-                           let maskName = FirmwareGroupMaskNamingConvention.Instance.Apply(groupMask.Key)
-                           from member in groupMask.Value.Values
-                           let memberName = FirmwareNamingConvention.Instance.Apply(member.Key)
-                           select maskName.Length + memberName.Length)
-                           .Prepend(0).Max();
-var maxBitMemberNameLength = Math.Max(maxBitNameLength, maxMemberNameLength);
+var maxBitMaskNameLength = TemplateHelper.GetMaxFirmwareBitMaskNameLength(DeviceMetadata);
+var maxGroupMaskNameLength = TemplateHelper.GetMaxFirmwareGroupMaskNameLength(DeviceMetadata);
+var maxMaskNameLength = Math.Max(maxBitMaskNameLength, maxGroupMaskNameLength);
 foreach (var bitMask in DeviceMetadata.BitMasks)
 {
     var mask = bitMask.Value;
     foreach (var bitField in mask.Bits)
     {
         var fieldInfo = bitField.Value;
-        var fieldName = FirmwareNamingConvention.Instance.Apply(bitField.Key);
-        var fieldNamePadding = new string(' ', maxBitMemberNameLength - fieldName.Length + 6);
+        var fieldName = TemplateHelper.GetFirmwareName(bitField.Key);
+        var fieldNamePadding = new string(' ', maxMaskNameLength - fieldName.Length + 6);
         var bitShift = (int)Math.Log(fieldInfo.Value, 2);
         var bitShiftPadding = new string(' ', 8 - bitShift.ToString().Length);
 #>
@@ -190,8 +182,8 @@ foreach (var groupMask in DeviceMetadata.GroupMasks)
 {
     var mask = groupMask.Value;
     var maskSelect = TemplateHelper.GetMaskSelect(mask).ToString("X2");
-    var maskName = FirmwareGroupMaskNamingConvention.Instance.Apply(groupMask.Key);
-    var maskNamePadding = new string(' ', maxBitMemberNameLength - maskName.Length);
+    var maskName = TemplateHelper.GetFirmwareGroupMaskName(groupMask.Key);
+    var maskNamePadding = new string(' ', maxMaskNameLength - maskName.Length);
     var maskSelectPadding = new string(' ', 11 - maskSelect.Length);
 #>
 #define MSK_<#= maskName #>_SEL<#= maskNamePadding #>0x<#= maskSelect #><#= maskSelectPadding #>// 
@@ -200,8 +192,8 @@ foreach (var groupMask in DeviceMetadata.GroupMasks)
     foreach (var member in mask.Values)
     {
         var memberInfo = member.Value;
-        var memberName = FirmwareNamingConvention.Instance.Apply(member.Key);
-        var memberNamePadding = new string(' ', maxBitMemberNameLength - memberName.Length - maskName.Length + 4);
+        var memberName = TemplateHelper.GetFirmwareName(member.Key);
+        var memberNamePadding = new string(' ', maxMaskNameLength - memberName.Length - maskName.Length + 4);
         var memberHexValue = memberInfo.Value.ToString("X2");
         var memberHexPadding = new string(' ', 11 - memberHexValue.Length);
 #>

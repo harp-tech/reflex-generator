@@ -50,7 +50,8 @@ namespace Harp.Generators.Tests
             { 42, typeof(PulseDOPort0) },
             { 43, typeof(PulseDO0) },
             { 100, typeof(StartPulse) },
-            { 101, typeof(StartPulseTrain) }
+            { 101, typeof(StartPulseTrain) },
+            { 103, typeof(EncoderMode) }
         };
 
         /// <summary>
@@ -279,6 +280,7 @@ namespace Harp.Generators.Tests
     /// <seealso cref="PulseDO0"/>
     /// <seealso cref="StartPulse"/>
     /// <seealso cref="StartPulseTrain"/>
+    /// <seealso cref="EncoderMode"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -293,6 +295,7 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(PulseDO0))]
     [XmlInclude(typeof(StartPulse))]
     [XmlInclude(typeof(StartPulseTrain))]
+    [XmlInclude(typeof(EncoderMode))]
     [Description("Filters register-specific messages reported by the Tests device.")]
     public class FilterRegister : FilterRegisterBuilder, INamedElement
     {
@@ -328,6 +331,7 @@ namespace Harp.Generators.Tests
     /// <seealso cref="PulseDO0"/>
     /// <seealso cref="StartPulse"/>
     /// <seealso cref="StartPulseTrain"/>
+    /// <seealso cref="EncoderMode"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -342,6 +346,7 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(PulseDO0))]
     [XmlInclude(typeof(StartPulse))]
     [XmlInclude(typeof(StartPulseTrain))]
+    [XmlInclude(typeof(EncoderMode))]
     [XmlInclude(typeof(TimestampedDigitalInputs))]
     [XmlInclude(typeof(TimestampedAnalogData))]
     [XmlInclude(typeof(TimestampedComplexConfiguration))]
@@ -356,6 +361,7 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(TimestampedPulseDO0))]
     [XmlInclude(typeof(TimestampedStartPulse))]
     [XmlInclude(typeof(TimestampedStartPulseTrain))]
+    [XmlInclude(typeof(TimestampedEncoderMode))]
     [Description("Filters and selects specific messages reported by the Tests device.")]
     public partial class Parse : ParseBuilder, INamedElement
     {
@@ -388,6 +394,7 @@ namespace Harp.Generators.Tests
     /// <seealso cref="PulseDO0"/>
     /// <seealso cref="StartPulse"/>
     /// <seealso cref="StartPulseTrain"/>
+    /// <seealso cref="EncoderMode"/>
     [XmlInclude(typeof(DigitalInputs))]
     [XmlInclude(typeof(AnalogData))]
     [XmlInclude(typeof(ComplexConfiguration))]
@@ -402,6 +409,7 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(PulseDO0))]
     [XmlInclude(typeof(StartPulse))]
     [XmlInclude(typeof(StartPulseTrain))]
+    [XmlInclude(typeof(EncoderMode))]
     [Description("Formats a sequence of values as specific Tests register messages.")]
     public partial class Format : FormatBuilder, INamedElement
     {
@@ -1924,6 +1932,103 @@ namespace Harp.Generators.Tests
     }
 
     /// <summary>
+    /// Represents a register that configures the operation mode of the encoder.
+    /// </summary>
+    [Description("Configures the operation mode of the encoder.")]
+    public partial class EncoderMode
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="EncoderMode"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 103;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="EncoderMode"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U8;
+
+        /// <summary>
+        /// Represents the length of the <see cref="EncoderMode"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 1;
+
+        /// <summary>
+        /// Returns the payload data for <see cref="EncoderMode"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static EncoderModeMask GetPayload(HarpMessage message)
+        {
+            return (EncoderModeMask)message.GetPayloadByte();
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="EncoderMode"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<EncoderModeMask> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayloadByte();
+            return Timestamped.Create((EncoderModeMask)payload.Value, payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="EncoderMode"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="EncoderMode"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, EncoderModeMask value)
+        {
+            return HarpMessage.FromByte(Address, messageType, (byte)value);
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="EncoderMode"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="EncoderMode"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, EncoderModeMask value)
+        {
+            return HarpMessage.FromByte(Address, timestamp, messageType, (byte)value);
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// EncoderMode register.
+    /// </summary>
+    /// <seealso cref="EncoderMode"/>
+    [Description("Filters and selects timestamped messages from the EncoderMode register.")]
+    public partial class TimestampedEncoderMode
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="EncoderMode"/> register. This field is constant.
+        /// </summary>
+        public const int Address = EncoderMode.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="EncoderMode"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<EncoderModeMask> GetPayload(HarpMessage message)
+        {
+            return EncoderMode.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
     /// Represents an operator which creates standard message payloads for the
     /// Tests device.
     /// </summary>
@@ -1941,6 +2046,7 @@ namespace Harp.Generators.Tests
     /// <seealso cref="CreatePulseDO0Payload"/>
     /// <seealso cref="CreateStartPulsePayload"/>
     /// <seealso cref="CreateStartPulseTrainPayload"/>
+    /// <seealso cref="CreateEncoderModePayload"/>
     [XmlInclude(typeof(CreateDigitalInputsPayload))]
     [XmlInclude(typeof(CreateAnalogDataPayload))]
     [XmlInclude(typeof(CreateComplexConfigurationPayload))]
@@ -1955,6 +2061,7 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(CreatePulseDO0Payload))]
     [XmlInclude(typeof(CreateStartPulsePayload))]
     [XmlInclude(typeof(CreateStartPulseTrainPayload))]
+    [XmlInclude(typeof(CreateEncoderModePayload))]
     [XmlInclude(typeof(CreateTimestampedDigitalInputsPayload))]
     [XmlInclude(typeof(CreateTimestampedAnalogDataPayload))]
     [XmlInclude(typeof(CreateTimestampedComplexConfigurationPayload))]
@@ -1969,6 +2076,7 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(CreateTimestampedPulseDO0Payload))]
     [XmlInclude(typeof(CreateTimestampedStartPulsePayload))]
     [XmlInclude(typeof(CreateTimestampedStartPulseTrainPayload))]
+    [XmlInclude(typeof(CreateTimestampedEncoderModePayload))]
     [Description("Creates standard message payloads for the Tests device.")]
     public partial class CreateMessage : CreateMessageBuilder, INamedElement
     {
@@ -2879,6 +2987,60 @@ namespace Harp.Generators.Tests
     }
 
     /// <summary>
+    /// Represents an operator that creates a message payload
+    /// that configures the operation mode of the encoder.
+    /// </summary>
+    [DisplayName("EncoderModePayload")]
+    [Description("Creates a message payload that configures the operation mode of the encoder.")]
+    public partial class CreateEncoderModePayload
+    {
+        /// <summary>
+        /// Gets or sets the value that configures the operation mode of the encoder.
+        /// </summary>
+        [Description("The value that configures the operation mode of the encoder.")]
+        public EncoderModeMask EncoderMode { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the EncoderMode register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public EncoderModeMask GetPayload()
+        {
+            return EncoderMode;
+        }
+
+        /// <summary>
+        /// Creates a message that configures the operation mode of the encoder.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the EncoderMode register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Harp.Generators.Tests.EncoderMode.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// that configures the operation mode of the encoder.
+    /// </summary>
+    [DisplayName("TimestampedEncoderModePayload")]
+    [Description("Creates a timestamped message payload that configures the operation mode of the encoder.")]
+    public partial class CreateTimestampedEncoderModePayload : CreateEncoderModePayload
+    {
+        /// <summary>
+        /// Creates a timestamped message that configures the operation mode of the encoder.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the EncoderMode register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Harp.Generators.Tests.EncoderMode.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
     /// Represents the payload of the AnalogData register.
     /// </summary>
     public struct AnalogDataPayload
@@ -3309,6 +3471,15 @@ namespace Harp.Generators.Tests
         Pwm1 = 2,
         Pwm2 = 4,
         Pwm3 = 10
+    }
+
+    /// <summary>
+    /// Specifies the type of encoder mode.
+    /// </summary>
+    public enum EncoderModeMask : byte
+    {
+        Position = 0,
+        Displacement = 1
     }
 
     internal static partial class PayloadMarshal

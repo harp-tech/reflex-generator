@@ -26,7 +26,7 @@ int totalRegisterSize = 0;
 foreach (var registerMetadata in deviceRegisters)
 {
     var register = registerMetadata.Value;
-    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var registerName = TemplateHelper.GetFirmwareName(registerMetadata.Key);
     maxRegisterNameLength = Math.Max(maxRegisterNameLength, registerName.Length);
     minRegisterAddress = Math.Min(minRegisterAddress, register.Address);
     maxRegisterAddress = Math.Max(maxRegisterAddress, register.Address);
@@ -40,8 +40,8 @@ foreach (var registerMetadata in deviceRegisters)
 void init_ios(void)
 {<#
 var maxPinNameLength = Math.Max(
-    inputPins.Count > 0 ? inputPins.Max(pin => FirmwareNamingConvention.Instance.Apply(pin.Key).Length) : 0,
-    outputPins.Count > 0 ? outputPins.Max(pin => FirmwareNamingConvention.Instance.Apply(pin.Key).Length) : 0);
+    inputPins.Count > 0 ? inputPins.Max(pin => TemplateHelper.GetFirmwareName(pin.Key).Length) : 0,
+    outputPins.Count > 0 ? outputPins.Max(pin => TemplateHelper.GetFirmwareName(pin.Key).Length) : 0);
 if (inputPins.Count > 0)
 {
 #>
@@ -51,7 +51,7 @@ if (inputPins.Count > 0)
     foreach (var pin in inputPins)
     {
         var pinInfo = pin.Value;
-        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
         var pullMode = TemplateHelper.GetFirmwarePullMode(pinInfo.PinMode);
         var senseMode = TemplateHelper.GetFirmwareSenseMode(pinInfo.TriggerMode);
         var descriptionPadding = new string(' ', 49 - pinInfo.Port.Length - pullMode.Length - senseMode.Length);
@@ -72,7 +72,7 @@ if (inputPins.Count > 0)
             var pinInfo = pin.Value;
             var port = pinInfo.Port;
             var pinNumber = pinInfo.PinNumber.ToString();
-            var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+            var pinName = TemplateHelper.GetFirmwareName(pin.Key);
             if (!pinInfo.InterruptNumber.HasValue)
                 Error($"({pinName}) Interrupt number must be specified if interrupt priority is set.");
             var interruptNumber = pinInfo.InterruptNumber.GetValueOrDefault();
@@ -94,7 +94,7 @@ if (outputPins.Count > 0)
     foreach (var pin in outputPins)
     {
         var pinInfo = pin.Value;
-        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
         var descriptionOffset = maxPinNameLength - pinName.Length + 10;
         var inputEnable = pinInfo.AllowRead ? "IN_EN_IO_EN" : "IN_EN_IO_DIS";
         var outMode = TemplateHelper.GetFirmwareOutputIO(pinInfo.PinMode);
@@ -110,7 +110,7 @@ if (outputPins.Count > 0)
 }
     foreach (var pin in outputPins)
     {
-        var pinName = FirmwareNamingConvention.Instance.Apply(pin.Key);
+        var pinName = TemplateHelper.GetFirmwareName(pin.Key);
         var pinState = pin.Value.InitialState > 0 ? "set" : "clr";
 #>
     <#= pinState #>_<#= pinName #>;
@@ -154,7 +154,7 @@ uint8_t *app_regs_pointer[] = {
 registerIndex = 0;
 foreach (var registerMetadata in deviceRegisters)
 {
-    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var registerName = TemplateHelper.GetFirmwareName(registerMetadata.Key);
 #>
     (uint8_t*)(&app_regs.REG_<#= registerName #>)<#= ++registerIndex < deviceRegisters.Count ? "," : string.Empty #>
 <#

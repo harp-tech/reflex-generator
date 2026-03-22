@@ -22,7 +22,8 @@ void (*app_func_rd_pointer[])(void) = {
 	&app_read_REG_PULSE_DO_PORT0,
 	&app_read_REG_PULSE_DO0,
 	&app_read_REG_START_PULSE,
-	&app_read_REG_START_PULSE_TRAIN
+	&app_read_REG_START_PULSE_TRAIN,
+	&app_read_REG_ENCODER_MODE
 };
 
 bool (*app_func_wr_pointer[])(void*) = {
@@ -39,7 +40,8 @@ bool (*app_func_wr_pointer[])(void*) = {
 	&app_write_REG_PULSE_DO_PORT0,
 	&app_write_REG_PULSE_DO0,
 	&app_write_REG_START_PULSE,
-	&app_write_REG_START_PULSE_TRAIN
+	&app_write_REG_START_PULSE_TRAIN,
+	&app_write_REG_ENCODER_MODE
 };
 
 /************************************************************************/
@@ -242,5 +244,22 @@ bool app_write_REG_START_PULSE_TRAIN(void *a)
 	uint16_t *reg = ((uint16_t*)a);
 
 	app_regs.REG_START_PULSE_TRAIN[0] = reg[0];
+    return true;
+}
+
+/************************************************************************/
+/* REG_ENCODER_MODE                                                     */
+/************************************************************************/
+void app_read_REG_ENCODER_MODE(void)
+{
+	//app_regs.REG_ENCODER_MODE = 0;
+
+}
+
+bool app_write_REG_ENCODER_MODE(void *a)
+{
+	uint8_t reg = *((uint8_t*)a);
+
+	app_regs.REG_ENCODER_MODE = reg;
     return true;
 }

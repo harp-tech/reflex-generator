@@ -283,6 +283,37 @@ internal static partial class TemplateHelper
         };
     }
 
+    public static string GetFirmwareName(string value)
+    {
+        return FirmwareNamingConvention.Instance.Apply(value);
+    }
+
+    public static string GetFirmwareGroupMaskName(string value)
+    {
+        var suffixIndex = value.LastIndexOf("Mask");
+        if (suffixIndex >= 1)
+            value = value.Substring(0, suffixIndex);
+        return GetFirmwareName(value);
+    }
+
+    public static int GetMaxFirmwareBitMaskNameLength(DeviceInfo deviceMetadata)
+    {
+        return deviceMetadata.BitMasks.Values
+            .SelectMany(mask => mask.Bits)
+            .Select(bitField => GetFirmwareName(bitField.Key).Length)
+            .Prepend(0).Max();
+    }
+
+    public static int GetMaxFirmwareGroupMaskNameLength(DeviceInfo deviceMetadata)
+    {
+        return (from groupMask in deviceMetadata.GroupMasks
+                let maskName = GetFirmwareGroupMaskName(groupMask.Key)
+                from member in groupMask.Value.Values
+                let memberName = GetFirmwareName(member.Key)
+                select maskName.Length + memberName.Length)
+                .Prepend(0).Max();
+    }
+
     public static string GetFirmwareRegisterType(PayloadType payloadType)
     {
         return payloadType switch

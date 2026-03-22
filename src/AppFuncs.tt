@@ -31,7 +31,7 @@
 <#
 foreach (var registerMetadata in DeviceMetadata.Registers)
 {
-    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var registerName = TemplateHelper.GetFirmwareName(registerMetadata.Key);
 #>
 void app_read_REG_<#= registerName #>(void);
 <#
@@ -41,7 +41,7 @@ void app_read_REG_<#= registerName #>(void);
 <#
 foreach (var registerMetadata in DeviceMetadata.Registers)
 {
-    var registerName = FirmwareNamingConvention.Instance.Apply(registerMetadata.Key);
+    var registerName = TemplateHelper.GetFirmwareName(registerMetadata.Key);
 #>
 bool app_write_REG_<#= registerName #>(void *a);
 <#

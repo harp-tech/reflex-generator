@@ -145,6 +145,7 @@ typedef struct
     uint16_t REG_PULSE_DO0;
     uint16_t REG_START_PULSE;
     uint16_t REG_START_PULSE_TRAIN[2];
+    uint8_t REG_ENCODER_MODE;
 } AppRegs;
 
 /************************************************************************/
@@ -165,6 +166,7 @@ typedef struct
 #define ADD_REG_PULSE_DO0                  43 // U16    
 #define ADD_REG_START_PULSE               100 // U16    Starts a PWM pulse.
 #define ADD_REG_START_PULSE_TRAIN         101 // U16    Starts a PWM pulse train.
+#define ADD_REG_ENCODER_MODE              103 // U8     Configures the operation mode of the encoder.
 
 /************************************************************************/
 /* Tests registers' memory limits                                       */
@@ -174,24 +176,27 @@ typedef struct
 /************************************************************************/
 /* Memory limits */
 #define APP_REGS_ADD_MIN                    0x20
-#define APP_REGS_ADD_MAX                    0x65
-#define APP_NBYTES_OF_REG_BANK              117
+#define APP_REGS_ADD_MAX                    0x67
+#define APP_NBYTES_OF_REG_BANK              118
 
 /************************************************************************/
 /* Registers' bits                                                      */
 /************************************************************************/
-#define B_DIO0               (1<<0)       // 
-#define B_DIO1               (1<<1)       // 
-#define B_DIO2               (1<<2)       // 
-#define B_DIO3               (1<<3)       // 
-#define B_DI_PORT0           (1<<8)       // 
-#define B_TEST_DI_PORT1      (1<<9)       // 
-#define B_SUPPLY_PORT0       (1<<10)      // 
-#define B_PORT_DIO1          (1<<11)      // 
-#define MSK_PWM_PORT_SEL     0x0F         // 
-#define GM_PWM_PORT_PWM0     0x01         // 
-#define GM_PWM_PORT_PWM1     0x02         // 
-#define GM_PWM_PORT_PWM2     0x04         // 
-#define GM_PWM_PORT_PWM3     0x0A         // 
+#define B_DIO0                          (1<<0)       // 
+#define B_DIO1                          (1<<1)       // 
+#define B_DIO2                          (1<<2)       // 
+#define B_DIO3                          (1<<3)       // 
+#define B_DI_PORT0                      (1<<8)       // 
+#define B_TEST_DI_PORT1                 (1<<9)       // 
+#define B_SUPPLY_PORT0                  (1<<10)      // 
+#define B_PORT_DIO1                     (1<<11)      // 
+#define MSK_PWM_PORT_SEL                0x0F         // 
+#define GM_PWM_PORT_PWM0                0x01         // 
+#define GM_PWM_PORT_PWM1                0x02         // 
+#define GM_PWM_PORT_PWM2                0x04         // 
+#define GM_PWM_PORT_PWM3                0x0A         // 
+#define MSK_ENCODER_MODE_SEL            0x01         // 
+#define GM_ENCODER_MODE_POSITION        0x00         // 
+#define GM_ENCODER_MODE_DISPLACEMENT    0x01         // 
 
 #endif /* _APP_REGS_H_ */

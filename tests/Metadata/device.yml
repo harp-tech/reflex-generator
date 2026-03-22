@@ -160,6 +160,12 @@ registers:
         offset: 1
         mask: 0xFF
         interfaceType: byte
+  EncoderMode:
+    address: 103
+    type: U8
+    access: Write
+    maskType: EncoderModeMask
+    description: Configures the operation mode of the encoder.
 bitMasks:
   PortDigitalIOS:
     bits:
@@ -178,3 +184,8 @@ groupMasks:
       Pwm1: 0x2
       Pwm2: 0x4
       Pwm3: 0xA
+  EncoderModeMask:
+    description: Specifies the type of encoder mode.
+    values:
+      Position: 0x0
+      Displacement: 0x1
