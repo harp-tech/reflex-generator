@@ -1,0 +1,193 @@
+﻿<#@ template debug="true" hostspecific="false" visibility="internal" language="C#" inherits="TemplateBase" #>
+<#@ parameter name="DeviceMetadata" type="DeviceInfo" #>
+<#@ import namespace="Harp.Generators" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".py" #>
+<#
+var module = TemplateHelper.BuildPythonModule(DeviceMetadata);
+var usesNumpy = module.Payloads.Count > 0;
+#>
+# This file was automatically generated and should not be edited directly.
+# To make changes, edit the device metadata and regenerate the interface.
+
+<#
+if (module.Enums.Count > 0)
+{
+#>
+import enum
+<#
+}
+#>
+from typing import Any, ClassVar
+<#
+if (usesNumpy)
+{
+#>
+
+import numpy as np
+<#
+}
+if (module.UsesNDArray)
+{
+#>
+from numpy.typing import NDArray
+<#
+}
+#>
+from harp.protocol import (
+<#
+foreach (var import in module.ProtocolImports)
+{
+#>
+    <#= import #>,
+<#
+}
+#>
+)
+<#
+if (module.IsApplicationDevice)
+{
+#>
+from harp.device import REGISTER_MAP as _CORE_REGISTER_MAP
+<#
+}
+if (module.ExtensionImports.Count > 0)
+{
+#>
+
+from .converters import (
+<#
+    foreach (var import in module.ExtensionImports)
+    {
+#>
+    <#= import #>,
+<#
+    }
+#>
+)
+<#
+}
+#>
+<#
+foreach (var pythonEnum in module.Enums)
+{
+#>
+
+
+class <#= pythonEnum.Name #>(enum.<#= pythonEnum.IsFlag ? "IntFlag" : "IntEnum" #>):
+<#
+    if (!string.IsNullOrEmpty(pythonEnum.Description))
+    {
+#>
+    """<#= pythonEnum.Description #>"""
+
+<#
+    }
+    foreach (var member in pythonEnum.Members)
+    {
+#>
+    <#= member.Name #> = <#= member.Value #>
+<#
+        if (!string.IsNullOrEmpty(member.Description))
+        {
+#>
+    """<#= member.Description #>"""
+<#
+        }
+    }
+}
+#>
+<#
+foreach (var payload in module.Payloads)
+{
+    var length = payload.Length.HasValue ? $", length={payload.Length.Value}" : string.Empty;
+#>
+
+
+<#
+    if (!string.IsNullOrEmpty(payload.Converter))
+    {
+#>
+class <#= payload.Name #>(AnonymousPayload, converter=<#= payload.Converter #>):
+<#
+    }
+    else
+    {
+#>
+class <#= payload.Name #>(StructPayload[<#= payload.ElementType #>]<#= length #>):
+<#
+    }
+    if (!string.IsNullOrEmpty(payload.Description))
+    {
+#>
+    """<#= payload.Description #>"""
+<#
+        if (payload.Fields.Count > 0) WriteLine("");
+    }
+    foreach (var field in payload.Fields)
+    {
+#>
+    <#= field.Name #>: <#= field.Annotation #> = <#= field.Descriptor #>
+<#
+        if (!string.IsNullOrEmpty(field.Description))
+        {
+#>
+    """<#= field.Description #>"""
+<#
+        }
+    }
+}
+#>
+<#
+foreach (var register in module.Registers)
+{
+#>
+
+
+class <#= register.Name #>(<#= register.BaseClass #>):
+<#
+    if (!string.IsNullOrEmpty(register.Description))
+    {
+#>
+    """<#= register.Description #>"""
+
+<#
+    }
+#>
+    address: ClassVar[int] = <#= register.Address #>
+<#
+    if (register.Kind == PythonRegisterKind.Array)
+    {
+#>
+    length: ClassVar[int] = <#= register.Length #>
+<#
+    }
+    else if (register.Kind == PythonRegisterKind.Struct)
+    {
+#>
+    payload_type: ClassVar[PayloadType] = <#= register.PayloadType #>
+    payload_class = <#= register.PayloadClass #>
+<#
+    }
+}
+#>
+
+
+REGISTER_MAP: dict[int, type[RegisterBase[Any]]] = {
+<#
+if (module.IsApplicationDevice)
+{
+#>
+    **_CORE_REGISTER_MAP,
+<#
+}
+foreach (var register in module.Registers)
+{
+#>
+    <#= register.Address #>: <#= register.Name #>,
+<#
+}
+#>
+}
+

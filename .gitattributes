@@ -23,6 +23,7 @@
 *.yml text
 
 # Code
+*.py text
 *.manifest text
 *.vsixmanifest text
 *.vstemplate text

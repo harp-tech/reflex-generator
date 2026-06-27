@@ -92,6 +92,19 @@ jobs:
       - name: Test .NET 8
         run: dotnet test --no-restore --no-build --configuration ${{matrix.configuration}} --verbosity normal --framework net8.0
 
+      # ----------------------------------------------------------------------- Python interop test
+      # The .NET test run generates Harp binaries from the auto-generated C# interface; this step
+      # reads them back through the auto-generated Python interface to verify the two stacks agree.
+      - name: Set up uv
+        if: matrix.configuration == 'release'
+        uses: astral-sh/setup-uv@v5
+
+      - name: Test Python interop
+        if: matrix.configuration == 'release'
+        env:
+          HARP_INTEROP_OUTPUT: ${{github.workspace}}/artifacts/python-interop
+        run: uv run --project tests/Python pytest tests/Python/test_interop.py
+
       # ----------------------------------------------------------------------- Collect artifacts
       - name: Collect NuGet packages
         uses: actions/upload-artifact@v4
