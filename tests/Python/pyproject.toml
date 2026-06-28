@@ -8,6 +8,5 @@ requires-python = ">=3.11"
 dependencies = [
     "harp-protocol @ git+https://github.com/harp-tech/pyharp.git@0f0365a3fb1ebd68c4f3a8c421375bfce22aeb37#subdirectory=src/packages/harp-protocol",
     "harp-device @ git+https://github.com/harp-tech/pyharp.git@0f0365a3fb1ebd68c4f3a8c421375bfce22aeb37#subdirectory=src/packages/harp-device",
-    "harp-data @ git+https://github.com/harp-tech/pyharp.git@0f0365a3fb1ebd68c4f3a8c421375bfce22aeb37#subdirectory=src/packages/harp-data",
     "pytest>=8",
 ]

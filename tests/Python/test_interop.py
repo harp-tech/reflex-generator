@@ -18,7 +18,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from harp.data import read_dataframe
 from harp.protocol import HarpMessage
 from harp.protocol._payload import PayloadBase
 
@@ -91,9 +90,9 @@ def test_register_round_trips_from_csharp(device_module, entry):
 
     assert len(frames) == entry["frames"]
 
-    # Bulk analysis path: the whole binary parses into one DataFrame row per frame.
-    dataframe = read_dataframe(register, buffer, timestamp=False)
-    assert len(dataframe) == entry["frames"]
+    # Bulk parse path: the whole binary parses into one payload record per frame.
+    _, _, _, payload = register.parse_bulk(buffer, parse_timestamp=False)
+    assert len(payload) == entry["frames"]
 
     # Single message path: each frame decodes to the value the C# interface encoded.
     for frame, expected in zip(frames, entry["expected"]):
