@@ -77,7 +77,7 @@ public sealed class PythonInteropTests
                     var value = InteropValue.Build(valueType, register, seed);
                     var message = (HarpMessage)fromPayload.Invoke(null, [MessageType.Write, value])!;
                     binaryStream.Write(message.MessageBytes, 0, message.MessageBytes.Length);
-                    expected.Add(InteropValue.Canonicalize(value, register, deviceMetadata));
+                    expected.Add(InteropValue.Canonicalize(value, register));
                 }
             }
 
@@ -215,7 +215,7 @@ static class InteropValue
         return constructor.Invoke(arguments);
     }
 
-    public static string Canonicalize(object value, RegisterInfo register, DeviceInfo deviceMetadata)
+    public static string Canonicalize(object value, RegisterInfo register)
     {
         if (register.PayloadSpec != null)
         {
@@ -226,19 +226,6 @@ static class InteropValue
                 return $"\"{ToSnakeCase(member.Key)}\": {CanonicalizeLeaf(field.GetValue(value)!)}";
             });
             return $"{{{string.Join(", ", members)}}}";
-        }
-
-        if (deviceMetadata.GroupMasks.ContainsKey(register.MaskType))
-            return $"{{\"value\": {CanonicalizeLeaf(value)}}}";
-
-        if (deviceMetadata.BitMasks.TryGetValue(register.MaskType, out var bitMask))
-        {
-            var elementRange = GetElementRange(register.Type);
-            var flags = Convert.ToInt64(value, CultureInfo.InvariantCulture);
-            var bits = bitMask.Bits
-                .Where(bit => bit.Value.Value != 0 && bit.Value.Value <= elementRange)
-                .Select(bit => $"\"{ToSnakeCase(bit.Key)}\": {((flags & bit.Value.Value) != 0 ? 1 : 0)}");
-            return $"{{{string.Join(", ", bits)}}}";
         }
 
         return CanonicalizeLeaf(value);

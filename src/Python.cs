@@ -39,7 +39,7 @@ internal sealed class PythonPayload
     public string Description = "";
     public string ElementType = "";
     public int? Length;
-    public string Converter = "";
+    public bool IsAnonymous;
     public string UnwrapType = "";
     public List<PythonField> Fields = [];
 }
@@ -273,65 +273,61 @@ internal static partial class TemplateHelper
             return payload;
         }
 
-        if (!string.IsNullOrEmpty(register.MaskType))
-        {
-            module.ProtocolImports.Add("StructPayload");
-            BuildMaskRegisterFields(module, payload, register, deviceMetadata, elementType, elementSize);
-        }
-        else if (register.InterfaceType == "string")
-        {
-            module.ProtocolImports.Add("AnonymousPayload");
-            module.ProtocolImports.Add("StringConverter");
-            payload.Converter = $"StringConverter({Math.Max(1, register.Length) * elementSize})";
-            payload.UnwrapType = "str";
-        }
-        else
-        {
-            module.ProtocolImports.Add("AnonymousPayload");
-            var domainType = register.InterfaceType;
-            var domainConverter = $"{domainType}Converter";
-            AddConverterImports(module, domainType, domainConverter);
-            payload.Converter = $"{domainConverter}({elementType})";
-            payload.UnwrapType = domainType;
-        }
+        module.ProtocolImports.Add("AnonymousPayload");
+        payload.IsAnonymous = true;
+        payload.Length = null;
 
-        return payload;
-    }
-
-    static void BuildMaskRegisterFields(
-        PythonModule module,
-        PythonPayload payload,
-        RegisterInfo register,
-        DeviceInfo deviceMetadata,
-        string elementType,
-        int elementSize)
-    {
-        var elementMask = (1L << (elementSize * 8)) - 1;
         if (deviceMetadata.GroupMasks.ContainsKey(register.MaskType))
         {
             module.ProtocolImports.Add("GroupMask");
+            var elementMask = (1L << (elementSize * 8)) - 1;
+            payload.UnwrapType = register.MaskType;
             payload.Fields.Add(new PythonField
             {
-                Name = "value",
+                Name = "__value__",
                 Annotation = register.MaskType,
                 Descriptor = $"GroupMask(enum={register.MaskType}, mask=0x{elementMask:X})"
             });
         }
-        else if (deviceMetadata.BitMasks.TryGetValue(register.MaskType, out var bitMask))
+        else if (deviceMetadata.BitMasks.ContainsKey(register.MaskType))
         {
-            module.ProtocolImports.Add("BitFlag");
-            foreach (var bit in bitMask.Bits)
+            module.ProtocolImports.Add("BitMask");
+            payload.UnwrapType = register.MaskType;
+            payload.Fields.Add(new PythonField
             {
-                if (bit.Value.Value == 0 || bit.Value.Value > elementMask) continue;
-                payload.Fields.Add(new PythonField
-                {
-                    Name = GetPythonFieldName(bit.Key),
-                    Annotation = "bool",
-                    Descriptor = $"BitFlag(mask=0x{bit.Value.Value:X})",
-                    Description = bit.Value.Description
-                });
-            }
+                Name = "__value__",
+                Annotation = register.MaskType,
+                Descriptor = $"BitMask(enum={register.MaskType})"
+            });
         }
+        else if (register.InterfaceType == "string")
+        {
+            module.ProtocolImports.Add("Field");
+            module.ProtocolImports.Add("StringConverter");
+            payload.UnwrapType = "str";
+            payload.Fields.Add(new PythonField
+            {
+                Name = "__value__",
+                Annotation = "str",
+                Descriptor = $"Field(StringConverter({Math.Max(1, register.Length) * elementSize}))"
+            });
+        }
+        else
+        {
+            module.ProtocolImports.Add("Field");
+            var domainType = register.InterfaceType;
+            var domainConverter = $"{domainType}Converter";
+            AddConverterImports(module, domainType, domainConverter);
+            payload.UnwrapType = domainType;
+            payload.Fields.Add(new PythonField
+            {
+                Name = "__value__",
+                Annotation = domainType,
+                Descriptor = $"Field({domainConverter}({elementType}))"
+            });
+        }
+
+        return payload;
     }
 
     static PythonField BuildPythonField(
@@ -368,12 +364,13 @@ internal static partial class TemplateHelper
             var mask = member.Mask.GetValueOrDefault();
             if (member.InterfaceType == "bool")
             {
-                module.ProtocolImports.Add("BitFlag");
+                module.ProtocolImports.Add("Field");
+                module.ProtocolImports.Add("BoolConverter");
                 return new PythonField
                 {
                     Name = name,
                     Annotation = "bool",
-                    Descriptor = $"BitFlag(mask=0x{mask:X}{offsetArgument}{defaultArgument})"
+                    Descriptor = $"Field(BoolConverter(), mask=0x{mask:X}{offsetArgument}{defaultArgument})"
                 };
             }
 

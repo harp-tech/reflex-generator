@@ -8,7 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 from harp.protocol import (
     AnonymousPayload,
-    BitFlag,
+    BitMask,
     BoolConverter,
     Field,
     GroupMask,
@@ -84,12 +84,16 @@ class VersionPayload(StructPayload[np.uint8], length=32):
     interface_hash: NDArray[np.uint8] = Field(IdentityConverter(np.dtype((np.uint8, (20,)))), offset=12)
 
 
-class CustomPayloadPayload(AnonymousPayload, converter=HarpVersionConverter(np.uint32)):
+class CustomPayloadPayload(AnonymousPayload[np.uint32]):
     """Represents the payload of the CustomPayload register."""
 
+    __value__: HarpVersion = Field(HarpVersionConverter(np.uint32))
 
-class CustomRawPayloadPayload(AnonymousPayload, converter=HarpVersionConverter(np.uint32)):
+
+class CustomRawPayloadPayload(AnonymousPayload[np.uint32]):
     """Represents the payload of the CustomRawPayload register."""
+
+    __value__: HarpVersion = Field(HarpVersionConverter(np.uint32))
 
 
 class CustomMemberConverterPayload(StructPayload[np.uint8], length=3):
@@ -106,13 +110,10 @@ class BitmaskSplitterPayload(StructPayload[np.uint8]):
     high: np.int32 = Field(IdentityConverter(np.int32), mask=0xF0)
 
 
-class PortDIOSetPayload(StructPayload[np.uint8]):
+class PortDIOSetPayload(AnonymousPayload[np.uint8]):
     """Represents the payload of the PortDIOSet register."""
 
-    dio0: bool = BitFlag(mask=0x1)
-    dio1: bool = BitFlag(mask=0x2)
-    dio2: bool = BitFlag(mask=0x4)
-    dio3: bool = BitFlag(mask=0x8)
+    __value__: PortDigitalIOS = BitMask(enum=PortDigitalIOS)
 
 
 class StartPulsePayload(StructPayload[np.uint16]):
@@ -131,10 +132,10 @@ class StartPulseTrainPayload(StructPayload[np.uint16], length=2):
     pulse_count: np.uint8 = Field(IdentityConverter(np.uint8), mask=0xFF, offset=1)
 
 
-class EncoderModePayload(StructPayload[np.uint8]):
+class EncoderModePayload(AnonymousPayload[np.uint8]):
     """Represents the payload of the EncoderMode register."""
 
-    value: EncoderModeMask = GroupMask(enum=EncoderModeMask, mask=0xFF)
+    __value__: EncoderModeMask = GroupMask(enum=EncoderModeMask, mask=0xFF)
 
 
 class DigitalInputs(RegisterU8):
@@ -187,7 +188,7 @@ class Counter0(RegisterS32):
     address: ClassVar[int] = 40
 
 
-class PortDIOSet(RegisterBase[PortDIOSetPayload]):
+class PortDIOSet(RegisterBase[PortDigitalIOS]):
     address: ClassVar[int] = 41
     payload_type: ClassVar[PayloadType] = PayloadType.U8
     payload_class = PortDIOSetPayload
@@ -217,7 +218,7 @@ class StartPulseTrain(RegisterBase[StartPulseTrainPayload]):
     payload_class = StartPulseTrainPayload
 
 
-class EncoderMode(RegisterBase[EncoderModePayload]):
+class EncoderMode(RegisterBase[EncoderModeMask]):
     """Configures the operation mode of the encoder."""
 
     address: ClassVar[int] = 103

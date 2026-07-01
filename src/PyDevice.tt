@@ -101,19 +101,19 @@ class <#= pythonEnum.Name #>(enum.<#= pythonEnum.IsFlag ? "IntFlag" : "IntEnum" 
 <#
 foreach (var payload in module.Payloads)
 {
-    var length = payload.Length.HasValue ? $", length={payload.Length.Value}" : string.Empty;
 #>
 
 
 <#
-    if (!string.IsNullOrEmpty(payload.Converter))
+    if (payload.IsAnonymous)
     {
 #>
-class <#= payload.Name #>(AnonymousPayload, converter=<#= payload.Converter #>):
+class <#= payload.Name #>(AnonymousPayload[<#= payload.ElementType #>]):
 <#
     }
     else
     {
+        var length = payload.Length.HasValue ? $", length={payload.Length.Value}" : string.Empty;
 #>
 class <#= payload.Name #>(StructPayload[<#= payload.ElementType #>]<#= length #>):
 <#
