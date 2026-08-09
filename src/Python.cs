@@ -9,6 +9,7 @@ namespace Harp.Generators;
 internal sealed class PythonModule
 {
     public string Device = "";
+    public int WhoAmI;
     public SortedSet<string> ProtocolImports = [];
     public SortedSet<string> ExtensionImports = [];
     public bool UsesNDArray;
@@ -166,7 +167,7 @@ internal static partial class TemplateHelper
 
     public static PythonModule BuildPythonModule(DeviceInfo deviceMetadata)
     {
-        var module = new PythonModule { Device = deviceMetadata.Device };
+        var module = new PythonModule { Device = deviceMetadata.Device, WhoAmI = deviceMetadata.WhoAmI };
 
         foreach (var bitMask in deviceMetadata.BitMasks)
             module.Enums.Add(BuildPythonEnum(bitMask.Key, bitMask.Value.Description, bitMask.Value.Bits, isFlag: true));
