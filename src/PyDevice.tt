@@ -49,7 +49,7 @@ foreach (var import in module.ProtocolImports)
 if (module.IsApplicationDevice)
 {
 #>
-from harp.device import REGISTER_MAP as _CORE_REGISTER_MAP
+from harp.device.core import REGISTER_MAP as _CORE_REGISTER_MAP
 <#
 }
 if (module.ExtensionImports.Count > 0)
