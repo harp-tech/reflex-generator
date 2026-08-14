@@ -90,12 +90,15 @@ class <#= pythonEnum.Name #>(enum.<#= pythonEnum.IsFlag ? "IntFlag" : "IntEnum" 
 
 <#
     }
+    var previousMemberDocumented = false;
     foreach (var member in pythonEnum.Members)
     {
+        if (previousMemberDocumented) WriteLine("");
 #>
     <#= member.Name #> = <#= member.Value #>
 <#
-        if (!string.IsNullOrEmpty(member.Description))
+        previousMemberDocumented = !string.IsNullOrEmpty(member.Description);
+        if (previousMemberDocumented)
         {
 #>
     """<#= member.Description #>"""
@@ -131,12 +134,15 @@ class <#= payload.Name #>(StructPayload[<#= payload.ElementType #>]<#= length #>
 <#
         if (payload.Fields.Count > 0) WriteLine("");
     }
+    var previousFieldDocumented = false;
     foreach (var field in payload.Fields)
     {
+        if (previousFieldDocumented) WriteLine("");
 #>
     <#= field.Name #>: <#= field.Annotation #> = <#= field.Descriptor #>
 <#
-        if (!string.IsNullOrEmpty(field.Description))
+        previousFieldDocumented = !string.IsNullOrEmpty(field.Description);
+        if (previousFieldDocumented)
         {
 #>
     """<#= field.Description #>"""
