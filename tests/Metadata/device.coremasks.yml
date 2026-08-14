@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://harp-tech.org/draft-02/schema/registers.json
+device: CoreMasks
+whoAmI: 1234
+firmwareVersion: "0.1"
+hardwareTargets: "1.0"
+registers:
+  EnableFlow:
+    address: 32
+    type: U8
+    access: Write
+    maskType: EnableFlag
+    description: Specifies whether the flow is enabled.
+  ResetFlow:
+    address: 33
+    type: U8
+    access: Write
+    maskType: ResetFlags
+    description: Specifies the reset behavior of the flow controller.

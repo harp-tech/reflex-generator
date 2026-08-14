@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Bonsai.Harp;
 
@@ -11,6 +12,7 @@ internal sealed class PythonModule
     public string Device = "";
     public int WhoAmI;
     public SortedSet<string> ProtocolImports = [];
+    public SortedSet<string> CoreImports = [];
     public SortedSet<string> ExtensionImports = [];
     public bool UsesNDArray;
     public bool IsApplicationDevice;
@@ -74,6 +76,9 @@ internal sealed class PythonRegister
 
 internal static partial class TemplateHelper
 {
+    const int CoreRegisterAddressLimit = 32;
+    const string CoreMetadataResourceName = "Harp.Generators.core.yml";
+
     static readonly Dictionary<string, string> PrimitiveNumpyTypes = new()
     {
         { "byte", "np.uint8" },
@@ -98,7 +103,33 @@ internal static partial class TemplateHelper
 
     static readonly HashSet<string> StandardConverterInterfaceTypes = ["HarpVersion"];
 
-    const int CoreRegisterAddressLimit = 32;
+    static readonly Lazy<DeviceInfo> CoreMetadata = new(() =>
+    {
+        using var stream = typeof(TemplateHelper).Assembly.GetManifestResourceStream(CoreMetadataResourceName)
+            ?? throw new InvalidOperationException($"Embedded metadata '{CoreMetadataResourceName}' was not found.");
+        using var reader = new StreamReader(stream);
+        return ReadDeviceMetadata(reader);
+    });
+
+    static GroupMaskInfo? FindGroupMask(DeviceInfo deviceMetadata, string typeName)
+    {
+        if (deviceMetadata.GroupMasks.TryGetValue(typeName, out var groupMask)) return groupMask;
+        if (deviceMetadata.BitMasks.ContainsKey(typeName)) return null;
+        return CoreMetadata.Value.GroupMasks.TryGetValue(typeName, out groupMask) ? groupMask : null;
+    }
+
+    static bool IsBitMask(DeviceInfo deviceMetadata, string typeName)
+    {
+        if (deviceMetadata.BitMasks.ContainsKey(typeName)) return true;
+        if (deviceMetadata.GroupMasks.ContainsKey(typeName)) return false;
+        return CoreMetadata.Value.BitMasks.ContainsKey(typeName);
+    }
+
+    static void AddCoreImport(PythonModule module, DeviceInfo deviceMetadata, string typeName)
+    {
+        if (!deviceMetadata.GroupMasks.ContainsKey(typeName) && !deviceMetadata.BitMasks.ContainsKey(typeName))
+            module.CoreImports.Add(typeName);
+    }
 
     static void AddConverterImports(PythonModule module, string domainType, string domainConverter)
     {
@@ -278,9 +309,10 @@ internal static partial class TemplateHelper
         payload.IsAnonymous = true;
         payload.Length = null;
 
-        if (deviceMetadata.GroupMasks.ContainsKey(register.MaskType))
+        if (FindGroupMask(deviceMetadata, register.MaskType) != null)
         {
             module.ProtocolImports.Add("GroupMask");
+            AddCoreImport(module, deviceMetadata, register.MaskType);
             var elementMask = (1L << (elementSize * 8)) - 1;
             payload.UnwrapType = register.MaskType;
             payload.Fields.Add(new PythonField
@@ -290,9 +322,10 @@ internal static partial class TemplateHelper
                 Descriptor = $"GroupMask(enum={register.MaskType}, mask=0x{elementMask:X})"
             });
         }
-        else if (deviceMetadata.BitMasks.ContainsKey(register.MaskType))
+        else if (IsBitMask(deviceMetadata, register.MaskType))
         {
             module.ProtocolImports.Add("BitMask");
+            AddCoreImport(module, deviceMetadata, register.MaskType);
             payload.UnwrapType = register.MaskType;
             payload.Fields.Add(new PythonField
             {
@@ -347,9 +380,10 @@ internal static partial class TemplateHelper
         var converterBaseName = name;
         name = GetPythonFieldName(name);
 
-        if (deviceMetadata.GroupMasks.ContainsKey(typeName))
+        if (FindGroupMask(deviceMetadata, typeName) != null)
         {
             module.ProtocolImports.Add("GroupMask");
+            AddCoreImport(module, deviceMetadata, typeName);
             var elementMask = (1L << (elementSize * 8)) - 1;
             var enumMask = member.Mask.GetValueOrDefault((int)elementMask);
             return new PythonField
@@ -488,7 +522,8 @@ internal static partial class TemplateHelper
             return string.Empty;
 
         var value = defaultValue.GetValueOrDefault();
-        if (deviceMetadata.GroupMasks.TryGetValue(typeName, out var groupMask))
+        var groupMask = FindGroupMask(deviceMetadata, typeName);
+        if (groupMask != null)
         {
             foreach (var entry in groupMask.Values)
             {

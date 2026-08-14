@@ -29,6 +29,9 @@
     <Content Include="Metadata\*.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\src\core.yml" Link="Metadata\core.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Compile Remove="ExpectedOutput\*" />
     <Content Include="ExpectedOutput\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

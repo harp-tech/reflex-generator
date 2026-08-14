@@ -7,6 +7,8 @@
 <#
 var module = TemplateHelper.BuildPythonModule(DeviceMetadata);
 var usesNumpy = module.Payloads.Count > 0;
+var coreImports = module.CoreImports.ToList();
+if (module.IsApplicationDevice) coreImports.Add("REGISTER_MAP as _CORE_REGISTER_MAP");
 #>
 # This file was automatically generated and should not be edited directly.
 # To make changes, edit the device metadata and regenerate the interface.
@@ -46,10 +48,25 @@ foreach (var import in module.ProtocolImports)
 #>
 )
 <#
-if (module.IsApplicationDevice)
+if (coreImports.Count == 1)
 {
 #>
-from harp.device.core import REGISTER_MAP as _CORE_REGISTER_MAP
+from harp.device.core import <#= coreImports[0] #>
+<#
+}
+else if (coreImports.Count > 1)
+{
+#>
+from harp.device.core import (
+<#
+    foreach (var import in coreImports)
+    {
+#>
+    <#= import #>,
+<#
+    }
+#>
+)
 <#
 }
 if (module.ExtensionImports.Count > 0)

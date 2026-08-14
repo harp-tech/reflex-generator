@@ -18,6 +18,7 @@ public sealed class PythonGeneratorTests
     [DataTestMethod]
     [DataRow("core.yml")]
     [DataRow("device.yml")]
+    [DataRow("device.coremasks.yml")]
     public void DeviceTemplate_GenerateMatchesExpectedOutput(string metadataFileName)
     {
         metadataFileName = TestHelper.GetMetadataPath(metadataFileName);

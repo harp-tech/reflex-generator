@@ -358,6 +358,11 @@ internal static partial class TemplateHelper
     public static DeviceInfo ReadDeviceMetadata(string path)
     {
         using var reader = new StreamReader(path);
+        return ReadDeviceMetadata(reader);
+    }
+
+    public static DeviceInfo ReadDeviceMetadata(TextReader reader)
+    {
         var parser = new MergingParser(new Parser(reader));
         return MetadataDeserializer.Instance.Deserialize<DeviceInfo>(parser);
     }
