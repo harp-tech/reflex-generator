@@ -68,10 +68,42 @@ from .converters import (
 )
 <#
 }
+#>
+
+
+__all__ = [
+<#
 if (module.IsApplicationDevice)
 {
 #>
-
+    "WHO_AM_I",
+<#
+}
+foreach (var pythonEnum in module.Enums)
+{
+#>
+    "<#= pythonEnum.Name #>",
+<#
+}
+foreach (var payload in module.Payloads)
+{
+#>
+    "<#= payload.Name #>",
+<#
+}
+foreach (var register in module.Registers)
+{
+#>
+    "<#= register.Name #>",
+<#
+}
+#>
+    "REGISTER_MAP",
+]
+<#
+if (module.IsApplicationDevice)
+{
+#>
 
 WHO_AM_I: int = <#= module.WhoAmI #>
 <#
@@ -202,4 +234,3 @@ foreach (var register in module.Registers)
 }
 #>
 }
-

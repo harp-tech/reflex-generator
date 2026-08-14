@@ -21,6 +21,34 @@ from harp.protocol import (
 )
 
 
+__all__ = [
+    "ResetFlags",
+    "ClockConfigurationFlags",
+    "OperationMode",
+    "EnableFlag",
+    "OperationControlPayload",
+    "ResetDevicePayload",
+    "DeviceNamePayload",
+    "ClockConfigurationPayload",
+    "WhoAmI",
+    "HardwareVersionHigh",
+    "HardwareVersionLow",
+    "AssemblyVersion",
+    "CoreVersionHigh",
+    "CoreVersionLow",
+    "FirmwareVersionHigh",
+    "FirmwareVersionLow",
+    "TimestampSeconds",
+    "TimestampMicroseconds",
+    "OperationControl",
+    "ResetDevice",
+    "DeviceName",
+    "SerialNumber",
+    "ClockConfiguration",
+    "REGISTER_MAP",
+]
+
+
 class ResetFlags(enum.IntFlag):
     """Specifies the behavior of the non-volatile registers when resetting the device."""
 
@@ -246,4 +274,3 @@ REGISTER_MAP: dict[int, type[RegisterBase[Any]]] = {
     13: SerialNumber,
     14: ClockConfiguration,
 }
-
