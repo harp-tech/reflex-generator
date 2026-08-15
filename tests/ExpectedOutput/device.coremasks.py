@@ -19,6 +19,7 @@ from harp.device.core import (
 
 
 __all__ = [
+    "DEVICE_NAME",
     "WHO_AM_I",
     "EnableFlowPayload",
     "ResetFlowPayload",
@@ -27,6 +28,7 @@ __all__ = [
     "REGISTER_MAP",
 ]
 
+DEVICE_NAME: str = "CoreMasks"
 WHO_AM_I: int = 1234
 
 

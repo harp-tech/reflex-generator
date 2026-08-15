@@ -93,6 +93,7 @@ __all__ = [
 if (module.IsApplicationDevice)
 {
 #>
+    "DEVICE_NAME",
     "WHO_AM_I",
 <#
 }
@@ -122,6 +123,7 @@ if (module.IsApplicationDevice)
 {
 #>
 
+DEVICE_NAME: str = "<#= module.Device #>"
 WHO_AM_I: int = <#= module.WhoAmI #>
 <#
 }
