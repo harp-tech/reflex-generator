@@ -14,6 +14,13 @@ if (module.IsApplicationDevice) coreImports.Add("REGISTER_MAP as _CORE_REGISTER_
 # To make changes, edit the device metadata and regenerate the interface.
 
 <#
+if (!string.IsNullOrEmpty(module.Description))
+{
+#>
+"""<#= module.Description #>"""
+
+<#
+}
 if (module.Enums.Count > 0)
 {
 #>

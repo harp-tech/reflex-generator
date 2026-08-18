@@ -1,6 +1,8 @@
 # This file was automatically generated and should not be edited directly.
 # To make changes, edit the device metadata and regenerate the interface.
 
+"""The core register set every Harp device carries, and its address space."""
+
 import enum
 from typing import Any, ClassVar
 

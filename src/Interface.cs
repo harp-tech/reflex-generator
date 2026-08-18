@@ -16,6 +16,11 @@ namespace Harp.Generators;
 public class DeviceInfo
 {
     /// <summary>
+    /// Specifies a summary description of the register interface.
+    /// </summary>
+    public string Description = "";
+
+    /// <summary>
     /// Specifies the name of the device.
     /// </summary>
     public string Device = "";
