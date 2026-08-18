@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://harp-tech.org/draft-02/schema/registers.json
+description: The core register set every Harp device carries, and its address space.
 device: Tests
 registers:
   WhoAmI:

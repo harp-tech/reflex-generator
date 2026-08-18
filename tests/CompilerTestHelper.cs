@@ -1,4 +1,5 @@
-﻿using Basic.Reference.Assemblies;
+﻿using System.Reflection;
+using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,6 +9,17 @@ namespace Harp.Generators.Tests;
 internal static class CompilerTestHelper
 {
     public static void CompileFromSource(params string[] code)
+    {
+        Compile(code);
+    }
+
+    public static Assembly CompileAndLoadFromSource(params string[] code)
+    {
+        var bytes = Compile(code);
+        return Assembly.Load(bytes);
+    }
+
+    static byte[] Compile(string[] code)
     {
         var options = CSharpParseOptions.Default;
         var syntaxTrees = Array.ConvertAll(code, text => CSharpSyntaxTree.ParseText(text, options));
@@ -38,5 +50,7 @@ internal static class CompilerTestHelper
                                 .ToList();
             Assert.Fail(string.Join(Environment.NewLine, errorMessages));
         }
+
+        return memoryStream.ToArray();
     }
 }

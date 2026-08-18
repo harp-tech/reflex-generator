@@ -1,0 +1,12 @@
+[project]
+name = "harp-generators-interop"
+version = "0"
+description = "Cross-stack interop test for the generated Python device interface."
+requires-python = ">=3.11"
+# harp-protocol and harp-device are pinned to a pyharp main commit until a release including the
+# harp.device namespace split is published to PyPI.
+dependencies = [
+    "harp-protocol @ git+https://github.com/harp-tech/pyharp.git@371a0fb7903e80c93783476f0d08cee9a27709fb#subdirectory=src/packages/harp-protocol",
+    "harp-device @ git+https://github.com/harp-tech/pyharp.git@371a0fb7903e80c93783476f0d08cee9a27709fb#subdirectory=src/packages/harp-device",
+    "pytest>=8",
+]

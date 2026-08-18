@@ -22,10 +22,14 @@
     <Compile Remove="EmbeddedSources\*.cs" />
     <EmbeddedResource Include="EmbeddedSources\*.cs" />
     <EmbeddedResource Include="PayloadMarshal.cs" />
+    <EmbeddedResource Include="Python\converters.py" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Metadata\*.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\src\core.yml" Link="Metadata\core.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Remove="ExpectedOutput\*" />

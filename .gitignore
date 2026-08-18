@@ -1,2 +1,7 @@
 .vs/
 /artifacts/
+
+# Python
+__pycache__/
+*.py[cod]
+uv.lock
