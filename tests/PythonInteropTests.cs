@@ -131,10 +131,10 @@ static class InteropValue
     static object BuildField(Type fieldType, PayloadMemberInfo member, int seed)
     {
         if (fieldType.IsArray)
-            return BuildArray(fieldType.GetElementType()!, Math.Max(1, member.Length), seed);
+            return BuildArray(fieldType.GetElementType()!, member.Length.GetValueOrDefault(1), seed);
         if (fieldType.IsEnum)
             return SmallestFittingEnumValue(fieldType, GetFieldRange(member));
-        return BuildScalar(fieldType, Math.Max(1, member.Length), GetFieldRange(member), seed);
+        return BuildScalar(fieldType, member.Length.GetValueOrDefault(1), GetFieldRange(member), seed);
     }
 
     static long GetElementRange(PayloadType payloadType)
