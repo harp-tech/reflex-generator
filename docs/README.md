@@ -1,6 +1,6 @@
 # Harp.Generators
 
-Provides a device and IO pin configuration metadata model and a set of [T4 runtime templates](https://github.com/mono/t4) supporting the automatic generation of firmware and [Bonsai](https://bonsai-rx.org/) interface code for [Harp](https://harp-tech.org/) devices.
+Provides a device and IO pin configuration metadata model and a set of [T4 runtime templates](https://github.com/mono/t4) supporting the automatic generation of firmware, [Bonsai](https://bonsai-rx.org/) and Python interface code for [Harp](https://harp-tech.org/) devices.
 
 ## Installing
 
@@ -57,6 +57,18 @@ var generator = new FirmwareGenerator(deviceMetadata, portPinMetadata);
 var headers = generator.GenerateHeaders();
 var implementation = generator.GenerateImplementation();
 ```
+
+## Generating Python interface code
+
+Assuming the `deviceMetadata` object loaded above is available, a Python interface targeting the [pyharp](https://github.com/harp-tech/pyharp) register and payload API can be generated from the same metadata.
+
+```csharp
+...
+var generator = new PythonGenerator(deviceMetadata);
+var implementation = generator.GenerateImplementation();
+```
+
+The generated module declares a class for every register, together with the enum and payload types they are built from, and an address to class `REGISTER_MAP`. Converters outside the standard set are imported from a companion `converters` module, written by hand alongside the generated one.
 
 ## Contributing
 
