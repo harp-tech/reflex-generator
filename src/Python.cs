@@ -427,7 +427,7 @@ internal static partial class TemplateHelper
         }
 
         module.ProtocolImports.Add("Field");
-        var memberLength = member.Length.GetValueOrDefault(0);
+        var memberLength = member.Length;
         var span = Math.Max(1, memberLength) * elementSize;
 
         if (member.InterfaceType == "string")
@@ -524,7 +524,7 @@ internal static partial class TemplateHelper
     static string GetPythonDefaultArgument(PayloadMemberInfo member, string typeName, RegisterInfo register, DeviceInfo deviceMetadata)
     {
         var defaultValue = member.DefaultValue ?? member.MinValue;
-        if (!defaultValue.HasValue || member.Length.GetValueOrDefault() > 1)
+        if (!defaultValue.HasValue || member.Length > 1)
             return string.Empty;
 
         var value = defaultValue.GetValueOrDefault();
