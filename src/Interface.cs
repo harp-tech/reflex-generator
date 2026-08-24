@@ -223,7 +223,7 @@ public class PayloadMemberInfo
     /// <summary>
     /// Specifies the number of elements used to encode this payload member.
     /// </summary>
-    public int? Length;
+    public int Length;
 
     /// <summary>
     /// Specifies the mask used to read and write this payload member.
@@ -287,10 +287,10 @@ public class PayloadMemberInfo
         return Converter switch
         {
             MemberConverter.RawPayload => "ArraySegment<byte>",
-            MemberConverter.Payload => Length.GetValueOrDefault() > 0
+            MemberConverter.Payload => Length > 0
                 ? $"ArraySegment<{TemplateHelper.GetInterfaceType(payloadType, 0)}>"
                 : TemplateHelper.GetInterfaceType(payloadType, 0),
-            _ => TemplateHelper.GetInterfaceType(payloadType, Length.GetValueOrDefault())
+            _ => TemplateHelper.GetInterfaceType(payloadType, Length)
         };
     }
 }
@@ -384,7 +384,7 @@ internal static partial class TemplateHelper
     {
         if (!string.IsNullOrEmpty(member.InterfaceType)) return member.InterfaceType;
         else if (!string.IsNullOrEmpty(member.MaskType)) return member.MaskType;
-        else return GetInterfaceType(payloadType, member.Length.GetValueOrDefault());
+        else return GetInterfaceType(payloadType, member.Length);
     }
 
     public static string GetInterfaceType(PayloadType payloadType)
@@ -570,7 +570,7 @@ internal static partial class TemplateHelper
         DeviceInfo deviceMetadata)
     {
         var payloadType = register.Type;
-        var memberLength = member.Length.GetValueOrDefault();
+        var memberLength = member.Length;
         var memberOffset = member.Offset.GetValueOrDefault();
         var payloadInterfaceType = GetInterfaceType(payloadType);
         if (memberLength > 0 && member.InterfaceType != "bool")
@@ -636,7 +636,7 @@ internal static partial class TemplateHelper
         bool assigned)
     {
         var payloadType = register.Type;
-        var memberLength = member.Length.GetValueOrDefault();
+        var memberLength = member.Length;
         var memberOffset = member.Offset.GetValueOrDefault();
         var payloadInterfaceType = GetInterfaceType(payloadType);
 
