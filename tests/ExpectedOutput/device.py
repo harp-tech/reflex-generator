@@ -19,6 +19,7 @@ from harp.protocol import (
     RegisterBase,
     RegisterS32,
     RegisterU16,
+    RegisterU16Array,
     RegisterU8,
     StringConverter,
     StructPayload,
@@ -44,6 +45,7 @@ __all__ = [
     "CustomMemberConverterPayload",
     "BitmaskSplitterPayload",
     "PortDIOSetPayload",
+    "MixedMemberLengthPayload",
     "StartPulsePayload",
     "StartPulseTrainPayload",
     "EncoderModePayload",
@@ -59,6 +61,9 @@ __all__ = [
     "PortDIOSet",
     "PulseDOPort0",
     "PulseDO0",
+    "MultiElementPayload",
+    "SingleElementPayload",
+    "MixedMemberLength",
     "StartPulse",
     "StartPulseTrain",
     "EncoderMode",
@@ -155,6 +160,14 @@ class PortDIOSetPayload(AnonymousPayload[np.uint8]):
     __value__: PortDigitalIOS = BitMask(enum=PortDigitalIOS)
 
 
+class MixedMemberLengthPayload(StructPayload[np.uint8], length=4):
+    """Represents the payload of the MixedMemberLength register."""
+
+    absent: np.uint8 = Field(IdentityConverter(np.uint8))
+    single: NDArray[np.uint8] = Field(IdentityConverter(np.dtype((np.uint8, (1,)))), offset=1)
+    multiple: NDArray[np.uint8] = Field(IdentityConverter(np.dtype((np.uint8, (2,)))), offset=2)
+
+
 class StartPulsePayload(StructPayload[np.uint16]):
     """Represents the payload of the StartPulse register."""
 
@@ -241,6 +254,22 @@ class PulseDO0(RegisterU16):
     address: ClassVar[int] = 43
 
 
+class MultiElementPayload(RegisterU16Array):
+    address: ClassVar[int] = 44
+    length: ClassVar[int] = 3
+
+
+class SingleElementPayload(RegisterU16Array):
+    address: ClassVar[int] = 45
+    length: ClassVar[int] = 1
+
+
+class MixedMemberLength(RegisterBase[MixedMemberLengthPayload]):
+    address: ClassVar[int] = 46
+    payload_type: ClassVar[PayloadType] = PayloadType.U8
+    payload_class = MixedMemberLengthPayload
+
+
 class StartPulse(RegisterBase[StartPulsePayload]):
     """Starts a PWM pulse."""
 
@@ -279,6 +308,9 @@ REGISTER_MAP: dict[int, type[RegisterBase[Any]]] = {
     41: PortDIOSet,
     42: PulseDOPort0,
     43: PulseDO0,
+    44: MultiElementPayload,
+    45: SingleElementPayload,
+    46: MixedMemberLength,
     100: StartPulse,
     101: StartPulseTrain,
     103: EncoderMode,

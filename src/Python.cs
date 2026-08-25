@@ -455,7 +455,7 @@ internal static partial class TemplateHelper
         if (string.IsNullOrEmpty(member.InterfaceType))
         {
             module.ProtocolImports.Add("IdentityConverter");
-            if (memberLength > 1)
+            if (memberLength > 0)
             {
                 module.UsesNDArray = true;
                 return new PythonField
@@ -524,7 +524,7 @@ internal static partial class TemplateHelper
     static string GetPythonDefaultArgument(PayloadMemberInfo member, string typeName, RegisterInfo register, DeviceInfo deviceMetadata)
     {
         var defaultValue = member.DefaultValue ?? member.MinValue;
-        if (!defaultValue.HasValue || member.Length > 1)
+        if (!defaultValue.HasValue || member.Length > 0)
             return string.Empty;
 
         var value = defaultValue.GetValueOrDefault();

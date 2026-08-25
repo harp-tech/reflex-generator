@@ -49,6 +49,9 @@ namespace Harp.Generators.Tests
             { 41, typeof(PortDIOSet) },
             { 42, typeof(PulseDOPort0) },
             { 43, typeof(PulseDO0) },
+            { 44, typeof(MultiElementPayload) },
+            { 45, typeof(SingleElementPayload) },
+            { 46, typeof(MixedMemberLength) },
             { 100, typeof(StartPulse) },
             { 101, typeof(StartPulseTrain) },
             { 103, typeof(EncoderMode) }
@@ -278,6 +281,9 @@ namespace Harp.Generators.Tests
     /// <seealso cref="PortDIOSet"/>
     /// <seealso cref="PulseDOPort0"/>
     /// <seealso cref="PulseDO0"/>
+    /// <seealso cref="MultiElementPayload"/>
+    /// <seealso cref="SingleElementPayload"/>
+    /// <seealso cref="MixedMemberLength"/>
     /// <seealso cref="StartPulse"/>
     /// <seealso cref="StartPulseTrain"/>
     /// <seealso cref="EncoderMode"/>
@@ -293,6 +299,9 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(PortDIOSet))]
     [XmlInclude(typeof(PulseDOPort0))]
     [XmlInclude(typeof(PulseDO0))]
+    [XmlInclude(typeof(MultiElementPayload))]
+    [XmlInclude(typeof(SingleElementPayload))]
+    [XmlInclude(typeof(MixedMemberLength))]
     [XmlInclude(typeof(StartPulse))]
     [XmlInclude(typeof(StartPulseTrain))]
     [XmlInclude(typeof(EncoderMode))]
@@ -329,6 +338,9 @@ namespace Harp.Generators.Tests
     /// <seealso cref="PortDIOSet"/>
     /// <seealso cref="PulseDOPort0"/>
     /// <seealso cref="PulseDO0"/>
+    /// <seealso cref="MultiElementPayload"/>
+    /// <seealso cref="SingleElementPayload"/>
+    /// <seealso cref="MixedMemberLength"/>
     /// <seealso cref="StartPulse"/>
     /// <seealso cref="StartPulseTrain"/>
     /// <seealso cref="EncoderMode"/>
@@ -344,6 +356,9 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(PortDIOSet))]
     [XmlInclude(typeof(PulseDOPort0))]
     [XmlInclude(typeof(PulseDO0))]
+    [XmlInclude(typeof(MultiElementPayload))]
+    [XmlInclude(typeof(SingleElementPayload))]
+    [XmlInclude(typeof(MixedMemberLength))]
     [XmlInclude(typeof(StartPulse))]
     [XmlInclude(typeof(StartPulseTrain))]
     [XmlInclude(typeof(EncoderMode))]
@@ -359,6 +374,9 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(TimestampedPortDIOSet))]
     [XmlInclude(typeof(TimestampedPulseDOPort0))]
     [XmlInclude(typeof(TimestampedPulseDO0))]
+    [XmlInclude(typeof(TimestampedMultiElementPayload))]
+    [XmlInclude(typeof(TimestampedSingleElementPayload))]
+    [XmlInclude(typeof(TimestampedMixedMemberLength))]
     [XmlInclude(typeof(TimestampedStartPulse))]
     [XmlInclude(typeof(TimestampedStartPulseTrain))]
     [XmlInclude(typeof(TimestampedEncoderMode))]
@@ -392,6 +410,9 @@ namespace Harp.Generators.Tests
     /// <seealso cref="PortDIOSet"/>
     /// <seealso cref="PulseDOPort0"/>
     /// <seealso cref="PulseDO0"/>
+    /// <seealso cref="MultiElementPayload"/>
+    /// <seealso cref="SingleElementPayload"/>
+    /// <seealso cref="MixedMemberLength"/>
     /// <seealso cref="StartPulse"/>
     /// <seealso cref="StartPulseTrain"/>
     /// <seealso cref="EncoderMode"/>
@@ -407,6 +428,9 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(PortDIOSet))]
     [XmlInclude(typeof(PulseDOPort0))]
     [XmlInclude(typeof(PulseDO0))]
+    [XmlInclude(typeof(MultiElementPayload))]
+    [XmlInclude(typeof(SingleElementPayload))]
+    [XmlInclude(typeof(MixedMemberLength))]
     [XmlInclude(typeof(StartPulse))]
     [XmlInclude(typeof(StartPulseTrain))]
     [XmlInclude(typeof(EncoderMode))]
@@ -1701,6 +1725,314 @@ namespace Harp.Generators.Tests
     }
 
     /// <summary>
+    /// Represents a register that manipulates messages from register MultiElementPayload.
+    /// </summary>
+    [Description("")]
+    public partial class MultiElementPayload
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="MultiElementPayload"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 44;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="MultiElementPayload"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U16;
+
+        /// <summary>
+        /// Represents the length of the <see cref="MultiElementPayload"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 3;
+
+        /// <summary>
+        /// Returns the payload data for <see cref="MultiElementPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static ushort[] GetPayload(HarpMessage message)
+        {
+            return message.GetPayloadArray<ushort>();
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="MultiElementPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ushort[]> GetTimestampedPayload(HarpMessage message)
+        {
+            return message.GetTimestampedPayloadArray<ushort>();
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="MultiElementPayload"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="MultiElementPayload"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, ushort[] value)
+        {
+            return HarpMessage.FromUInt16(Address, messageType, value);
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="MultiElementPayload"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="MultiElementPayload"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, ushort[] value)
+        {
+            return HarpMessage.FromUInt16(Address, timestamp, messageType, value);
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// MultiElementPayload register.
+    /// </summary>
+    /// <seealso cref="MultiElementPayload"/>
+    [Description("Filters and selects timestamped messages from the MultiElementPayload register.")]
+    public partial class TimestampedMultiElementPayload
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="MultiElementPayload"/> register. This field is constant.
+        /// </summary>
+        public const int Address = MultiElementPayload.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="MultiElementPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ushort[]> GetPayload(HarpMessage message)
+        {
+            return MultiElementPayload.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register SingleElementPayload.
+    /// </summary>
+    [Description("")]
+    public partial class SingleElementPayload
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="SingleElementPayload"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 45;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="SingleElementPayload"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U16;
+
+        /// <summary>
+        /// Represents the length of the <see cref="SingleElementPayload"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 1;
+
+        /// <summary>
+        /// Returns the payload data for <see cref="SingleElementPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static ushort[] GetPayload(HarpMessage message)
+        {
+            return message.GetPayloadArray<ushort>();
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="SingleElementPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ushort[]> GetTimestampedPayload(HarpMessage message)
+        {
+            return message.GetTimestampedPayloadArray<ushort>();
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="SingleElementPayload"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="SingleElementPayload"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, ushort[] value)
+        {
+            return HarpMessage.FromUInt16(Address, messageType, value);
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="SingleElementPayload"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="SingleElementPayload"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, ushort[] value)
+        {
+            return HarpMessage.FromUInt16(Address, timestamp, messageType, value);
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// SingleElementPayload register.
+    /// </summary>
+    /// <seealso cref="SingleElementPayload"/>
+    [Description("Filters and selects timestamped messages from the SingleElementPayload register.")]
+    public partial class TimestampedSingleElementPayload
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="SingleElementPayload"/> register. This field is constant.
+        /// </summary>
+        public const int Address = SingleElementPayload.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="SingleElementPayload"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<ushort[]> GetPayload(HarpMessage message)
+        {
+            return SingleElementPayload.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
+    /// Represents a register that manipulates messages from register MixedMemberLength.
+    /// </summary>
+    [Description("")]
+    public partial class MixedMemberLength
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="MixedMemberLength"/> register. This field is constant.
+        /// </summary>
+        public const int Address = 46;
+
+        /// <summary>
+        /// Represents the payload type of the <see cref="MixedMemberLength"/> register. This field is constant.
+        /// </summary>
+        public const PayloadType RegisterType = PayloadType.U8;
+
+        /// <summary>
+        /// Represents the length of the <see cref="MixedMemberLength"/> register. This field is constant.
+        /// </summary>
+        public const int RegisterLength = 4;
+
+        static MixedMemberLengthPayload ParsePayload(byte[] payload)
+        {
+            MixedMemberLengthPayload result;
+            result.Absent = payload[0];
+            result.Single = PayloadMarshal.GetSubArray(payload, 1, 1);
+            result.Multiple = PayloadMarshal.GetSubArray(payload, 2, 2);
+            return result;
+        }
+
+        static byte[] FormatPayload(MixedMemberLengthPayload value)
+        {
+            byte[] result;
+            result = new byte[4];
+            result[0] = value.Absent;
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 1, 1), value.Single);
+            PayloadMarshal.Write(new ArraySegment<byte>(result, 2, 2), value.Multiple);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the payload data for <see cref="MixedMemberLength"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the message payload.</returns>
+        public static MixedMemberLengthPayload GetPayload(HarpMessage message)
+        {
+            return ParsePayload(message.GetPayloadArray<byte>());
+        }
+
+        /// <summary>
+        /// Returns the timestamped payload data for <see cref="MixedMemberLength"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<MixedMemberLengthPayload> GetTimestampedPayload(HarpMessage message)
+        {
+            var payload = message.GetTimestampedPayloadArray<byte>();
+            return Timestamped.Create(ParsePayload(payload.Value), payload.Seconds);
+        }
+
+        /// <summary>
+        /// Returns a Harp message for the <see cref="MixedMemberLength"/> register.
+        /// </summary>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="MixedMemberLength"/> register
+        /// with the specified message type and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(MessageType messageType, MixedMemberLengthPayload value)
+        {
+            return HarpMessage.FromByte(Address, messageType, FormatPayload(value));
+        }
+
+        /// <summary>
+        /// Returns a timestamped Harp message for the <see cref="MixedMemberLength"/>
+        /// register.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">The type of the Harp message.</param>
+        /// <param name="value">The value to be stored in the message payload.</param>
+        /// <returns>
+        /// A <see cref="HarpMessage"/> object for the <see cref="MixedMemberLength"/> register
+        /// with the specified message type, timestamp, and payload.
+        /// </returns>
+        public static HarpMessage FromPayload(double timestamp, MessageType messageType, MixedMemberLengthPayload value)
+        {
+            return HarpMessage.FromByte(Address, timestamp, messageType, FormatPayload(value));
+        }
+    }
+
+    /// <summary>
+    /// Provides methods for manipulating timestamped messages from the
+    /// MixedMemberLength register.
+    /// </summary>
+    /// <seealso cref="MixedMemberLength"/>
+    [Description("Filters and selects timestamped messages from the MixedMemberLength register.")]
+    public partial class TimestampedMixedMemberLength
+    {
+        /// <summary>
+        /// Represents the address of the <see cref="MixedMemberLength"/> register. This field is constant.
+        /// </summary>
+        public const int Address = MixedMemberLength.Address;
+
+        /// <summary>
+        /// Returns timestamped payload data for <see cref="MixedMemberLength"/> register messages.
+        /// </summary>
+        /// <param name="message">A <see cref="HarpMessage"/> object representing the register message.</param>
+        /// <returns>A value representing the timestamped message payload.</returns>
+        public static Timestamped<MixedMemberLengthPayload> GetPayload(HarpMessage message)
+        {
+            return MixedMemberLength.GetTimestampedPayload(message);
+        }
+    }
+
+    /// <summary>
     /// Represents a register that starts a PWM pulse.
     /// </summary>
     [Description("Starts a PWM pulse.")]
@@ -2044,6 +2376,9 @@ namespace Harp.Generators.Tests
     /// <seealso cref="CreatePortDIOSetPayload"/>
     /// <seealso cref="CreatePulseDOPort0Payload"/>
     /// <seealso cref="CreatePulseDO0Payload"/>
+    /// <seealso cref="CreateMultiElementPayloadPayload"/>
+    /// <seealso cref="CreateSingleElementPayloadPayload"/>
+    /// <seealso cref="CreateMixedMemberLengthPayload"/>
     /// <seealso cref="CreateStartPulsePayload"/>
     /// <seealso cref="CreateStartPulseTrainPayload"/>
     /// <seealso cref="CreateEncoderModePayload"/>
@@ -2059,6 +2394,9 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(CreatePortDIOSetPayload))]
     [XmlInclude(typeof(CreatePulseDOPort0Payload))]
     [XmlInclude(typeof(CreatePulseDO0Payload))]
+    [XmlInclude(typeof(CreateMultiElementPayloadPayload))]
+    [XmlInclude(typeof(CreateSingleElementPayloadPayload))]
+    [XmlInclude(typeof(CreateMixedMemberLengthPayload))]
     [XmlInclude(typeof(CreateStartPulsePayload))]
     [XmlInclude(typeof(CreateStartPulseTrainPayload))]
     [XmlInclude(typeof(CreateEncoderModePayload))]
@@ -2074,6 +2412,9 @@ namespace Harp.Generators.Tests
     [XmlInclude(typeof(CreateTimestampedPortDIOSetPayload))]
     [XmlInclude(typeof(CreateTimestampedPulseDOPort0Payload))]
     [XmlInclude(typeof(CreateTimestampedPulseDO0Payload))]
+    [XmlInclude(typeof(CreateTimestampedMultiElementPayloadPayload))]
+    [XmlInclude(typeof(CreateTimestampedSingleElementPayloadPayload))]
+    [XmlInclude(typeof(CreateTimestampedMixedMemberLengthPayload))]
     [XmlInclude(typeof(CreateTimestampedStartPulsePayload))]
     [XmlInclude(typeof(CreateTimestampedStartPulseTrainPayload))]
     [XmlInclude(typeof(CreateTimestampedEncoderModePayload))]
@@ -2846,6 +3187,184 @@ namespace Harp.Generators.Tests
 
     /// <summary>
     /// Represents an operator that creates a message payload
+    /// for register MultiElementPayload.
+    /// </summary>
+    [DisplayName("MultiElementPayloadPayload")]
+    [Description("Creates a message payload for register MultiElementPayload.")]
+    public partial class CreateMultiElementPayloadPayload
+    {
+        /// <summary>
+        /// Gets or sets the value for register MultiElementPayload.
+        /// </summary>
+        [Description("The value for register MultiElementPayload.")]
+        public ushort[] MultiElementPayload { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the MultiElementPayload register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public ushort[] GetPayload()
+        {
+            return MultiElementPayload;
+        }
+
+        /// <summary>
+        /// Creates a message for register MultiElementPayload.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the MultiElementPayload register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Harp.Generators.Tests.MultiElementPayload.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register MultiElementPayload.
+    /// </summary>
+    [DisplayName("TimestampedMultiElementPayloadPayload")]
+    [Description("Creates a timestamped message payload for register MultiElementPayload.")]
+    public partial class CreateTimestampedMultiElementPayloadPayload : CreateMultiElementPayloadPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register MultiElementPayload.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the MultiElementPayload register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Harp.Generators.Tests.MultiElementPayload.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register SingleElementPayload.
+    /// </summary>
+    [DisplayName("SingleElementPayloadPayload")]
+    [Description("Creates a message payload for register SingleElementPayload.")]
+    public partial class CreateSingleElementPayloadPayload
+    {
+        /// <summary>
+        /// Gets or sets the value for register SingleElementPayload.
+        /// </summary>
+        [Description("The value for register SingleElementPayload.")]
+        public ushort[] SingleElementPayload { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the SingleElementPayload register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public ushort[] GetPayload()
+        {
+            return SingleElementPayload;
+        }
+
+        /// <summary>
+        /// Creates a message for register SingleElementPayload.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the SingleElementPayload register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Harp.Generators.Tests.SingleElementPayload.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register SingleElementPayload.
+    /// </summary>
+    [DisplayName("TimestampedSingleElementPayloadPayload")]
+    [Description("Creates a timestamped message payload for register SingleElementPayload.")]
+    public partial class CreateTimestampedSingleElementPayloadPayload : CreateSingleElementPayloadPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register SingleElementPayload.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the SingleElementPayload register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Harp.Generators.Tests.SingleElementPayload.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
+    /// for register MixedMemberLength.
+    /// </summary>
+    [DisplayName("MixedMemberLengthPayload")]
+    [Description("Creates a message payload for register MixedMemberLength.")]
+    public partial class CreateMixedMemberLengthPayload
+    {
+        /// <summary>
+        /// Gets or sets a value to write on payload member Absent.
+        /// </summary>
+        [Description("")]
+        public byte Absent { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member Single.
+        /// </summary>
+        [Description("")]
+        public byte[] Single { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value to write on payload member Multiple.
+        /// </summary>
+        [Description("")]
+        public byte[] Multiple { get; set; }
+
+        /// <summary>
+        /// Creates a message payload for the MixedMemberLength register.
+        /// </summary>
+        /// <returns>The created message payload value.</returns>
+        public MixedMemberLengthPayload GetPayload()
+        {
+            MixedMemberLengthPayload value;
+            value.Absent = Absent;
+            value.Single = Single;
+            value.Multiple = Multiple;
+            return value;
+        }
+
+        /// <summary>
+        /// Creates a message for register MixedMemberLength.
+        /// </summary>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new message for the MixedMemberLength register.</returns>
+        public HarpMessage GetMessage(MessageType messageType)
+        {
+            return Harp.Generators.Tests.MixedMemberLength.FromPayload(messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a timestamped message payload
+    /// for register MixedMemberLength.
+    /// </summary>
+    [DisplayName("TimestampedMixedMemberLengthPayload")]
+    [Description("Creates a timestamped message payload for register MixedMemberLength.")]
+    public partial class CreateTimestampedMixedMemberLengthPayload : CreateMixedMemberLengthPayload
+    {
+        /// <summary>
+        /// Creates a timestamped message for register MixedMemberLength.
+        /// </summary>
+        /// <param name="timestamp">The timestamp of the message payload, in seconds.</param>
+        /// <param name="messageType">Specifies the type of the created message.</param>
+        /// <returns>A new timestamped message for the MixedMemberLength register.</returns>
+        public HarpMessage GetMessage(double timestamp, MessageType messageType)
+        {
+            return Harp.Generators.Tests.MixedMemberLength.FromPayload(timestamp, messageType, GetPayload());
+        }
+    }
+
+    /// <summary>
+    /// Represents an operator that creates a message payload
     /// that starts a PWM pulse.
     /// </summary>
     [DisplayName("StartPulsePayload")]
@@ -3333,6 +3852,60 @@ namespace Harp.Generators.Tests
             return "BitmaskSplitterPayload { " +
                 "Low = " + Low + ", " +
                 "High = " + High + " " +
+            "}";
+        }
+    }
+
+    /// <summary>
+    /// Represents the payload of the MixedMemberLength register.
+    /// </summary>
+    public struct MixedMemberLengthPayload
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MixedMemberLengthPayload"/> structure.
+        /// </summary>
+        /// <param name="absent"></param>
+        /// <param name="single"></param>
+        /// <param name="multiple"></param>
+        public MixedMemberLengthPayload(
+            byte absent,
+            byte[] single,
+            byte[] multiple)
+        {
+            Absent = absent;
+            Single = single;
+            Multiple = multiple;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public byte Absent;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public byte[] Single;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public byte[] Multiple;
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents the payload of
+        /// the MixedMemberLength register.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents the payload of the
+        /// MixedMemberLength register.
+        /// </returns>
+        public override string ToString()
+        {
+            return "MixedMemberLengthPayload { " +
+                "Absent = " + Absent + ", " +
+                "Single = " + Single + ", " +
+                "Multiple = " + Multiple + " " +
             "}";
         }
     }
