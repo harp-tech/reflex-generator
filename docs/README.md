@@ -60,7 +60,7 @@ var implementation = generator.GenerateImplementation();
 
 ## Generating Python interface code
 
-Assuming the `deviceMetadata` object loaded above is available, a Python interface targeting the [pyharp](https://github.com/harp-tech/pyharp) register and payload API can be generated from the same metadata.
+Assuming the `deviceMetadata` object loaded above is available, an interface targeting [Harp Python](https://harp-tech.org/python) can be generated from the same metadata.
 
 ```csharp
 ...
