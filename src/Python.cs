@@ -454,18 +454,19 @@ internal static partial class TemplateHelper
 
         if (string.IsNullOrEmpty(member.InterfaceType))
         {
-            module.ProtocolImports.Add("IdentityConverter");
             if (memberLength > 0)
             {
+                module.ProtocolImports.Add("ArrayConverter");
                 module.UsesNDArray = true;
                 return new PythonField
                 {
                     Name = name,
                     Annotation = $"NDArray[{elementType}]",
-                    Descriptor = $"Field(IdentityConverter(np.dtype(({elementType}, ({memberLength},)))){offsetArgument}{defaultArgument})"
+                    Descriptor = $"Field(ArrayConverter({elementType}, {memberLength}){offsetArgument}{defaultArgument})"
                 };
             }
 
+            module.ProtocolImports.Add("IdentityConverter");
             return new PythonField
             {
                 Name = name,
