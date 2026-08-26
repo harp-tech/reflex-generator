@@ -104,7 +104,7 @@ internal static partial class TemplateHelper
 
     static readonly HashSet<string> StandardConverterInterfaceTypes = ["HarpVersion"];
 
-    static readonly Lazy<DeviceInfo> CoreMetadata = new(() =>
+    static readonly Lazy<DeviceMetadata> CoreMetadata = new(() =>
     {
         using var stream = typeof(TemplateHelper).Assembly.GetManifestResourceStream(CoreMetadataResourceName)
             ?? throw new InvalidOperationException($"Embedded metadata '{CoreMetadataResourceName}' was not found.");
@@ -112,21 +112,21 @@ internal static partial class TemplateHelper
         return ReadDeviceMetadata(reader);
     });
 
-    static GroupMaskInfo? FindGroupMask(DeviceInfo deviceMetadata, string typeName)
+    static GroupMaskInfo? FindGroupMask(DeviceMetadata deviceMetadata, string typeName)
     {
         if (deviceMetadata.GroupMasks.TryGetValue(typeName, out var groupMask)) return groupMask;
         if (deviceMetadata.BitMasks.ContainsKey(typeName)) return null;
         return CoreMetadata.Value.GroupMasks.TryGetValue(typeName, out groupMask) ? groupMask : null;
     }
 
-    static bool IsBitMask(DeviceInfo deviceMetadata, string typeName)
+    static bool IsBitMask(DeviceMetadata deviceMetadata, string typeName)
     {
         if (deviceMetadata.BitMasks.ContainsKey(typeName)) return true;
         if (deviceMetadata.GroupMasks.ContainsKey(typeName)) return false;
         return CoreMetadata.Value.BitMasks.ContainsKey(typeName);
     }
 
-    static void AddCoreImport(PythonModule module, DeviceInfo deviceMetadata, string typeName)
+    static void AddCoreImport(PythonModule module, DeviceMetadata deviceMetadata, string typeName)
     {
         if (!deviceMetadata.GroupMasks.ContainsKey(typeName) && !deviceMetadata.BitMasks.ContainsKey(typeName))
             module.CoreImports.Add(typeName);
@@ -197,7 +197,7 @@ internal static partial class TemplateHelper
         return FirmwareNamingConvention.Instance.Apply(name).ToLowerInvariant();
     }
 
-    public static PythonModule BuildPythonModule(DeviceInfo deviceMetadata)
+    public static PythonModule BuildPythonModule(DeviceMetadata deviceMetadata)
     {
         var module = new PythonModule
         {
@@ -237,7 +237,7 @@ internal static partial class TemplateHelper
         return pythonEnum;
     }
 
-    static void BuildPythonRegister(PythonModule module, string name, RegisterInfo register, DeviceInfo deviceMetadata)
+    static void BuildPythonRegister(PythonModule module, string name, RegisterInfo register, DeviceMetadata deviceMetadata)
     {
         var hasMask = !string.IsNullOrEmpty(register.MaskType);
         var isString = register.InterfaceType == "string";
@@ -287,7 +287,7 @@ internal static partial class TemplateHelper
         });
     }
 
-    static PythonPayload BuildPythonPayload(PythonModule module, string payloadName, RegisterInfo register, DeviceInfo deviceMetadata)
+    static PythonPayload BuildPythonPayload(PythonModule module, string payloadName, RegisterInfo register, DeviceMetadata deviceMetadata)
     {
         var elementType = GetPythonNumpyType(register.Type);
         var elementSize = GetPayloadTypeSize(register.Type);
@@ -375,7 +375,7 @@ internal static partial class TemplateHelper
         string name,
         PayloadMemberInfo member,
         RegisterInfo register,
-        DeviceInfo deviceMetadata,
+        DeviceMetadata deviceMetadata,
         string elementType,
         int elementSize)
     {
@@ -517,12 +517,7 @@ internal static partial class TemplateHelper
         return GetPythonNumpyType(register.Type);
     }
 
-    static string GetMemberAnnotation(PayloadMemberInfo member, RegisterInfo register)
-    {
-        return GetMemberNumpyType(member, register);
-    }
-
-    static string GetPythonDefaultArgument(PayloadMemberInfo member, string typeName, RegisterInfo register, DeviceInfo deviceMetadata)
+    static string GetPythonDefaultArgument(PayloadMemberInfo member, string typeName, RegisterInfo register, DeviceMetadata deviceMetadata)
     {
         var defaultValue = member.DefaultValue ?? member.MinValue;
         if (!defaultValue.HasValue || member.Length > 0)

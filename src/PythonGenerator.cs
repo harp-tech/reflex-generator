@@ -17,7 +17,7 @@ public sealed class PythonGenerator
     /// specified device metadata.
     /// </summary>
     /// <param name="deviceMetadata">The device metadata object.</param>
-    public PythonGenerator(DeviceInfo deviceMetadata)
+    public PythonGenerator(DeviceMetadata deviceMetadata)
     {
         var session = new Dictionary<string, object>
         {

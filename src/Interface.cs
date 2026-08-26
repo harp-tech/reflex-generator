@@ -11,9 +11,9 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace Harp.Generators;
 
 /// <summary>
-/// Represents information about Harp device functionality and operation registers.
+/// Represents metadata about Harp device functionality and operation registers.
 /// </summary>
-public class DeviceInfo
+public class DeviceMetadata
 {
     /// <summary>
     /// Specifies a summary description of the register interface.
@@ -360,16 +360,16 @@ public class MaskValue
 
 internal static partial class TemplateHelper
 {
-    public static DeviceInfo ReadDeviceMetadata(string path)
+    public static DeviceMetadata ReadDeviceMetadata(string path)
     {
         using var reader = new StreamReader(path);
         return ReadDeviceMetadata(reader);
     }
 
-    public static DeviceInfo ReadDeviceMetadata(TextReader reader)
+    public static DeviceMetadata ReadDeviceMetadata(TextReader reader)
     {
         var parser = new MergingParser(new Parser(reader));
-        return MetadataDeserializer.Instance.Deserialize<DeviceInfo>(parser);
+        return MetadataDeserializer.Instance.Deserialize<DeviceMetadata>(parser);
     }
 
     public static string GetInterfaceType(string name, RegisterInfo register)
@@ -546,7 +546,7 @@ internal static partial class TemplateHelper
     static int GetMemberSize(
         PayloadMemberInfo member,
         RegisterInfo register,
-        DeviceInfo deviceMetadata,
+        DeviceMetadata deviceMetadata,
         out string interfaceType,
         out PayloadType payloadType)
     {
@@ -567,7 +567,7 @@ internal static partial class TemplateHelper
         PayloadMemberInfo member,
         string expression,
         RegisterInfo register,
-        DeviceInfo deviceMetadata)
+        DeviceMetadata deviceMetadata)
     {
         var payloadType = register.Type;
         var memberLength = member.Length;

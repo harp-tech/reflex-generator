@@ -29,11 +29,11 @@ static class TestHelper
         return Path.Combine("Metadata", fileName);
     }
 
-    public static DeviceInfo ReadDeviceMetadata(string path)
+    public static DeviceMetadata ReadDeviceMetadata(string path)
     {
         using var reader = new StreamReader(path);
         var parser = new MergingParser(new Parser(reader));
-        return MetadataDeserializer.Instance.Deserialize<DeviceInfo>(parser);
+        return MetadataDeserializer.Instance.Deserialize<DeviceMetadata>(parser);
     }
 
     public static Dictionary<string, PortPinInfo> ReadPortPinMetadata(string path)

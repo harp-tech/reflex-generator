@@ -19,7 +19,7 @@ public sealed class InterfaceGenerator
     /// </summary>
     /// <param name="deviceMetadata">The device metadata object.</param>
     /// <param name="ns">The target namespace to use for all generated code.</param>
-    public InterfaceGenerator(DeviceInfo deviceMetadata, string ns)
+    public InterfaceGenerator(DeviceMetadata deviceMetadata, string ns)
     {
         var session = new Dictionary<string, object>
         {
