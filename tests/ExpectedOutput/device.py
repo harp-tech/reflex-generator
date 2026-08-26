@@ -8,6 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 from harp.protocol import (
     AnonymousPayload,
+    ArrayConverter,
     BitMask,
     BoolConverter,
     Field,
@@ -105,7 +106,7 @@ class AnalogDataPayload(StructPayload[np.float32], length=6):
     analog0: np.float32 = Field(IdentityConverter(np.float32))
     analog1: np.float32 = Field(IdentityConverter(np.float32), offset=1)
     analog2: np.float32 = Field(IdentityConverter(np.float32), offset=2)
-    accelerometer: NDArray[np.float32] = Field(IdentityConverter(np.dtype((np.float32, (3,)))), offset=3)
+    accelerometer: NDArray[np.float32] = Field(ArrayConverter(np.float32, 3), offset=3)
 
 
 class ComplexConfigurationPayload(StructPayload[np.uint8], length=17):
@@ -125,7 +126,7 @@ class VersionPayload(StructPayload[np.uint8], length=32):
     firmware_version: HarpVersion = Field(HarpVersionConverter(np.uint8), offset=3)
     hardware_version: HarpVersion = Field(HarpVersionConverter(np.uint8), offset=6)
     core_id: str = Field(StringConverter(3), offset=9)
-    interface_hash: NDArray[np.uint8] = Field(IdentityConverter(np.dtype((np.uint8, (20,)))), offset=12)
+    interface_hash: NDArray[np.uint8] = Field(ArrayConverter(np.uint8, 20), offset=12)
 
 
 class CustomPayloadPayload(AnonymousPayload[np.uint32]):
@@ -164,8 +165,8 @@ class MixedMemberLengthPayload(StructPayload[np.uint8], length=4):
     """Represents the payload of the MixedMemberLength register."""
 
     absent: np.uint8 = Field(IdentityConverter(np.uint8))
-    single: NDArray[np.uint8] = Field(IdentityConverter(np.dtype((np.uint8, (1,)))), offset=1)
-    multiple: NDArray[np.uint8] = Field(IdentityConverter(np.dtype((np.uint8, (2,)))), offset=2)
+    single: NDArray[np.uint8] = Field(ArrayConverter(np.uint8, 1), offset=1)
+    multiple: NDArray[np.uint8] = Field(ArrayConverter(np.uint8, 2), offset=2)
 
 
 class StartPulsePayload(StructPayload[np.uint16]):
