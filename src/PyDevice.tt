@@ -230,7 +230,7 @@ class <#= register.Name #>(<#= register.BaseClass #>):
     if (register.Kind == PythonRegisterKind.Array)
     {
 #>
-    length: ClassVar[int] = <#= register.Length #>
+    length: int = <#= register.Length #>
 <#
     }
     else if (register.Kind == PythonRegisterKind.Struct)

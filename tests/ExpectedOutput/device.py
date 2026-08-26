@@ -257,12 +257,12 @@ class PulseDO0(RegisterU16):
 
 class MultiElementPayload(RegisterU16Array):
     address: ClassVar[int] = 44
-    length: ClassVar[int] = 3
+    length: int = 3
 
 
 class SingleElementPayload(RegisterU16Array):
     address: ClassVar[int] = 45
-    length: ClassVar[int] = 1
+    length: int = 1
 
 
 class MixedMemberLength(RegisterBase[MixedMemberLengthPayload]):

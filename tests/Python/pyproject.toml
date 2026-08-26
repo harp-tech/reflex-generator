@@ -6,5 +6,6 @@ requires-python = ">=3.11"
 dependencies = [
     "harp-protocol>=0.5.0",
     "harp-device>=0.5.0",
+    "pyright>=1.1.411",
     "pytest>=8",
 ]
