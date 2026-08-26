@@ -105,6 +105,10 @@ jobs:
           HARP_INTEROP_OUTPUT: ${{github.workspace}}/artifacts/python-interop
         run: uv run --project tests/Python pytest tests/Python/test_interop.py
 
+      - name: Type-check generated Python
+        if: matrix.configuration == 'release'
+        run: uv run --project tests/Python pyright artifacts/python-interop/harp_device
+
       # ----------------------------------------------------------------------- Collect artifacts
       - name: Collect NuGet packages
         uses: actions/upload-artifact@v4
