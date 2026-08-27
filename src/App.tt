@@ -1,5 +1,5 @@
 ﻿<#@ template debug="true" hostspecific="false" visibility="internal" language="C#" inherits="TemplateBase" #>
-<#@ parameter name="DeviceMetadata" type="DeviceInfo" #>
+<#@ parameter name="DeviceMetadata" type="DeviceMetadata" #>
 <#@ import namespace="Harp.Generators" #>
 <#@ import namespace="System.IO" #>
 <#@ output extension=".h" #>

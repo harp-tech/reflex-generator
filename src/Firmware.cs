@@ -296,7 +296,7 @@ internal static partial class TemplateHelper
         return GetFirmwareName(value);
     }
 
-    public static int GetMaxFirmwareBitMaskNameLength(DeviceInfo deviceMetadata)
+    public static int GetMaxFirmwareBitMaskNameLength(DeviceMetadata deviceMetadata)
     {
         return deviceMetadata.BitMasks.Values
             .SelectMany(mask => mask.Bits)
@@ -304,7 +304,7 @@ internal static partial class TemplateHelper
             .Prepend(0).Max();
     }
 
-    public static int GetMaxFirmwareGroupMaskNameLength(DeviceInfo deviceMetadata)
+    public static int GetMaxFirmwareGroupMaskNameLength(DeviceMetadata deviceMetadata)
     {
         return (from groupMask in deviceMetadata.GroupMasks
                 let maskName = GetFirmwareGroupMaskName(groupMask.Key)

@@ -38,7 +38,7 @@ A complete reactive interface to communicate with the device can be generated fr
 ```csharp
 using var reader = new StreamReader("device.yml");
 var parser = new MergingParser(new Parser(reader));
-var deviceMetadata = MetadataDeserializer.Instance.Deserialize<DeviceInfo>(parser);
+var deviceMetadata = MetadataDeserializer.Instance.Deserialize<DeviceMetadata>(parser);
 
 var generator = new InterfaceGenerator(deviceMetadata, "MyNamespace");
 var implementation = generator.GenerateImplementation();
