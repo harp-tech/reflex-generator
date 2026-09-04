@@ -34,7 +34,10 @@ public sealed class InterfaceGeneratorTests
         {
             CompilerTestHelper.CompileFromSource(implementation.Device, implementation.AsyncDevice, payloadExtensions, customImplementation);
             TestHelper.AssertExpectedOutput(implementation.Device, deviceOutputFileName);
-            TestHelper.AssertExpectedOutput(implementation.AsyncDevice, asyncDeviceOutputFileName);
+            if (deviceMetadata.IsApplicationDevice)
+                TestHelper.AssertExpectedOutput(implementation.AsyncDevice, asyncDeviceOutputFileName);
+            else
+                Assert.AreEqual(string.Empty, implementation.AsyncDevice, "Metadata describing only common registers should generate no asynchronous interface.");
         }
         catch (AssertFailedException)
         {

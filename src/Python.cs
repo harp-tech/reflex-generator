@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Bonsai.Harp;
 
 namespace Harp.Generators;
@@ -77,7 +76,6 @@ internal sealed class PythonRegister
 
 internal static partial class TemplateHelper
 {
-    const int CoreRegisterAddressLimit = 32;
     const string CoreMetadataResourceName = "Harp.Generators.core.yml";
 
     static readonly Dictionary<string, string> PrimitiveNumpyTypes = new()
@@ -215,7 +213,7 @@ internal static partial class TemplateHelper
             BuildPythonRegister(module, registerMetadata.Key, registerMetadata.Value, deviceMetadata);
 
         module.ProtocolImports.Add("RegisterBase");
-        module.IsApplicationDevice = deviceMetadata.Registers.Values.All(register => register.Address >= CoreRegisterAddressLimit);
+        module.IsApplicationDevice = deviceMetadata.IsApplicationDevice;
         return module;
     }
 

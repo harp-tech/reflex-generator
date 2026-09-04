@@ -54,6 +54,12 @@ public class DeviceMetadata
     /// Specifies the collection of group masks available to be used with the different registers.
     /// </summary>
     public Dictionary<string, GroupMaskInfo> GroupMasks = [];
+
+    /// <summary>
+    /// Gets a value indicating whether the metadata describes an application device.
+    /// </summary>
+    [YamlIgnore]
+    public bool IsApplicationDevice => !string.IsNullOrEmpty(Device);
 }
 
 /// <summary>

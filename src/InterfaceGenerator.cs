@@ -12,6 +12,7 @@ public sealed class InterfaceGenerator
     readonly Device _deviceTemplate = new();
     readonly AsyncDevice _asyncDeviceTemplate = new();
     readonly CompilerErrorCollection errors = [];
+    readonly bool isApplicationDevice;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InterfaceGenerator"/> class with the
@@ -28,6 +29,7 @@ public sealed class InterfaceGenerator
         };
         _deviceTemplate.Initialize(InterfaceImplementation.DeviceFileName, errors, session);
         _asyncDeviceTemplate.Initialize(InterfaceImplementation.AsyncDeviceFileName, errors, session);
+        isApplicationDevice = deviceMetadata.IsApplicationDevice;
     }
 
     /// <summary>
@@ -41,7 +43,7 @@ public sealed class InterfaceGenerator
     /// <returns>The generated device interface implementation.</returns>
     public InterfaceImplementation GenerateImplementation() =>
         new(Device: _deviceTemplate.TransformText(),
-            AsyncDevice: _asyncDeviceTemplate.TransformText());
+            AsyncDevice: isApplicationDevice ? _asyncDeviceTemplate.TransformText() : string.Empty);
 }
 
 /// <summary>
@@ -72,7 +74,8 @@ public record struct InterfaceImplementation(string Device, string AsyncDevice)
     public readonly IEnumerator<KeyValuePair<string, string>> GetEnumerator()
     {
         yield return new(DeviceFileName, Device);
-        yield return new(AsyncDeviceFileName, AsyncDevice);
+        if (!string.IsNullOrEmpty(AsyncDevice))
+            yield return new(AsyncDeviceFileName, AsyncDevice);
     }
 
     readonly IEnumerator IEnumerable.GetEnumerator()

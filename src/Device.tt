@@ -12,6 +12,11 @@
 var publicRegisters = DeviceMetadata.Registers.Where(register => register.Value.Visibility == RegisterVisibility.Public).ToList();
 var deviceRegisters = DeviceMetadata.Registers;
 var deviceName = DeviceMetadata.Device;
+var isApplicationDevice = DeviceMetadata.IsApplicationDevice;
+#>
+<#
+if (isApplicationDevice)
+{
 #>
 using Bonsai;
 using Bonsai.Harp;
@@ -21,9 +26,25 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Xml.Serialization;
+<#
+}
+else
+{
+#>
+using Bonsai.Harp;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+<#
+} // isApplicationDevice
+#>
 
 namespace <#= Namespace #>
 {
+<#
+if (isApplicationDevice)
+{
+#>
     /// <summary>
     /// Generates events and processes commands for the <#= deviceName #> device connected
     /// at the specified serial port.
@@ -53,6 +74,19 @@ namespace <#= Namespace #>
             (Bonsai.Harp.Device.RegisterMap.ToDictionary(entry => entry.Key, entry => entry.Value))
         {
 <#
+}
+else
+{
+#>
+    public partial class Device
+    {
+        /// <summary>
+        /// Gets a read-only mapping from address to register type.
+        /// </summary>
+        public static IReadOnlyDictionary<int, Type> RegisterMap { get; } = new Dictionary<int, Type>
+        {
+<#
+} // isApplicationDevice
 int registerIndex = 0;
 foreach (var register in deviceRegisters)
 {
@@ -62,6 +96,10 @@ foreach (var register in deviceRegisters)
 }
 #>
         };
+<#
+if (isApplicationDevice)
+{
+#>
 
         /// <summary>
         /// Gets the contents of the metadata file describing the <see cref="<#= deviceName #>"/>
@@ -76,7 +114,14 @@ foreach (var register in deviceRegisters)
             using var streamReader = new System.IO.StreamReader(metadataStream);
             return streamReader.ReadToEnd();
         }
+<#
+} // isApplicationDevice
+#>
     }
+<#
+if (isApplicationDevice)
+{
+#>
 
     /// <summary>
     /// Represents an operator that returns the contents of the metadata file
@@ -388,6 +433,8 @@ foreach (var register in publicRegisters)
         string INamedElement.Name => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Register)}";
     }
 <#
+} // deviceRegisters.Count > 0
+} // isApplicationDevice
 foreach (var registerMetadata in deviceRegisters)
 {
     var register = registerMetadata.Value;
@@ -647,6 +694,8 @@ if (isPrivate)
     }
 <#
 }
+if (isApplicationDevice && deviceRegisters.Count > 0)
+{
 #>
 
     /// <summary>
@@ -691,6 +740,7 @@ foreach (var register in publicRegisters)
         string INamedElement.Name => $"{nameof(<#= deviceName #>)}.{GetElementDisplayName(Payload)}";
     }
 <#
+} // isApplicationDevice && deviceRegisters.Count > 0
 foreach (var registerMetadata in publicRegisters)
 {
     var register = registerMetadata.Value;
@@ -822,9 +872,6 @@ foreach (var registerMetadata in publicRegisters)
     }
 <#
 }
-#>
-<#
-} // deviceRegisters.Count > 0
 #>
 <#
 var payloadTypes = new HashSet<string>();
