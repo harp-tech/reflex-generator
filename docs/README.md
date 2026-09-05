@@ -51,7 +51,7 @@ Assuming the `deviceMetadata` object loaded above is available, device firmware 
 ```csharp
 ...
 using var reader = new StreamReader("ios.yml");
-var portPinMetadata = MetadataDeserializer.Instance.Deserialize<PortPinMetadata>(reader);
+var portPinMetadata = MetadataDeserializer.Instance.Deserialize<Dictionary<string, PortPinInfo>>(reader);
 var generator = new FirmwareGenerator(deviceMetadata, portPinMetadata);
 
 var headers = generator.GenerateHeaders();

@@ -58,6 +58,10 @@ public class DeviceMetadata
     /// <summary>
     /// Gets a value indicating whether the metadata describes an application device.
     /// </summary>
+    /// <remarks>
+    /// Metadata declaring no device name describes the core register set. In this case, the
+    /// generated interface carries the register classes and the address map only.
+    /// </remarks>
     [YamlIgnore]
     public bool IsApplicationDevice => !string.IsNullOrEmpty(Device);
 }

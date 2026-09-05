@@ -7,6 +7,10 @@ namespace Harp.Generators;
 /// <summary>
 /// Provides automatic generation of reactive device interface implementations.
 /// </summary>
+/// <remarks>
+/// Metadata declaring no device name generates no asynchronous device interface, so
+/// enumerating the result yields a single file.
+/// </remarks>
 public sealed class InterfaceGenerator
 {
     readonly Device _deviceTemplate = new();
